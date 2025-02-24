@@ -21,7 +21,7 @@ public class Conexao {
 
     public static Connection getConnectionMySQL() throws ClassNotFoundException, SQLException {
         driver = "com.mysql.cj.jdbc.Driver";
-        url = "jdbc:mysql://localhost:3306/crud_v2?useSSL=false";
+        url = "jdbc:mysql://localhost:3306/crud_v3?useSSL=false";
         user = "root";
         password = "root";
         return getConnection();
