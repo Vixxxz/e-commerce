@@ -80,7 +80,7 @@ public class ControleCliente extends HttpServlet {
         if (!ResultJsonObject.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{" + ResultJsonObject.getErro() + "}");
+            resposta.addProperty("erro", ResultJsonObject.getErro());
             out.print(gson.toJson(resposta));
             return;
         }
@@ -89,7 +89,7 @@ public class ControleCliente extends HttpServlet {
         if (!jsonObject.has("Cliente") || !jsonObject.has("ClienteEndereco")) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{\"erro\": \"JSON inválido: Campos obrigatórios ausentes.\"}");
+            resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes");
             out.print(gson.toJson(resposta));
             return;
         }
@@ -105,7 +105,7 @@ public class ControleCliente extends HttpServlet {
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{\"erro\": \"" + resultado.getErro() + "\"}");
+            resposta.addProperty("erro", resultado.getErro());
             out.print(gson.toJson(resposta));
             return;
         }
@@ -127,7 +127,7 @@ public class ControleCliente extends HttpServlet {
         if (!ResultJsonObject.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{\"erro\": \"" + ResultJsonObject.getErro() + "\"}");
+            resposta.addProperty("erro", ResultJsonObject.getErro());
             out.print(gson.toJson(resposta));
             return;
         }
