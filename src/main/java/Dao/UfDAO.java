@@ -37,7 +37,8 @@ public class UfDAO implements IDAO {
         List<EntidadeDominio> paises = resultadoPaises.getValor();
 
         if (paises.isEmpty()) {
-            uf.setPais((Pais) paisDAO.salvar(uf.getPais()));
+            Resultado<EntidadeDominio> resultadoPais = paisDAO.salvar(uf.getPais());
+            uf.setPais((Pais) resultadoPais.getValor());
         } else {
             uf.setPais((Pais) paises.getFirst());
         }
@@ -52,12 +53,13 @@ public class UfDAO implements IDAO {
             pst.executeUpdate();
 
             try (ResultSet rs = pst.getGeneratedKeys()) {
-                if (rs.next()) {
-                    int idUf = rs.getInt(1);
-                    uf.setId(idUf);
+                if (!rs.next()) {
+                    throw new SQLException("Erro ao salvar UF");
                 }
+                int idUf = rs.getInt(1);
+                uf.setId(idUf);
             }
-            return uf;
+            return Resultado.sucesso(uf);
         }
     }
 

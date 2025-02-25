@@ -38,7 +38,8 @@ public class BairroDAO implements IDAO {
         List<EntidadeDominio> cidades = resultadoCidades.getValor();
 
         if (cidades.isEmpty()) {
-            bairro.setCidade((Cidade) cidadeDAO.salvar(bairro.getCidade()));
+            Resultado<EntidadeDominio> resultadoCidade = cidadeDAO.salvar(bairro.getCidade());
+            bairro.setCidade((Cidade) resultadoCidade.getValor());
         } else {
             bairro.setCidade((Cidade) cidades.getFirst());
         }
@@ -54,11 +55,12 @@ public class BairroDAO implements IDAO {
 
             try (ResultSet rs = pst.getGeneratedKeys()) {
                 if (rs.next()) {
-                    int idBairro = rs.getInt(1);
-                    bairro.setId(idBairro);
+                    throw new SQLException("Erro ao criar bairro");
                 }
+                int idBairro = rs.getInt(1);
+                bairro.setId(idBairro);
             }
-            return bairro;
+            return Resultado.sucesso(bairro);
         }
     }
 

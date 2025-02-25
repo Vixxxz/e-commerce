@@ -36,7 +36,8 @@ public class CidadeDAO implements IDAO {
         List<EntidadeDominio> ufs = resultadoUfs.getValor();
 
         if (ufs.isEmpty()) {
-            cidade.setUf((Uf) ufDAO.salvar(cidade.getUf()));
+            Resultado<EntidadeDominio> resultadoUf = ufDAO.salvar(cidade.getUf());
+            cidade.setUf((Uf) resultadoUf.getValor());
         } else {
             cidade.setUf((Uf) ufs.getFirst());
         }
@@ -51,12 +52,13 @@ public class CidadeDAO implements IDAO {
             pst.executeUpdate();
 
             try (ResultSet rs = pst.getGeneratedKeys()) {
-                if (rs.next()) {
-                    int idCidade = rs.getInt(1);
-                    cidade.setId(idCidade);
+                if (!rs.next()) {
+                    throw new SQLException("Erro ao salvar Cidade");
                 }
+                int idCidade = rs.getInt(1);
+                cidade.setId(idCidade);
             }
-            return cidade;
+            return Resultado.sucesso(cidade);
         }
     }
 

@@ -39,12 +39,13 @@ public class PaisDAO implements IDAO {
             pst.executeUpdate();
 
             try (ResultSet rs = pst.getGeneratedKeys()) {
-                if (rs.next()) {
-                    int idPais = rs.getInt(1);
-                    pais.setId(idPais);
+                if (!rs.next()) {
+                    throw new SQLException("Erro ao salvar Pais");
                 }
+                int idPais = rs.getInt(1);
+                pais.setId(idPais);
             }
-            return pais;
+            return Resultado.sucesso(pais);
         }
     }
 
