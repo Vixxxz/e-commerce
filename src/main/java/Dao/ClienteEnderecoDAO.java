@@ -16,16 +16,8 @@ public class ClienteEnderecoDAO implements IDAO{
     }
     public ClienteEnderecoDAO() {}
 
-    @Override
-    public EntidadeDominio salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
-        if (connection == null) {
-            connection = Conexao.getConnectionMySQL();
-        }
-        connection.setAutoCommit(false);
-
-        ClienteEndereco clienteEndereco = (ClienteEndereco) entidade;
+    public void salvaEnderecoCadastro(ClienteEndereco clienteEndereco) throws SQLException, ClassNotFoundException {
         StringBuilder sql = new StringBuilder();
-
         sql.append("INSERT INTO cliente_endereco(cli_end_cli_id, cli_end_end_id, cli_end_num, ");
         sql.append("cli_end_tp_residencia, cli_end_tp_end, cli_end_obs, cli_end_dt_cadastro) ");
         sql.append("VALUES (?,?,?,?,?,?,?)");
@@ -36,7 +28,8 @@ public class ClienteEnderecoDAO implements IDAO{
         List<EntidadeDominio> enderecos = resultadoEnderecos.getValor();
 
         if (enderecos.isEmpty()) {
-            clienteEndereco.setEndereco((Endereco) enderecoDAO.salvar(clienteEndereco.getEndereco()));
+            Resultado<EntidadeDominio> resultadoClienteEndereco = enderecoDAO.salvar(clienteEndereco.getEndereco());
+            clienteEndereco.setEndereco((Endereco) resultadoClienteEndereco.getValor());
         } else {
             clienteEndereco.setEndereco((Endereco) enderecos.getFirst());
         }
@@ -53,12 +46,85 @@ public class ClienteEnderecoDAO implements IDAO{
             pst.executeUpdate();
 
             try (ResultSet rs = pst.getGeneratedKeys()) {
-                if (rs.next()) {
-                    int idClienteEndereco = rs.getInt(1);
-                    clienteEndereco.setId(idClienteEndereco);
+                if (!rs.next()) {
+                    throw new SQLException("Falha ao inserir o ClienteEndereco.");
                 }
+                int idClienteEndereco = rs.getInt(1);
+                clienteEndereco.setId(idClienteEndereco);
             }
-            return clienteEndereco;
+        }
+    }
+
+    @Override
+    public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
+        try{
+            if (connection == null) {
+                connection = Conexao.getConnectionMySQL();
+            }
+            connection.setAutoCommit(false);
+
+            ClienteEndereco clienteEndereco = (ClienteEndereco) entidade;
+
+            Resultado<List<EntidadeDominio>> resultadoClientesEnderecos = consultar(clienteEndereco);
+            List<EntidadeDominio> clientesEnderecos = resultadoClientesEnderecos.getValor();
+            if(!clientesEnderecos.isEmpty()){
+                return Resultado.erro("endereço já existente para o cliente: " + clientesEnderecos.getFirst());
+            }
+
+            StringBuilder sql = new StringBuilder();
+            sql.append("INSERT INTO cliente_endereco(cli_end_cli_id, cli_end_end_id, cli_end_num, ");
+            sql.append("cli_end_tp_residencia, cli_end_tp_end, cli_end_obs, cli_end_dt_cadastro) ");
+            sql.append("VALUES (?,?,?,?,?,?,?)");
+
+            IDAO enderecoDAO = new EnderecoDAO(connection);
+
+            Resultado<List<EntidadeDominio>> resultadoEnderecos = enderecoDAO.consultar(clienteEndereco.getEndereco());
+            List<EntidadeDominio> enderecos = resultadoEnderecos.getValor();
+
+            if (enderecos.isEmpty()) {
+                Resultado<EntidadeDominio> resultadoClienteEndereco = enderecoDAO.salvar(clienteEndereco.getEndereco());
+                clienteEndereco.setEndereco((Endereco) resultadoClienteEndereco.getValor());
+            } else {
+                clienteEndereco.setEndereco((Endereco) enderecos.getFirst());
+            }
+            clienteEndereco.complementarDtCadastro();
+            try (PreparedStatement pst = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
+                pst.setInt(1, clienteEndereco.getCliente().getId());
+                pst.setInt(2, clienteEndereco.getEndereco().getId());
+                pst.setString(3, clienteEndereco.getNumero());
+                pst.setString(4, clienteEndereco.getTipoResidencia());
+                pst.setString(5, clienteEndereco.getTipoEndereco());
+                pst.setString(6, clienteEndereco.getObservacoes());
+                pst.setTimestamp(7, new Timestamp(clienteEndereco.getDtCadastro().getTime()));
+
+                pst.executeUpdate();
+
+                try (ResultSet rs = pst.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        int idClienteEndereco = rs.getInt(1);
+                        clienteEndereco.setId(idClienteEndereco);
+                    }
+                }
+                connection.commit();
+                return Resultado.sucesso(clienteEndereco);
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+                System.err.println("Rollback efetuado devido a erro: " + e.getMessage());
+                return Resultado.erro("Erro ao salvar ClienteEndereço: " + e.getMessage());
+            } catch (SQLException rollbackEx) {
+                System.err.println("Erro durante rollback: " + rollbackEx.getMessage());
+                return Resultado.erro("Erro durante rollback: " + rollbackEx.getMessage());
+            }
+        } finally {
+            try {
+                if (connection != null) connection.close();
+            } catch (SQLException closeEx) {
+                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
+            }
         }
     }
 

@@ -19,7 +19,7 @@ public class CidadeDAO implements IDAO {
     }
 
     @Override
-    public EntidadeDominio salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
+    public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
         Cidade cidade = (Cidade) entidade;
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO cidade(cid_nome, cid_uf_id, cid_dt_cadastro) ");

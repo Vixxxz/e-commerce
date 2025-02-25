@@ -1,6 +1,5 @@
 package Dao;
 
-import Dominio.Cidade;
 import Dominio.EntidadeDominio;
 import Dominio.Pais;
 import Dominio.Uf;
@@ -22,7 +21,7 @@ public class UfDAO implements IDAO {
     }
 
     @Override
-    public EntidadeDominio salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
+    public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
         Uf uf = (Uf) entidade;
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO uf(uf_nome, uf_pai_id, uf_dt_cadastro) ");

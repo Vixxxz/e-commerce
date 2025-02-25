@@ -22,31 +22,22 @@ public class ClienteDAO implements IDAO {
 
     public Resultado<Cliente> salvarClienteEEndereco(Cliente cliente, List<ClienteEndereco> enderecos) {
         try {
-            if (connection == null) {
-                connection = Conexao.getConnectionMySQL();
-            }
-            connection.setAutoCommit(false);
             Resultado<List<EntidadeDominio>> resultadoConsultaCliente = consultar(cliente);
-
             List<EntidadeDominio> clientes = resultadoConsultaCliente.getValor();
 
             if (!clientes.isEmpty()) {
                 return Resultado.erro("cliente já existente");
             }
 
-            Cliente clienteSalvo = (Cliente) salvar(cliente);
+            Resultado<EntidadeDominio> resultadoSalvarCliente = salvar(cliente);
+            Cliente clienteSalvo = (Cliente) resultadoSalvarCliente.getValor();
             ClienteEnderecoDAO clienteEnderecoDAO = new ClienteEnderecoDAO(connection);
             for (ClienteEndereco clienteEndereco : enderecos) {
                 clienteEndereco.setCliente(clienteSalvo);
-                Resultado<List<EntidadeDominio>> resultadoClienteEndereco = clienteEnderecoDAO.consultar(clienteEndereco);
-                List<EntidadeDominio> clientesEnderecos = resultadoClienteEndereco.getValor();
-                if(!clientesEnderecos.isEmpty()){
-                    return Resultado.erro("endereço já existente para o cliente: " + clientesEnderecos.getFirst());
-                }
-                clienteEnderecoDAO.salvar(clienteEndereco);
+                clienteEnderecoDAO.salvaEnderecoCadastro(clienteEndereco);
             }
-            connection.commit();
             System.out.println("Cliente e Endereço salvos com sucesso!");
+            connection.commit();
             return Resultado.sucesso(clienteSalvo);
         } catch (SQLException | ClassNotFoundException e) {
             try {
@@ -69,7 +60,12 @@ public class ClienteDAO implements IDAO {
     }
 
     @Override
-    public EntidadeDominio salvar(EntidadeDominio entidade) throws SQLException {
+    public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
+        if (connection == null) {
+            connection = Conexao.getConnectionMySQL();
+        }
+        connection.setAutoCommit(false);
+
         Cliente cliente = (Cliente) entidade;
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO cliente(cli_cpf, cli_email, cli_senha, cli_nome, ");
@@ -96,7 +92,7 @@ public class ClienteDAO implements IDAO {
                 int idCliente = rs.getInt(1);
                 cliente.setId(idCliente);
             }
-            return cliente;
+            return Resultado.sucesso(cliente);
         }
     }
 

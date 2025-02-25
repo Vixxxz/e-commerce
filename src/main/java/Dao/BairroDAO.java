@@ -16,7 +16,7 @@ public class BairroDAO implements IDAO {
     public BairroDAO() {}
 
     @Override
-    public EntidadeDominio salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
+    public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
         if (connection == null) {
             connection = Conexao.getConnectionMySQL();
         }

@@ -20,7 +20,7 @@ public class EnderecoDAO implements IDAO {
 
 
     @Override
-    public EntidadeDominio salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
+    public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
         Endereco endereco = (Endereco) entidade;
         StringBuilder sql = new StringBuilder();
 
@@ -34,11 +34,12 @@ public class EnderecoDAO implements IDAO {
 
         IDAO bairroDAO = new BairroDAO(connection);
 
-        Resultado<List<EntidadeDominio>> resultadoBairro = bairroDAO.consultar(endereco.getBairro());
-        List<EntidadeDominio> bairros = resultadoBairro.getValor();
+        Resultado<List<EntidadeDominio>> resultadoBairros = bairroDAO.consultar(endereco.getBairro());
+        List<EntidadeDominio> bairros = resultadoBairros.getValor();
 
         if (bairros.isEmpty()) {
-            endereco.setBairro((Bairro) bairroDAO.salvar(endereco.getBairro()));
+            Resultado<EntidadeDominio> resultadoBairro = bairroDAO.salvar(endereco.getBairro());
+            endereco.setBairro((Bairro) resultadoBairro.getValor());
         } else {
             endereco.setBairro((Bairro) bairros.getFirst());
         }
@@ -55,12 +56,13 @@ public class EnderecoDAO implements IDAO {
             pst.executeUpdate();
 
             try (ResultSet rs = pst.getGeneratedKeys()) {
-                if (rs.next()) {
-                    int idEndereco = rs.getInt(1);
-                    endereco.setId(idEndereco);
+                if (!rs.next()) {
+                    throw new SQLException("Falha ao inserir o Endereco.");
                 }
+                int idEndereco = rs.getInt(1);
+                endereco.setId(idEndereco);
             }
-            return endereco;
+            return Resultado.sucesso(endereco);
         }
     }
 

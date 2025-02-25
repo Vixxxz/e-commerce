@@ -29,8 +29,10 @@ public class ControleCliente extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        System.out.println("teste");
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
@@ -42,7 +44,7 @@ public class ControleCliente extends HttpServlet {
         if (!resultadoClienteFiltro.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{\"erro\": \"" + resultadoClienteFiltro.getErro() + "\"}");
+            resposta.addProperty("erro", "{" + resultadoClienteFiltro.getErro() + "}");
             out.print(gson.toJson(resposta));
             return;
         }
@@ -78,7 +80,7 @@ public class ControleCliente extends HttpServlet {
         if (!ResultJsonObject.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{\"erro\": \"" + ResultJsonObject.getErro() + "\"}");
+            resposta.addProperty("erro", "{" + ResultJsonObject.getErro() + "}");
             out.print(gson.toJson(resposta));
             return;
         }
