@@ -36,6 +36,7 @@ public class ClienteDAO implements IDAO {
                 clienteEndereco.setCliente(clienteSalvo);
                 clienteEnderecoDAO.salvaEnderecoCadastro(clienteEndereco);
             }
+
             System.out.println("Cliente e Endereço salvos com sucesso!");
             connection.commit();
             return Resultado.sucesso(clienteSalvo);
@@ -61,7 +62,7 @@ public class ClienteDAO implements IDAO {
 
     @Override
     public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
-        if (connection == null) {
+        if (connection == null || connection.isClosed()) {
             connection = Conexao.getConnectionMySQL();
         }
         connection.setAutoCommit(false);
@@ -71,6 +72,8 @@ public class ClienteDAO implements IDAO {
         sql.append("INSERT INTO cliente(cli_cpf, cli_email, cli_senha, cli_nome, ");
         sql.append("cli_genero, cli_dt_nasc, cli_tp_tel, cli_tel, cli_ranking, cli_dt_cadastro) ");
         sql.append("VALUES (?,?,?,?,?,?,?,?,?,?)");
+
+        cliente.complementarDtCadastro();
 
         try (PreparedStatement pst = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
             pst.setString(1, cliente.getCpf());

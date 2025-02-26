@@ -144,7 +144,7 @@ public class EnderecoDAO implements IDAO {
             }
             return Resultado.sucesso(enderecos);
         } catch (Exception e) {
-            return Resultado.erro("Erro ao consultar ClienteEndereco");
+            return Resultado.erro("Erro ao consultar Endereco");
         }
     }
 
@@ -154,7 +154,7 @@ public class EnderecoDAO implements IDAO {
                 .append("INNER JOIN crud_v3.bairro b            ON e.end_bai_id = b.bai_id ")
                 .append("INNER JOIN crud_v3.cidade c            ON b.bai_cid_id = c.cid_id ")
                 .append("INNER JOIN crud_v3.uf u                ON c.cid_uf_id = u.uf_id ")
-                .append("INNER JOIN crud_v3.pais p              ON u.pai_pai_id = p.pai_id ")
+                .append("INNER JOIN crud_v3.pais p              ON u.uf_pai_id = p.pai_id ")
                 .append("WHERE 1=1 ");
 
         adicionarCondicao(sql, "e.end_id = ?", endereco.getId(), parametros);

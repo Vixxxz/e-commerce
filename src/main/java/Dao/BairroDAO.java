@@ -54,7 +54,7 @@ public class BairroDAO implements IDAO {
             pst.executeUpdate();
 
             try (ResultSet rs = pst.getGeneratedKeys()) {
-                if (rs.next()) {
+                if (!rs.next()) {
                     throw new SQLException("Erro ao criar bairro");
                 }
                 int idBairro = rs.getInt(1);
@@ -178,10 +178,9 @@ public class BairroDAO implements IDAO {
         sql.append("SELECT * FROM crud_v3.bairro b ")
                 .append("INNER JOIN crud_v3.cidade c ON b.bai_cid_id = c.cid_id ")
                 .append("INNER JOIN crud_v3.uf u ON c.cid_uf_id = u.uf_id ")
-                .append("INNER JOIN crud_v3.pais p ON u.pai_pai_id = p.pai_id ")
+                .append("INNER JOIN crud_v3.pais p ON u.uf_pai_id = p.pai_id ")
                 .append("WHERE 1=1 ");
 
-        // Adicionar filtros dinamicamente
         adicionarCondicao(sql, "b.bai_id = ?", bairro.getId(), parametros);
         adicionarCondicao(sql, "b.bai_nome = ?", bairro.getBairro(), parametros, true);
 

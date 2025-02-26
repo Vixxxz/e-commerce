@@ -1,6 +1,5 @@
 package Dao;
 
-import Dominio.Cliente;
 import Dominio.EntidadeDominio;
 import Util.Resultado;
 

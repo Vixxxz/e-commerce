@@ -131,7 +131,7 @@ public class UfDAO implements IDAO {
 
             StringBuilder sql = new StringBuilder();
             sql.append("select * from crud_v3.uf u ");
-            sql.append("inner join crud_v3.pais p on u.pai_pai_id = p.pai_id ");
+            sql.append("inner join crud_v3.pais p on u.uf_pai_id = p.pai_id ");
             sql.append("where 1=1 ");
 
             if(uf.getId() != null){

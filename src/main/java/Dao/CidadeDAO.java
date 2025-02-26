@@ -169,7 +169,7 @@ public class CidadeDAO implements IDAO {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT * FROM crud_v3.cidade c ")
                 .append("INNER JOIN crud_v3.uf u ON c.cid_uf_id = u.uf_id ")
-                .append("INNER JOIN crud_v3.pais p ON u.pai_pai_id = p.pai_id ")
+                .append("INNER JOIN crud_v3.pais p ON u.uf_pai_id = p.pai_id ")
                 .append("WHERE 1=1 ");
 
         adicionarCondicao(sql, "c.cid_id = ?", cidade.getId(), parametros);
