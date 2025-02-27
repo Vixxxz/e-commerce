@@ -247,7 +247,7 @@ public class ClienteEnderecoDAO implements IDAO{
                 .append("INNER JOIN crud_v3.bairro b            ON e.end_bai_id = b.bai_id ")
                 .append("INNER JOIN crud_v3.cidade cd           ON b.bai_cid_id = cd.cid_id ")
                 .append("INNER JOIN crud_v3.uf u                ON cd.cid_uf_id = u.uf_id ")
-                .append("INNER JOIN crud_v3.pais p              ON u.pai_pai_id = p.pai_id ")
+                .append("INNER JOIN crud_v3.pais p              ON u.uf_pai_id = p.pai_id ")
                 .append("WHERE 1=1 ");
 
         adicionarCondicoesClienteEndereco(sql, clienteEndereco, parametros);

@@ -32,7 +32,6 @@ public class ControleCliente extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        System.out.println("teste");
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
@@ -173,7 +172,7 @@ public class ControleCliente extends HttpServlet {
         if (idParam == null || idParam.isEmpty()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{\"erro\": \"ID do cliente é obrigatório para exclusão.\"}");
+            resposta.addProperty("erro", "ID do cliente é obrigatório para exclusão.");
             out.print(gson.toJson(resposta));
             return;
         }
@@ -183,7 +182,7 @@ public class ControleCliente extends HttpServlet {
         } catch (NumberFormatException e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{\"erro\": \"ID do cliente inválido.\"}");
+            resposta.addProperty("erro", "ID do cliente inválido.");
             out.print(gson.toJson(resposta));
             return;
         }
@@ -193,7 +192,7 @@ public class ControleCliente extends HttpServlet {
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{\"erro\": \"" + resultado.getErro() + "\"}");
+            resposta.addProperty("erro", resultado.getErro());
             out.print(gson.toJson(resposta));
             return;
         }

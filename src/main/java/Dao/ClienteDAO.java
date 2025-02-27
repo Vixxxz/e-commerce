@@ -101,9 +101,14 @@ public class ClienteDAO implements IDAO {
 
     @Override
     public Resultado<EntidadeDominio> alterar(EntidadeDominio entidade) {
-        Cliente cliente = (Cliente) entidade;
         try {
-            if (connection == null) {
+            Cliente cliente = (Cliente) entidade;
+            Resultado<List<EntidadeDominio>> resultadoClientes = consultar(cliente);
+
+            if(!resultadoClientes.isSucesso()){
+                return Resultado.erro("Nenhum cliente encontrado");
+            }
+            if (connection == null || connection.isClosed()) {
                 connection = Conexao.getConnectionMySQL();
             }
             connection.setAutoCommit(false);
@@ -112,9 +117,8 @@ public class ClienteDAO implements IDAO {
             sql.append("UPDATE crud_v3.cliente SET ");
             sql.append("cli_nome = ?, cli_cpf = ?, cli_email = ?, cli_senha = ?, ");
             sql.append("cli_genero = ?, cli_dt_nasc = ?, cli_tp_tel = ?, cli_tel = ?, ");
-            sql.append("cli_ranking = ?, cli_dt_cadastro = ? ");
+            sql.append("cli_ranking = ? ");
             sql.append("WHERE cli_id = ?");
-
 
             try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
                 pst.setString(1, cliente.getNome());
@@ -126,8 +130,7 @@ public class ClienteDAO implements IDAO {
                 pst.setString(7, cliente.getTipoTelefone());
                 pst.setString(8, cliente.getTelefone());
                 pst.setString(9, cliente.getRanking());
-                pst.setTimestamp(10, new Timestamp(cliente.getDtCadastro().getTime()));
-                pst.setInt(11, cliente.getId());
+                pst.setInt(10, cliente.getId());
 
                 int rowsUpdated = pst.executeUpdate();
                 if (rowsUpdated == 0) {
@@ -171,6 +174,8 @@ public class ClienteDAO implements IDAO {
             if(clientes.isEmpty()) {
                 return Resultado.erro("Cliente não cadastrado no sistema");
             }
+
+            cliente = (Cliente) clientes.getFirst();
 
             excluirClienteEndereco(cliente);
 
