@@ -162,11 +162,6 @@ public class ClienteDAO implements IDAO {
     @Override
     public Resultado<String> excluir(EntidadeDominio entidade) {
         try{
-            if (connection == null) {
-                connection = Conexao.getConnectionMySQL();
-            }
-            connection.setAutoCommit(false);
-
             Cliente cliente = (Cliente) entidade;
             Resultado<List<EntidadeDominio>> resultadoClientes = consultar(cliente);
             List<EntidadeDominio> clientes = resultadoClientes.getValor();
@@ -175,12 +170,18 @@ public class ClienteDAO implements IDAO {
                 return Resultado.erro("Cliente não cadastrado no sistema");
             }
 
+            if (connection == null || connection.isClosed()) {
+                connection = Conexao.getConnectionMySQL();
+            }
+
             cliente = (Cliente) clientes.getFirst();
 
             excluirClienteEndereco(cliente);
 
+            connection.setAutoCommit(false);
+
             StringBuilder sql = new StringBuilder();
-            sql.append("DELETE FROM crud_v3.cliente c")
+            sql.append("DELETE FROM crud_v3.cliente c ")
                     .append("WHERE c.cli_id = ? ");
 
             try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
@@ -231,7 +232,7 @@ public class ClienteDAO implements IDAO {
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
         try {
-            if (connection == null) {
+            if (connection == null || connection.isClosed()) {
                 connection = Conexao.getConnectionMySQL();
             }
 

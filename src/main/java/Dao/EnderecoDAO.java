@@ -77,9 +77,9 @@ public class EnderecoDAO implements IDAO {
             if (connection == null) {
                 connection = Conexao.getConnectionMySQL();
             }
-            connection.setAutoCommit(false);
 
             Endereco endereco = (Endereco) entidade;
+            System.out.println("status da conexao: " + connection.isClosed());
             Resultado<List<EntidadeDominio>> resultadoEndereco = consultar(endereco);
             List<EntidadeDominio> enderecos = resultadoEndereco.getValor();
 
@@ -87,11 +87,8 @@ public class EnderecoDAO implements IDAO {
                 return Resultado.erro("Endereco não cadastrado no sistema");
             }
 
-            BairroDAO bairroDAO = new BairroDAO();
-            bairroDAO.excluir(endereco.getBairro());
-
             StringBuilder sql = new StringBuilder();
-            sql.append("DELETE FROM crud_v3.endereco e")
+            sql.append("DELETE FROM crud_v3.endereco e ")
                     .append("WHERE e.end_id = ? ");
 
             try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
@@ -102,7 +99,10 @@ public class EnderecoDAO implements IDAO {
                     return Resultado.erro("Nenhum endereco encontrado com o ID fornecido.");
                 }
             }
-            connection.commit();
+
+            BairroDAO bairroDAO = new BairroDAO(connection);
+            bairroDAO.excluir(endereco.getBairro());
+
             return Resultado.sucesso("endereco excluido com sucesso");
         }catch (SQLException | ClassNotFoundException e) {
             try {
@@ -115,12 +115,6 @@ public class EnderecoDAO implements IDAO {
                 System.err.println("Erro durante rollback: " + rollbackEx.getMessage());
                 return Resultado.erro("Erro durante rollback: " + rollbackEx.getMessage());
             }
-        } finally {
-            try {
-                if (connection != null) connection.close();
-            } catch (SQLException closeEx) {
-                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
-            }
         }
     }
 
@@ -131,7 +125,7 @@ public class EnderecoDAO implements IDAO {
             List<EntidadeDominio> enderecos = new ArrayList<>();
             List<Object> parametros = new ArrayList<>();
             StringBuilder sql = construirConsultaEndereco(endereco, parametros);
-
+            System.out.println("status da conexao: " + connection.isClosed());
             try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
                 for (int i = 0; i < parametros.size(); i++) {
                     pst.setObject(i + 1, parametros.get(i));

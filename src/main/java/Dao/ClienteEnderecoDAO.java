@@ -58,7 +58,7 @@ public class ClienteEnderecoDAO implements IDAO{
     @Override
     public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
         try{
-            if (connection == null) {
+            if (connection == null || connection.isClosed()) {
                 connection = Conexao.getConnectionMySQL();
             }
             connection.setAutoCommit(false);
@@ -136,11 +136,6 @@ public class ClienteEnderecoDAO implements IDAO{
     @Override
     public Resultado<String> excluir(EntidadeDominio entidade) {
         try{
-            if (connection == null) {
-                connection = Conexao.getConnectionMySQL();
-            }
-            connection.setAutoCommit(false);
-
             ClienteEndereco clienteEndereco = (ClienteEndereco) entidade;
             Resultado<List<EntidadeDominio>> resultadoClienteEnderecos = consultar(clienteEndereco);
             List<EntidadeDominio> clienteEnderecos = resultadoClienteEnderecos.getValor();
@@ -149,8 +144,15 @@ public class ClienteEnderecoDAO implements IDAO{
                 return Resultado.erro("ClienteEndereco não cadastrado no sistema");
             }
 
+            boolean isEnderecoAssociadoAOutrosClientes = isEnderecoAssociadoAOutrosClientes(clienteEndereco);
+
+            if (connection == null || connection.isClosed()) {
+                connection = Conexao.getConnectionMySQL();
+            }
+            connection.setAutoCommit(false);
+
             StringBuilder sql = new StringBuilder();
-            sql.append("DELETE FROM crud_v3.cliente_endereco WHERE cli_end_id =?");
+            sql.append("DELETE FROM crud_v3.cliente_endereco ce WHERE ce.cli_end_id =?");
 
             try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
                 pst.setInt(1, clienteEndereco.getId());
@@ -161,8 +163,12 @@ public class ClienteEnderecoDAO implements IDAO{
                 }
             }
 
-            if (!isEnderecoAssociadoAOutrosClientes(clienteEndereco)) {
-                excluirEndereco(clienteEndereco);
+            System.out.println("status da conexao: " + connection.isClosed());
+
+            if (!isEnderecoAssociadoAOutrosClientes) {
+                EnderecoDAO enderecoDAO = new EnderecoDAO(connection);
+                System.out.println("status da conexao: " + connection.isClosed());
+                enderecoDAO.excluir(clienteEndereco.getEndereco());
             }
 
             connection.commit();
@@ -203,15 +209,10 @@ public class ClienteEnderecoDAO implements IDAO{
         return false;
     }
 
-    private void excluirEndereco(ClienteEndereco clienteEndereco) throws SQLException {
-        EnderecoDAO enderecoDAO = new EnderecoDAO();
-        enderecoDAO.excluir(clienteEndereco.getEndereco());
-    }
-
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
         try {
-            if(connection == null){
+            if(connection == null || connection.isClosed()){
                 connection = Conexao.getConnectionMySQL();
             }
 
@@ -227,6 +228,7 @@ public class ClienteEnderecoDAO implements IDAO{
                 }
 
                 try (ResultSet rs = pst.executeQuery()) {
+                    System.out.println("Passou");
                     while (rs.next()) {
                         clientesEnderecos.add(mapeiaClienteEndereco(rs));
                     }
@@ -234,7 +236,14 @@ public class ClienteEnderecoDAO implements IDAO{
             }
             return Resultado.sucesso(clientesEnderecos);
         } catch (Exception e) {
+            System.err.println("Erro ao buscar Cliente Endereco: " + e.getMessage());
             return Resultado.erro("Erro ao buscar Cliente Endereco: " + e.getMessage());
+        } finally {
+            try {
+                if (connection != null) connection.close();
+            } catch (SQLException closeEx) {
+                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
+            }
         }
     }
 

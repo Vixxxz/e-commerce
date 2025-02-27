@@ -72,7 +72,7 @@ public class PaisDAO implements IDAO {
             }
 
             StringBuilder sql = new StringBuilder();
-            sql.append("DELETE FROM crud_v3.pais p")
+            sql.append("DELETE FROM crud_v3.pais p ")
                     .append("WHERE p.pai_id = ? ");
 
             try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
@@ -83,8 +83,6 @@ public class PaisDAO implements IDAO {
                     return Resultado.erro("Nenhum pais encontrado com o ID fornecido.");
                 }
             }
-
-            connection.commit();
             return Resultado.sucesso("Pais excluido com sucesso");
         }catch (SQLException | ClassNotFoundException e) {
             try {
@@ -96,12 +94,6 @@ public class PaisDAO implements IDAO {
             } catch (SQLException rollbackEx) {
                 System.err.println("Erro durante rollback: " + rollbackEx.getMessage());
                 return Resultado.erro("Erro durante rollback: " + rollbackEx.getMessage());
-            }
-        } finally {
-            try {
-                if (connection != null) connection.close();
-            } catch (SQLException closeEx) {
-                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
             }
         }
     }

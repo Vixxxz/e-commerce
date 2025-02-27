@@ -83,11 +83,8 @@ public class CidadeDAO implements IDAO {
                 return Resultado.erro("Cidade não cadastrado no sistema");
             }
 
-            UfDAO ufDAO = new UfDAO();
-            ufDAO.excluir(cidade.getUf());
-
             StringBuilder sql = new StringBuilder();
-            sql.append("DELETE FROM crud_v3.cidade c")
+            sql.append("DELETE FROM crud_v3.cidade c ")
                     .append("WHERE c.cid_id = ? ");
 
             try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
@@ -99,7 +96,9 @@ public class CidadeDAO implements IDAO {
                 }
             }
 
-            connection.commit();
+            UfDAO ufDAO = new UfDAO(connection);
+            ufDAO.excluir(cidade.getUf());
+
             return Resultado.sucesso("Cidade excluida com sucesso");
         }catch (SQLException | ClassNotFoundException e) {
             try {
@@ -111,12 +110,6 @@ public class CidadeDAO implements IDAO {
             } catch (SQLException rollbackEx) {
                 System.err.println("Erro durante rollback: " + rollbackEx.getMessage());
                 return Resultado.erro("Erro durante rollback: " + rollbackEx.getMessage());
-            }
-        } finally {
-            try {
-                if (connection != null) connection.close();
-            } catch (SQLException closeEx) {
-                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
             }
         }
     }

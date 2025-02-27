@@ -84,11 +84,8 @@ public class UfDAO implements IDAO {
                 return Resultado.erro("Uf não cadastrado no sistema");
             }
 
-            PaisDAO paisDAO = new PaisDAO();
-            paisDAO.excluir(uf.getPais());
-
             StringBuilder sql = new StringBuilder();
-            sql.append("DELETE FROM crud_v3.uf u")
+            sql.append("DELETE FROM crud_v3.uf u ")
                     .append("WHERE u.uf_id = ? ");
 
             try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
@@ -100,7 +97,9 @@ public class UfDAO implements IDAO {
                 }
             }
 
-            connection.commit();
+            PaisDAO paisDAO = new PaisDAO(connection);
+            paisDAO.excluir(uf.getPais());
+
             return Resultado.sucesso("Uf excluida com sucesso");
         }catch (SQLException | ClassNotFoundException e) {
             try {
@@ -112,12 +111,6 @@ public class UfDAO implements IDAO {
             } catch (SQLException rollbackEx) {
                 System.err.println("Erro durante rollback: " + rollbackEx.getMessage());
                 return Resultado.erro("Erro durante rollback: " + rollbackEx.getMessage());
-            }
-        } finally {
-            try {
-                if (connection != null) connection.close();
-            } catch (SQLException closeEx) {
-                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
             }
         }
     }

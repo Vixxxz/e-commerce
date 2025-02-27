@@ -110,6 +110,7 @@ function criarQueryParams(formData) {
     formData.forEach((value, key) => {
         if (value.trim()) params.append(key, value.trim());
     });
+    console.log(params.toString());
     return params.toString();
 }
 
