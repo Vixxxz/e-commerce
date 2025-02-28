@@ -99,10 +99,7 @@ public class EnderecoDAO implements IDAO {
                     return Resultado.erro("Nenhum endereco encontrado com o ID fornecido.");
                 }
             }
-
-            BairroDAO bairroDAO = new BairroDAO(connection);
-            bairroDAO.excluir(endereco.getBairro());
-
+            
             return Resultado.sucesso("endereco excluido com sucesso");
         }catch (SQLException | ClassNotFoundException e) {
             try {

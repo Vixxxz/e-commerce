@@ -99,9 +99,6 @@ public class BairroDAO implements IDAO {
                 }
             }
 
-            CidadeDAO cidadeDAO = new CidadeDAO(connection);
-            cidadeDAO.excluir(bairro.getCidade());
-
             return Resultado.sucesso("Bairro excluido com sucesso");
         }catch (SQLException | ClassNotFoundException e) {
             try {

@@ -95,10 +95,6 @@ public class CidadeDAO implements IDAO {
                     return Resultado.erro("Nenhuma cidade encontrado com o ID fornecido.");
                 }
             }
-
-            UfDAO ufDAO = new UfDAO(connection);
-            ufDAO.excluir(cidade.getUf());
-
             return Resultado.sucesso("Cidade excluida com sucesso");
         }catch (SQLException | ClassNotFoundException e) {
             try {

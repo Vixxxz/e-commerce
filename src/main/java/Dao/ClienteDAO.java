@@ -170,13 +170,13 @@ public class ClienteDAO implements IDAO {
                 return Resultado.erro("Cliente não cadastrado no sistema");
             }
 
-            if (connection == null || connection.isClosed()) {
-                connection = Conexao.getConnectionMySQL();
-            }
-
             cliente = (Cliente) clientes.getFirst();
 
             excluirClienteEndereco(cliente);
+
+            if (connection == null || connection.isClosed()) {
+                connection = Conexao.getConnectionMySQL();
+            }
 
             connection.setAutoCommit(false);
 

@@ -77,6 +77,7 @@ public class PaisDAO implements IDAO {
 
             try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
                 pst.setInt(1, pais.getId());
+                System.out.println("Status da conexao: " + connection.isClosed());
                 int rowsDeleted = pst.executeUpdate();
 
                 if (rowsDeleted == 0) {

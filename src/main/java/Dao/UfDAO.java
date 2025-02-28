@@ -91,14 +91,11 @@ public class UfDAO implements IDAO {
             try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
                 pst.setInt(1, uf.getId());
                 int rowsDeleted = pst.executeUpdate();
-
+                System.out.println("linhas deletadas: " + rowsDeleted);
                 if (rowsDeleted == 0) {
                     return Resultado.erro("Nenhuma uf encontrado com o ID fornecido.");
                 }
             }
-
-            PaisDAO paisDAO = new PaisDAO(connection);
-            paisDAO.excluir(uf.getPais());
 
             return Resultado.sucesso("Uf excluida com sucesso");
         }catch (SQLException | ClassNotFoundException e) {
