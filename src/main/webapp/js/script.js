@@ -1,3 +1,6 @@
+import ManipulaForm from "./ManipulaForm.js";
+import ManipulaDataForm from "./ManipulaDataForm.js";
+
 // Obtenha os botões do título dos formulários
 const dadoPessoalBtn = document.getElementById("dados-pessoais-title");
 const enderecoBtn = document.getElementById("endereco-title"); // Corrigido o id

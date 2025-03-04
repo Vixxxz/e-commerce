@@ -16,9 +16,12 @@ async function realizarConsultaClientes() {
 
     try {
         const respostaJson = await fetchAPI(url, 'Erro ao buscar clientes');
-        respostaJson?.dados?.length
-            ? renderTabela(respostaJson.dados)
+        const clientes = Array.isArray(respostaJson) ? respostaJson : [respostaJson];
+
+        clientes.length
+            ? renderTabela(clientes)
             : mostrarErro('Nenhum cliente encontrado ou resposta inválida.');
+
     } catch (error) {
         mostrarErro('Erro ao buscar clientes.', error);
     }
@@ -58,17 +61,33 @@ function renderTabela(clientes) {
             <td>${escapeHtml(cliente.id || '')}</td>
             <td>${escapeHtml(cliente.nome || '')}</td>
             <td>${escapeHtml(cliente.cpf || '')}</td>
-            <td>${escapeHtml(cliente.dataNascimento || '')}</td>
+            <td>${escapeHtml(formatarData(cliente.dataNascimento) || '')}</td>
             <td>${escapeHtml(cliente.telefone || '')}</td>
             <td>${escapeHtml(cliente.email || '')}</td>
             <td>
-                <button class="btn-alterar btn btn-sm" data-id="${cliente.id}">Alterar</button>
-                <button class="btn-excluir btn btn-sm" data-id="${cliente.id}">Excluir</button>
+                <a href="./alterar/alteraCliente.html?id=${cliente.id}" target="_blank"><button class="btn-warning btn btn-sm" data-id="${cliente.id}">Alterar</button></a>
+                <button class="btn-danger btn btn-sm" data-id="${cliente.id}">Excluir</button>
             </td>
         </tr>
     `).join('');
     adicionarEventosTabela();
 }
+
+function formatarData(data) {
+    console.log("Valor recebido:", data); // 🔍 Depuração
+
+    if (!data) return ''; // Se for nulo ou undefined, retorna vazio
+    try {
+        const dataObj = new Date(data); // Converte para objeto Date
+        console.log("Objeto Date gerado:", dataObj);
+        return dataObj.toLocaleDateString('pt-BR'); // Retorna no formato DD/MM/YYYY
+    } catch (error) {
+        console.log("Erro ao formatar data:", data, error);
+        return data; // Retorna a data original se houver erro
+    }
+}
+
+
 
 function adicionarEventosTabela() {
     document.querySelectorAll('.btn-alterar').forEach(btn => {

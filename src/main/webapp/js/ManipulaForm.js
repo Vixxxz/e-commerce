@@ -8,10 +8,6 @@ class ManipulaForm {
     }
 
     init() {
-        console.log("Form 1 Button:", this.form1Btn);
-        console.log("Form 2 Button:", this.form2Btn);
-        console.log("Form 1:", this.form1);
-        console.log("Form 2:", this.form2);
         window.onload = () => {
             this.showForm(this.form1, this.form2, this.form1Btn, this.form2Btn);
         };
