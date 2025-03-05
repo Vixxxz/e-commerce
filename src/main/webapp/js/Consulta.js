@@ -15,10 +15,13 @@ async function realizarConsultaClientes() {
     const url = `${BASE_URL}/controlecliente?${queryParams}`;
 
     try {
-        const respostaJson = await fetchAPI(url, 'Erro ao buscar clientes');
-        respostaJson?.dados?.length
-            ? renderTabela(respostaJson.dados)
+        const respostaJson = await fetchAPI(url, 'Erro ao buscar clientes')
+        const clientes = Array.isArray(respostaJson) ? respostaJson : [respostaJson];
+
+        clientes.length
+            ? renderTabela(clientes)
             : mostrarErro('Nenhum cliente encontrado ou resposta inválida.');
+
     } catch (error) {
         mostrarErro('Erro ao buscar clientes.', error);
     }
@@ -58,7 +61,7 @@ function renderTabela(clientes) {
             <td>${escapeHtml(cliente.id || '')}</td>
             <td>${escapeHtml(cliente.nome || '')}</td>
             <td>${escapeHtml(cliente.cpf || '')}</td>
-            <td>${escapeHtml(cliente.dataNascimento || '')}</td>
+            <td>${escapeHtml(formatarData(cliente.dataNascimento) || '')}</td>
             <td>${escapeHtml(cliente.telefone || '')}</td>
             <td>${escapeHtml(cliente.email || '')}</td>
             <td>
@@ -68,6 +71,17 @@ function renderTabela(clientes) {
         </tr>
     `).join('');
     adicionarEventosTabela();
+}
+
+function formatarData(data) {
+    if (!data) return '';
+    try {
+        const dataObj = new Date(data);
+        return dataObj.toLocaleDateString('pt-BR'); // Retorna no formato DD/MM/YYYY
+    } catch (error) {
+        console.error("Erro ao formatar data:", data, error);
+        return data;
+    }
 }
 
 function adicionarEventosTabela() {
@@ -155,8 +169,7 @@ async function sendRequest(url, method, body = null) {
 }
 
 function mostrarErro(mensagem, error) {
-    console.error(mensagem, error);
-    alert(mensagem);
+    Logger.log(mensagem);
 }
 
 function escapeHtml(str) {
