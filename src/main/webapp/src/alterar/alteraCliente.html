@@ -25,57 +25,57 @@
             <legend>Informações Básicas</legend>
             <div class="form-row">
                 <div class="form-field">
-                    <label for="nome">Nome <span class="required">*</span></label>
-                    <input type="text" name="nome" id="nome" class="" placeholder="Digite seu nome completo" required aria-required="true" />
+                    <label for="nome-altera">Nome <span class="required">*</span></label>
+                    <input type="text" name="nome" id="nome-altera" class="" placeholder="Digite seu nome completo" required aria-required="true" />
                 </div>
                 <div class="form-field">
-                    <label for="cpf">CPF <span class="required">*</span></label>
-                    <input type="text" name="cpf" id="cpf" class="" placeholder="00000000000" required aria-required="true" pattern="\d{11}" title="CPF deve conter 11 dígitos, sem pontos ou traços." />
+                    <label for="cpf-altera">CPF <span class="required">*</span></label>
+                    <input type="text" name="cpf" id="cpf-altera" class="" placeholder="00000000000" required aria-required="true" pattern="\d{11}" title="CPF deve conter 11 dígitos, sem pontos ou traços." />
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-field">
                     <label>Gênero<span class="required">*</span></label>
                     <div class="form-row" aria-labelledby="genero-label">
-                        <input type="radio" name="genero" id="masc" value="masculino" />
-                        <label for="masc">Masculino</label>
-                        <input type="radio" name="genero" id="fem" value="feminino" />
-                        <label for="fem">Feminino</label>
+                        <input type="radio" name="genero-altera" id="masc-altera" value="masculino" />
+                        <label for="masc-altera">Masculino</label>
+                        <input type="radio" name="genero-altera" id="fem-altera" value="feminino" />
+                        <label for="fem-altera">Feminino</label>
                     </div>
                 </div>
                 <div class="form-field">
-                    <label for="telefone">Telefone <span class="required">*</span></label>
-                    <input type="text" name="telefone" id="telefone" placeholder="(99) 99999-9999" required aria-required="true" />
+                    <label for="telefone-altera">Telefone <span class="required">*</span></label>
+                    <input type="text" name="telefone" id="telefone-altera" placeholder="(99) 99999-9999" required aria-required="true" />
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-field">
                     <label>Tipo do Telefone <span class="required">*</span></label>
                     <div class="form-row" aria-labelledby="tipoTelefone-label">
-                        <input type="radio" name="tipoTelefone" id="residencial" value="residencial" />
-                        <label for="residencial">Residencial</label>
-                        <input type="radio" name="tipoTelefone" id="comercial" value="comercial" />
-                        <label for="comercial">Comercial</label>
+                        <input type="radio" name="tipoTelefone-altera" id="residencial-altera" value="residencial" />
+                        <label for="residencial-altera">Residencial</label>
+                        <input type="radio" name="tipoTelefone-altera" id="comercial-altera" value="comercial" />
+                        <label for="comercial-altera">Comercial</label>
                     </div>
                 </div>
                 <div class="form-field">
-                    <label for="dataNascimento">Data de Nascimento <span class="required">*</span></label>
-                    <input type="date" name="dataNascimento" id="dataNascimento" required aria-required="true" />
+                    <label for="dataNascimento-altera">Data de Nascimento <span class="required">*</span></label>
+                    <input type="date" name="dataNascimento" id="dataNascimento-altera" required aria-required="true" />
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-field">
-                    <label for="email">Email <span class="required">*</span></label>
-                    <input type="email" name="email" id="email" placeholder="Digite seu email" required aria-required="true" />
+                    <label for="email-altera">Email <span class="required">*</span></label>
+                    <input type="email" name="email" id="email-altera" placeholder="Digite seu email" required aria-required="true" />
                 </div>
                 <div class="form-field">
-                    <label for="senha">Senha <span class="required">*</span></label>
-                    <input type="password" name="senha" id="senha" placeholder="Digite sua senha" required aria-required="true" />
+                    <label for="senha-altera">Senha <span class="required">*</span></label>
+                    <input type="password" name="senha" id="senha-altera" placeholder="Digite sua senha" required aria-required="true" />
                 </div>
             </div>
         </fieldset>
         <div class="submit-section">
-            <button type="submit" aria-label="Enviar formulários" id="submit-button">Submit</button>
+            <button type="submit" aria-label="Enviar formulários" id="submit-button-altera">Submit</button>
         </div>
     </form>
     
@@ -89,7 +89,7 @@
             <fieldset>
                 <div class="form-row">
                     <div class="form-field">
-                        <a class="btn btn-warning" href="../index.html">Voltar</a>
+                        <a class="btn btn-warning" href="../consulta.html">Voltar</a>
                     </div>
                 </div>
 
@@ -129,15 +129,15 @@
             </fieldset>
         </form>
 
-        <table id="table-clientes" class="table table-hover">
+        <table id="table-endereco" class="table table-hover">
             <thead>
             <tr class="linha-coluna">
-                <th class="cln-id">Id</th>
-                <th class="cln-nome">Nome</th>
-                <th class="cln-cpf">CPF</th>
-                <th class="cln-dataN">Data Nascimento</th>
-                <th class="cln-telefone">Telefone</th>
-                <th class="cln-email">E-mail</th>
+                <th class="cln-id">Tipo</th>
+                <th class="cln-nome">Logradouro</th>
+                <th class="cln-cpf">Num</th>
+                <th class="cln-dataN">Bairro</th>
+                <th class="cln-telefone">Cidade</th>
+                <th class="cln-email">Estado</th>
                 <th class="cln-acoes">Ações</th>
             </tr>
             </thead>
