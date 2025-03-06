@@ -14,6 +14,7 @@
     <div class="form-titles">
         <h2 id="dados-pessoais-title" class="active-tab">Dados Cliente</h2>
         <h2 id="endereco-consulta-title" class="inactive-tab">Endereço</h2>
+        <h2 id="cartao-consulta-title" class="inactive-tab">Cartão</h2>
     </div>
     <form id="form-dados-pessoais" method="post" novalidate>
         <fieldset>
@@ -81,11 +82,7 @@
     
 
     <div class="tabbed-form" id="endereco-consulta">
-        <div class="form-titles">
-            <h2>Consulta Endereços</h2>
-        </div>
-
-        <form id="filtroForm" method="get">
+        <form id="filtroEndereco" method="get">
             <fieldset>
                 <div class="form-row">
                     <div class="form-field">
@@ -124,7 +121,7 @@
                 </div>
 
                 <div class="form-row">
-                    <button class="btn btn-warning" id="submit-filter" type="submit">Filtrar</button>
+                    <button class="btn btn-warning" id="filter-endereco" type="submit">Filtrar</button>
                 </div>
             </fieldset>
         </form>
@@ -165,16 +162,51 @@
                 <p id="alterar">Conteúdo do modal Alterar.</p>
             </div>
         </div>
+    </div>
 
-        <div id="modalExcluir" class="modal">
-            <div class="modal-content">
-                <h3>Excluir</h3>
-                <p id="excluir">Tem certeza de que deseja excluir este cliente?</p>
-            </div>
-        </div>
+    <div class="tabbed-form" id="cartao-consulta">
+        <form id="filtroCartao" method="get">
+            <fieldset>
+                <div class="form-row">
+                    <div class="form-field">
+                        <a class="btn btn-warning" href="../consulta.html">Voltar</a>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="numero-cartao">Nº Cartão:</label>
+                        <input type="text" id="numero-cartao" name="num_car" placeholder="Digite o número do cartão">
+                    </div>
+                    <div class="form-field">
+                        <label for="nome-cartao">Nome Impresso:</label>
+                        <input type="text" id="nome-cartao" name="nome_car" placeholder="Digite o nome impresso">
+                    </div>
+                    <div class="form-field">
+                        <label for="bandeira-cartao">Bandeira:</label>
+                        <input type="text" id="bandeira-cartao" name="ban_car" placeholder="Digite a Bandeira">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <button class="btn btn-warning" id="filter-cartao" type="submit">Filtrar</button>
+                </div>
+            </fieldset>
+        </form>
+
+        <table id="table-cartao" class="table table-hover">
+            <thead>
+            <tr class="linha-coluna">
+                <th class="cln-nome">Nº Cartão</th>
+                <th class="cln-cpf">Nome Impresso</th>
+                <th class="cln-dataN">Bandeira</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
 </section>
-<script type="module" src="../../js/script.js" defer></script>
 <script src="../../js/ManipulaForm.js" defer></script>
 <script src="../../js/ScriptAltera.js" defer></script>
 <script src="../../js/validaCep.js" defer></script>

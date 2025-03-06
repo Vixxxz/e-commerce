@@ -26,21 +26,22 @@ async function realizarConsultaClientes() {
     }
 }
 
-async function alterarCliente(clienteId, formData) {
-    if (!validarSenha(formData)) return;
-
-    const clienteJson = criarClienteJson(clienteId, formData);
-    try {
-        await sendRequest(`${BASE_URL}/controlecliente`, 'PUT', clienteJson);
-        alert('Cliente alterado com sucesso!');
-        realizarConsultaClientes();
-        fecharModal('modalAlterar');
-    } catch (error) {
-        mostrarErro('Erro ao alterar cliente.', error);
-    }
-}
+// async function alterarCliente(clienteId, formData) {
+//     if (!validarSenha(formData)) return;
+//
+//     const clienteJson = criarClienteJson(clienteId, formData);
+//     try {
+//         await sendRequest(`${BASE_URL}/controlecliente`, 'PUT', clienteJson);
+//         alert('Cliente alterado com sucesso!');
+//         realizarConsultaClientes();
+//         fecharModal('modalAlterar');
+//     } catch (error) {
+//         mostrarErro('Erro ao alterar cliente.', error);
+//     }
+// }
 
 async function confirmarExclusaoCliente(clienteId) {
+    // exibirModal("modalExcluir", document.getElementById("modalExcluir"));
     if (!confirm(`Tem certeza que deseja excluir o cliente com ID ${clienteId}?`)) return;
 
     try {
@@ -92,28 +93,28 @@ function adicionarEventosTabela(){
     });
 }
 
-function exibirFormularioAlteracao(clienteId) {
-    const conteudo = criarFormularioAlteracao(clienteId);
-    exibirModal('modalAlterar', conteudo);
+// function exibirFormularioAlteracao(clienteId) {
+//     const conteudo = criarFormularioAlteracao(clienteId);
+//     exibirModal('modalAlterar', conteudo);
+//
+//     document.getElementById('formAlterar').addEventListener('submit', async (e) => {
+//         e.preventDefault();
+//         const formData = new FormData(e.target);
+//         alterarCliente(clienteId, formData);
+//     });
+//
+//     document.getElementById('nome').focus();
+// }
 
-    document.getElementById('formAlterar').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        alterarCliente(clienteId, formData);
-    });
-
-    document.getElementById('nome').focus();
-}
-
-function validarSenha(formData) {
-    const senha = formData.get('senha');
-    const confirmaSenha = formData.get('confirmaSenha');
-    if (senha !== confirmaSenha) {
-        alert('As senhas não coincidem. Por favor, verifique.');
-        return false;
-    }
-    return true;
-}
+// function validarSenha(formData) {
+//     const senha = formData.get('senha');
+//     const confirmaSenha = formData.get('confirmaSenha');
+//     if (senha !== confirmaSenha) {
+//         alert('As senhas não coincidem. Por favor, verifique.');
+//         return false;
+//     }
+//     return true;
+// }
 
 function criarQueryParams(formData) {
     const params = new URLSearchParams();
@@ -124,21 +125,21 @@ function criarQueryParams(formData) {
     return params.toString();
 }
 
-function criarClienteJson(clienteId, formData) {
-    return {
-        Cliente: {
-            id: clienteId,
-            nome: formData.get('nome'),
-            genero: formData.get('genero'),
-            cpf: formData.get('cpf'),
-            tipoTelefone: formData.get('tipoTelefone'),
-            telefone: formData.get('telefone'),
-            email: formData.get('email'),
-            senha: formData.get('senha'),
-            dataNascimento: formData.get('dataNascimento')
-        }
-    };
-}
+// function criarClienteJson(clienteId, formData) {
+//     return {
+//         Cliente: {
+//             id: clienteId,
+//             nome: formData.get('nome'),
+//             genero: formData.get('genero'),
+//             cpf: formData.get('cpf'),
+//             tipoTelefone: formData.get('tipoTelefone'),
+//             telefone: formData.get('telefone'),
+//             email: formData.get('email'),
+//             senha: formData.get('senha'),
+//             dataNascimento: formData.get('dataNascimento')
+//         }
+//     };
+// }
 
 async function fetchAPI(url, mensagemErro) {
     try {
@@ -179,7 +180,6 @@ function exibirModal(modalId, conteudo) {
     const modal = document.getElementById(modalId);
     modal.querySelector('.modal-content').innerHTML = conteudo;
     modal.style.display = 'flex';
-
     modal.querySelector('.close-modal').addEventListener('click', () => fecharModal(modalId));
 }
 
@@ -188,72 +188,72 @@ function fecharModal(modalId) {
     modal.style.display = 'none';
 }
 
-function criarFormularioAlteracao(clienteId) {
-    return `
-        <section>
-            <form id="formAlterar" data-id="${clienteId}">
-                <h3>Alterar Cliente</h3>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label for="nome">Nome:</label>
-                        <input type="text" id="nome" name="nome" required>
-                    </div>   
-                </div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label for="genero">Gênero:</label>
-                        <select id="genero" name="genero" required>
-                            <option value="">Selecione</option>
-                            <option value="M">Masculino</option>
-                            <option value="F">Feminino</option>
-                        </select>
-                    </div>
-                    <div class="form-field">
-                        <label for="cpf">CPF:</label>
-                        <input type="text" id="cpf" name="cpf" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label>Tipo do Telefone <span class="required">*</span></label>
-                        <div class="form-row" aria-labelledby="tipoTelefone-label">
-                            <input type="radio" name="tipoTelefone" id="residencial" value="residencial" />
-                            <label for="residencial">Residencial</label>
-                            <input type="radio" name="tipoTelefone" id="comercial" value="comercial" />
-                            <label for="comercial">Comercial</label>
-                        </div>
-                    </div>
-                    <div class="form-field">
-                        <label for="telefone">Telefone:</label>
-                        <input type="text" id="telefone" name="telefone" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label for="email">E-mail:</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div class="form-field">
-                        <label for="dataNascimento">Data de Nascimento:</label>
-                        <input type="date" id="dataNascimento" name="dataNascimento" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-field">
-                        <label for="senha">Senha:</label>
-                        <input type="password" id="senha" name="senha">
-                    </div>
-                    <div class="form-field">
-                        <label for="confirmaSenha">Confirmar Senha:</label>
-                    <input type="password" id="confirmaSenha" name="confirmaSenha">
-                    </div>
-                </div>
-                <div class="modal-buttons">
-                    <button type="button" class="close-modal btn btn-danger btn-sm btnFechar">Fechar</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Confirmar</button>
-                    <button type="button" class="btn btn-primary btn-sm">Cancelar</button>
-                </div>
-            </form>
-        </section>
-    `;
-}
+// function criarFormularioAlteracao(clienteId) {
+//     return `
+//         <section>
+//             <form id="formAlterar" data-id="${clienteId}">
+//                 <h3>Alterar Cliente</h3>
+//                 <div class="form-row">
+//                     <div class="form-field">
+//                         <label for="nome">Nome:</label>
+//                         <input type="text" id="nome" name="nome" required>
+//                     </div>
+//                 </div>
+//                 <div class="form-row">
+//                     <div class="form-field">
+//                         <label for="genero">Gênero:</label>
+//                         <select id="genero" name="genero" required>
+//                             <option value="">Selecione</option>
+//                             <option value="M">Masculino</option>
+//                             <option value="F">Feminino</option>
+//                         </select>
+//                     </div>
+//                     <div class="form-field">
+//                         <label for="cpf">CPF:</label>
+//                         <input type="text" id="cpf" name="cpf" required>
+//                     </div>
+//                 </div>
+//                 <div class="form-row">
+//                     <div class="form-field">
+//                         <label>Tipo do Telefone <span class="required">*</span></label>
+//                         <div class="form-row" aria-labelledby="tipoTelefone-label">
+//                             <input type="radio" name="tipoTelefone" id="residencial" value="residencial" />
+//                             <label for="residencial">Residencial</label>
+//                             <input type="radio" name="tipoTelefone" id="comercial" value="comercial" />
+//                             <label for="comercial">Comercial</label>
+//                         </div>
+//                     </div>
+//                     <div class="form-field">
+//                         <label for="telefone">Telefone:</label>
+//                         <input type="text" id="telefone" name="telefone" required>
+//                     </div>
+//                 </div>
+//                 <div class="form-row">
+//                     <div class="form-field">
+//                         <label for="email">E-mail:</label>
+//                         <input type="email" id="email" name="email" required>
+//                     </div>
+//                     <div class="form-field">
+//                         <label for="dataNascimento">Data de Nascimento:</label>
+//                         <input type="date" id="dataNascimento" name="dataNascimento" required>
+//                     </div>
+//                 </div>
+//                 <div class="form-row">
+//                     <div class="form-field">
+//                         <label for="senha">Senha:</label>
+//                         <input type="password" id="senha" name="senha">
+//                     </div>
+//                     <div class="form-field">
+//                         <label for="confirmaSenha">Confirmar Senha:</label>
+//                     <input type="password" id="confirmaSenha" name="confirmaSenha">
+//                     </div>
+//                 </div>
+//                 <div class="modal-buttons">
+//                     <button type="button" class="close-modal btn btn-danger btn-sm btnFechar">Fechar</button>
+//                     <button type="submit" class="btn btn-primary btn-sm">Confirmar</button>
+//                     <button type="button" class="btn btn-primary btn-sm">Cancelar</button>
+//                 </div>
+//             </form>
+//         </section>
+//     `;
+// }
