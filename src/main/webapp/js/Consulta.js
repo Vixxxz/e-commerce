@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-/** Funções Principais **/
 async function realizarConsultaClientes() {
     const filtroForm = document.getElementById('filtroForm');
     const queryParams = criarQueryParams(new FormData(filtroForm));
@@ -45,7 +44,8 @@ async function confirmarExclusaoCliente(clienteId) {
     if (!confirm(`Tem certeza que deseja excluir o cliente com ID ${clienteId}?`)) return;
 
     try {
-        await sendRequest(`${BASE_URL}/controlecliente?id=${clienteId}`, 'DELETE', { id: clienteId });
+        await sendRequest(`${BASE_URL}/controlecliente?id=${clienteId}`, 'DELETE');
+        console.log("url utilizada: ${BASE_URL}/controlecliente?id=${clienteId}")
         alert('Cliente excluído com sucesso!');
         realizarConsultaClientes();
     } catch (error) {
@@ -53,7 +53,6 @@ async function confirmarExclusaoCliente(clienteId) {
     }
 }
 
-/** Funções Auxiliares **/
 function renderTabela(clientes) {
     const tbody = document.querySelector('#table-clientes tbody');
     tbody.innerHTML = clientes.map(cliente => `
@@ -87,14 +86,8 @@ function formatarData(data) {
     }
 }
 
-
-
-function adicionarEventosTabela() {
-    document.querySelectorAll('.btn-alterar').forEach(btn => {
-        btn.addEventListener('click', (e) => exibirFormularioAlteracao(e.target.getAttribute('data-id')));
-    });
-
-    document.querySelectorAll('.btn-excluir').forEach(btn => {
+function adicionarEventosTabela(){
+    document.querySelectorAll('.btn-danger').forEach(btn => {
         btn.addEventListener('click', (e) => confirmarExclusaoCliente(e.target.getAttribute('data-id')));
     });
 }
@@ -112,7 +105,6 @@ function exibirFormularioAlteracao(clienteId) {
     document.getElementById('nome').focus();
 }
 
-/** Validação **/
 function validarSenha(formData) {
     const senha = formData.get('senha');
     const confirmaSenha = formData.get('confirmaSenha');
@@ -123,7 +115,6 @@ function validarSenha(formData) {
     return true;
 }
 
-/** Utilitários **/
 function criarQueryParams(formData) {
     const params = new URLSearchParams();
     formData.forEach((value, key) => {
