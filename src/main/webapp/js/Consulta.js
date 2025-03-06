@@ -65,7 +65,7 @@ function renderTabela(clientes) {
             <td>${escapeHtml(cliente.telefone || '')}</td>
             <td>${escapeHtml(cliente.email || '')}</td>
             <td>
-                <a href="./alterar/alteraCliente.html?id=${cliente.id}" target="_blank"><button class="btn-warning btn btn-sm" data-id="${cliente.id}">Alterar</button></a>
+                <a href="./alterar/alteraCliente.html?id=${cliente.id}"><button class="btn-warning btn btn-sm" data-id="${cliente.id}">Alterar</button></a>
                 <button class="btn-danger btn btn-sm" data-id="${cliente.id}">Excluir</button>
             </td>
         </tr>

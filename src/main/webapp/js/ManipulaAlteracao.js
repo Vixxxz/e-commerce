@@ -57,6 +57,33 @@ function preencherFormulario(clienteArray) {
     preencherRadioButton("tipoTelefone-altera", cliente.tipoTelefone);
 }
 
+function formatarData(data) {
+    if (!data) return "";
+
+    if (!isNaN(Date.parse(data))) {
+        return new Date(data).toLocaleDateString("pt-BR");
+    }
+
+    // Converter manualmente datas em português
+    const meses = {
+        "jan.": "01", "fev.": "02", "mar.": "03", "abr.": "04",
+        "mai.": "05", "jun.": "06", "jul.": "07", "ago.": "08",
+        "set.": "09", "out.": "10", "nov.": "11", "dez.": "12"
+    };
+
+    const partes = data.split(" ");
+    const mes = meses[partes[0].toLowerCase()];
+    const dia = partes[1].replace(",", "");
+    const ano = partes[2];
+
+    if (mes && dia && ano) {
+        const dataFormatada = `${ano}-${mes}-${dia}`;
+        return new Date(dataFormatada).toLocaleDateString("pt-BR");
+    }
+
+    return "Data inválida";
+}
+
 function formatarDataParaInput(data) {
     if (!data) return "";
     const dataObj = new Date(data);
@@ -117,4 +144,87 @@ function montaJson(id) {
             dataNascimento: document.getElementById("dataNascimento-altera").value
         }
     });
+}
+
+document.getElementById('endereco-consulta-title').addEventListener('click', (e) => {
+    e.preventDefault();
+    realizarConsultaEndereco();
+});
+
+async function realizarConsultaEndereco() {
+    const filtroForm = document.getElementById('filtroEndereco');
+    const queryParams = criarQueryParams(new FormData(filtroForm));
+    const url = `${BASE_URL}/controleendereco?${queryParams}`;
+
+    try {
+        const respostaJson = await fetchAPI(url, 'Erro ao buscar endereços');
+        const enderecos = Array.isArray(respostaJson) ? respostaJson : [respostaJson];
+
+        enderecos.length
+            ? renderTabela(enderecos)
+            : mostrarErro('Nenhum endereco encontrado ou resposta inválida.');
+
+    } catch (error) {
+        mostrarErro('Erro ao buscar clientes.', error);
+    }
+}
+
+function criarQueryParams(formData) {
+    const params = new URLSearchParams();
+    formData.forEach((value, key) => {
+        if (value.trim()) params.append(key, value.trim());
+    });
+    console.log(params.toString());
+    return params.toString();
+}
+
+function renderTabela(enderecos) {
+    const tbody = document.querySelector('#table-enderecos tbody');
+    tbody.innerHTML = enderecos.map(endereco => `
+        <tr>
+            <td>${escapeHtml(endereco.tipoEndereco || '')}</td>
+            <td>${escapeHtml(endereco.tipoResidencia || '')}</td>
+            <td>${escapeHtml(endereco.logradouro || '')}</td>
+            <td>${escapeHtml(formatarData(endereco.numero) || '')}</td>
+            <td>${escapeHtml(endereco.cep || '')}</td>
+            <td>
+                <button class="btn-warning btn btn-sm" data-id="${endereco.id}">Alterar</button>
+                <button class="btn-danger btn btn-sm" data-id="${endereco.id}">Excluir</button>
+            </td>
+        </tr>
+    `).join('');
+    adicionarEventosTabela();
+}
+
+function adicionarEventosTabela(){
+    document.querySelectorAll('.btn-danger').forEach(btn => {
+        btn.addEventListener('click', (e) => confirmarExclusaoCliente(e.target.getAttribute('data-id')));
+    });
+
+    document.querySelectorAll('.btn-warning').forEach(btn => {
+        btn.addEventListener('click', (e) => confirmarExclusaoCliente(e.target));
+    })
+}
+
+async function fetchAPI(url, mensagemErro) {
+    try {
+        const resposta = await fetch(url);
+        if (!resposta.ok) throw new Error(`${mensagemErro}: ${resposta.statusText}`);
+        return await resposta.json();
+    } catch (error) {
+        console.error(mensagemErro, error);
+        alert(mensagemErro);
+        throw error;
+    }
+}
+
+function mostrarErro(mensagem, error) {
+    console.error(mensagem, error);
+    alert(mensagem);
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.innerText = str;
+    return div.innerHTML;
 }
