@@ -87,7 +87,7 @@ function formatarData(data) {
 function formatarDataParaInput(data) {
     if (!data) return "";
     const dataObj = new Date(data);
-    return dataObj.toISOString().split("T")[0]; // Retorna "YYYY-MM-DD"
+    return dataObj.toISOString().split("T")[0];
 }
 
 function preencherRadioButton(name, valor) {
@@ -133,7 +133,7 @@ function montaJson(id) {
     return JSON.stringify({
         Cliente: {
             id: id,
-            ranking: clienteRanking, // Usa o ranking armazenado
+            ranking: clienteRanking,
             nome: document.getElementById("nome-altera").value,
             genero: document.querySelector('input[name="genero-altera"]:checked').value,
             cpf: document.getElementById("cpf-altera").value,
