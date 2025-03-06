@@ -25,7 +25,6 @@ public class ControleEndereco extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         req.setCharacterEncoding("UTF-8");

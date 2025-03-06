@@ -1,11 +1,13 @@
 const BASE_URL = "http://localhost:8080/ecommerce_tenis_war_exploded";
 
-function obterParametroUrl(id) {
+// Variável global para armazenar o ranking do cliente
+let clienteRanking = null;
+
+function obterParametroUrl(parametro) {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(id);
+    return urlParams.get(parametro);
 }
 
-// Pegando o ID do cliente da URL
 const clienteId = obterParametroUrl("id");
 console.log("Cliente ID:", clienteId);
 
@@ -15,6 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+document.querySelectorAll('.submit-button-altera').forEach(btn => {
+    btn.addEventListener('click', (e) => enviarDadosCliente(e));
+});
 
 async function carregarDadosCliente(id) {
     try {
@@ -23,13 +28,19 @@ async function carregarDadosCliente(id) {
 
         console.log("Cliente recebido:", cliente);
         preencherFormulario(cliente);
+
+        // Armazena o ranking retornado pela API
+        if (Array.isArray(cliente) && cliente.length > 0) {
+            clienteRanking = cliente[0].ranking;
+            console.log("Ranking do cliente:", clienteRanking);
+        }
     } catch (error) {
         console.error("Erro ao carregar cliente:", error);
     }
 }
 
 function preencherFormulario(clienteArray) {
-    console.log("CLiente recebido para preencher: ", clienteArray);
+    console.log("Cliente recebido para preencher:", clienteArray);
 
     if (!Array.isArray(clienteArray) || clienteArray.length === 0) {
         console.error("Erro: Nenhum cliente encontrado!");
@@ -38,17 +49,15 @@ function preencherFormulario(clienteArray) {
 
     const cliente = clienteArray[0];
 
-    document.getElementById("nome-altera").value = cliente.nome;
-    document.getElementById("cpf-altera").value = cliente.cpf;
-    document.getElementById("email-altera").value = cliente.email;
-    document.getElementById("telefone-altera").value = cliente.telefone;
-    document.getElementById("dataNascimento-altera").value = formatarDataParaInput(cliente.dataNascimento);
-    preencherRadioButton("genero-altera",cliente.genero);
-    preencherRadioButton('tipoTelefone-altera',cliente.tipoTelefone);
-
+    document.getElementById("nome-altera").value = cliente.nome || "";
+    document.getElementById("cpf-altera").value = cliente.cpf || "";
+    document.getElementById("email-altera").value = cliente.email || "";
+    document.getElementById("telefone-altera").value = cliente.telefone || "";
+    document.getElementById("dataNascimento-altera").value = formatarDataParaInput(cliente.dataNascimento) || "";
+    preencherRadioButton("genero-altera", cliente.genero);
+    preencherRadioButton("tipoTelefone-altera", cliente.tipoTelefone);
 }
 
-// Converte a data para o formato YYYY-MM-DD (usado nos inputs de data)
 function formatarDataParaInput(data) {
     if (!data) return "";
     const dataObj = new Date(data);
@@ -64,23 +73,13 @@ function preencherRadioButton(name, valor) {
     });
 }
 
-
-/*--------------ALTERAR DADOS---------------*/
 async function enviarDadosCliente(event) {
     event.preventDefault();
 
-    // Captura os valores do formulário
-    const cliente = {
-        id: clienteId,
-        nome: document.getElementById("nome-altera").value,
-        cpf: document.getElementById("cpf-altera").value,
-        email: document.getElementById("email-altera").value,
-        telefone: document.getElementById("telefone-altera").value,
-        dataNascimento: document.getElementById("dataNascimento-altera").value
-    };
+    const cliente = montaJson(clienteId);
 
     console.log("Enviando cliente atualizado:", cliente);
-    const url = `${BASE_URL}/controlecliente?${clienteId}`;
+    const url = `${BASE_URL}/controlecliente`;
 
     try {
         const response = await fetch(url, {
@@ -88,7 +87,7 @@ async function enviarDadosCliente(event) {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(cliente)
+            body: cliente
         });
 
         const resultado = await response.json();
@@ -104,5 +103,19 @@ async function enviarDadosCliente(event) {
     }
 }
 
-
-/*--------------ENDERECO--------------------*/
+function montaJson(id) {
+    return JSON.stringify({
+        Cliente: {
+            id: id,
+            ranking: clienteRanking, // Usa o ranking armazenado
+            nome: document.getElementById("nome-altera").value,
+            genero: document.querySelector('input[name="genero-altera"]:checked').value,
+            cpf: document.getElementById("cpf-altera").value,
+            tipoTelefone: document.querySelector('input[name="tipoTelefone-altera"]:checked').value,
+            telefone: document.getElementById("telefone-altera").value,
+            email: document.getElementById("email-altera").value,
+            senha: document.getElementById("senha-altera").value,
+            dataNascimento: document.getElementById("dataNascimento-altera").value
+        }
+    });
+}
