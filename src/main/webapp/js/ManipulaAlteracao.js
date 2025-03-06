@@ -1,6 +1,5 @@
 const BASE_URL = "http://localhost:8080/ecommerce_tenis_war_exploded";
 
-// Variável global para armazenar o ranking do cliente
 let clienteRanking = null;
 
 function obterParametroUrl(parametro) {
@@ -17,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-document.querySelectorAll('.submit-button-altera').forEach(btn => {
+document.querySelectorAll('#submit-button-altera').forEach(btn => {
     btn.addEventListener('click', (e) => enviarDadosCliente(e));
 });
 
