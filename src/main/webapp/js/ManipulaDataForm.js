@@ -82,10 +82,10 @@ class ManipulaDataForm {
             const dado = await resposta.json();
 
             console.log('Success: ', dado);
-            alert(dado);
+            alert(dado.erro);
         } catch (error) {
             console.error('Exceção capturada: ', error);
-            alert("Falha ao enviar o formulário. Tente novamente.");
+            alert("Falha ao enviar o formulário. Tente novamente." + error);
         }
     }
 
