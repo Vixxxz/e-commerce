@@ -228,7 +228,6 @@ public class ClienteEnderecoDAO implements IDAO{
                 }
 
                 try (ResultSet rs = pst.executeQuery()) {
-                    System.out.println("Passou");
                     while (rs.next()) {
                         clientesEnderecos.add(mapeiaClienteEndereco(rs));
                     }

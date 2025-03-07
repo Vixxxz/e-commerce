@@ -147,14 +147,18 @@ function montaJson(id) {
 }
 
 document.getElementById('endereco-consulta-title').addEventListener('click', (e) => {
-    e.preventDefault();
-    realizarConsultaEndereco();
+    realizarConsultaEndereco(e);
 });
 
-async function realizarConsultaEndereco() {
+document.getElementById('filter-endereco').addEventListener('click', (e) => {
+    realizarConsultaEndereco(e);
+});
+
+async function realizarConsultaEndereco(e) {
+    e.preventDefault();
     const filtroForm = document.getElementById('filtroEndereco');
     const queryParams = criarQueryParams(new FormData(filtroForm));
-    const url = `${BASE_URL}/controleendereco?${queryParams}`;
+    const url = `${BASE_URL}/controleendereco?idCliente=${clienteId}${queryParams}`;
 
     try {
         const respostaJson = await fetchAPI(url, 'Erro ao buscar endereços');
@@ -174,25 +178,32 @@ function criarQueryParams(formData) {
     formData.forEach((value, key) => {
         if (value.trim()) params.append(key, value.trim());
     });
-    console.log(params.toString());
+    console.log("parametros: " + params.toString());
     return params.toString();
 }
 
 function renderTabela(enderecos) {
-    const tbody = document.querySelector('#table-enderecos tbody');
+    const tbody = document.querySelector('#table-endereco tbody');
+
+    enderecos.forEach(endereco => {
+        console.log(endereco.tipoResidencia);
+        console.log(endereco.logradouro);
+    });
+
     tbody.innerHTML = enderecos.map(endereco => `
         <tr>
-            <td>${escapeHtml(endereco.tipoEndereco || '')}</td>
+            <td>${escapeHtml(endereco.endereco.cep || '')}</td>
+            <td>${escapeHtml(endereco.numero || '')}</td>
+            <td>${escapeHtml(endereco.endereco.logradouro || '')}</td>
             <td>${escapeHtml(endereco.tipoResidencia || '')}</td>
-            <td>${escapeHtml(endereco.logradouro || '')}</td>
-            <td>${escapeHtml(formatarData(endereco.numero) || '')}</td>
-            <td>${escapeHtml(endereco.cep || '')}</td>
+            <td>${escapeHtml(endereco.tipoEndereco || '')}</td>
             <td>
                 <button class="btn-warning btn btn-sm" data-id="${endereco.id}">Alterar</button>
                 <button class="btn-danger btn btn-sm" data-id="${endereco.id}">Excluir</button>
             </td>
         </tr>
     `).join('');
+
     adicionarEventosTabela();
 }
 

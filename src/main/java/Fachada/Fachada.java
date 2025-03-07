@@ -39,7 +39,7 @@ public class Fachada implements IFachada {
         }
     }
 
-    public String salvar(List<EntidadeDominio> entidades) throws Exception {
+    public String salvar(EntidadeDominio entidade) throws Exception {
 //        try{
 //            StringBuilder sb = new StringBuilder();
 //            for(EntidadeDominio entidade : entidades) {
@@ -183,12 +183,35 @@ public class Fachada implements IFachada {
 
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
-        ClienteDAO clienteDAO = new ClienteDAO();
-        Resultado<List<EntidadeDominio>> resultadoEntidades = clienteDAO.consultar(entidade);
-        if (!resultadoEntidades.isSucesso()) {
-            return Resultado.erro(resultadoEntidades.getErro());
+        switch (entidade) {
+            case Cliente cliente -> {
+                ClienteDAO clienteDAO = new ClienteDAO();
+                Resultado<List<EntidadeDominio>> resultadoEntidades = clienteDAO.consultar(entidade);
+                if (!resultadoEntidades.isSucesso()) {
+                    return Resultado.erro(resultadoEntidades.getErro());
+                }
+                return Resultado.sucesso(resultadoEntidades.getValor());
+            }
+            case ClienteEndereco clienteEndereco ->{
+                ClienteEnderecoDAO clienteEnderecoDAO = new ClienteEnderecoDAO();
+                Resultado<List<EntidadeDominio>> resultadoEntidades = clienteEnderecoDAO.consultar(entidade);
+                if(!resultadoEntidades.isSucesso()) {
+                    return Resultado.erro(resultadoEntidades.getErro());
+                }
+                return Resultado.sucesso(resultadoEntidades.getValor());
+            }
+//                case Bandeira bandeira ->{
+//                    BandeiraDAO bandeiraDAO = new BandeiraDAO(connection);
+//                    bandeiraDAO.excluir(bandeira);
+//                }
+//                case Cartao cartao ->{
+//                    CartaoDAO cartaoDAO = new CartaoDAO(connection);
+//                    cartaoDAO.excluir(cartao);
+//                }
+            case null, default -> {
+                return Resultado.erro("Tipo de entidade não suportado");
+            }
         }
-        return Resultado.sucesso(resultadoEntidades.getValor());
     }
 
     private void processarValidacoes(EntidadeDominio entidade, List<IStrategy> estrategias, StringBuilder sb) {
