@@ -7,7 +7,6 @@ import Util.Resultado;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -17,7 +16,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serial;
-import java.lang.reflect.Type;
 import java.util.List;
 
 @WebServlet(name = "ControleEndereco", urlPatterns = "/controleendereco")
@@ -60,49 +58,50 @@ public class ControleEndereco extends HttpServlet {
         out.print(json);
     }
 
-//    @Override
-//    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-//        req.setCharacterEncoding("UTF-8");
-//        resp.setContentType("application/json");
-//        resp.setCharacterEncoding("UTF-8");
-//        PrintWriter out = resp.getWriter();
-//
-//        Gson gson = new Gson();
-//        Resultado<JsonObject> ResultJsonObject = lerJsonComoObjeto(req);
-//
-//        if (!ResultJsonObject.isSucesso()) {
-//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            JsonObject resposta = new JsonObject();
-//            resposta.addProperty("erro", ResultJsonObject.getErro());
-//            out.print(gson.toJson(resposta));
-//            return;
-//        }
-//
-//        JsonObject jsonObject = ResultJsonObject.getValor();
-//        if (!jsonObject.has("ClienteEndereco")) {
-//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            JsonObject resposta = new JsonObject();
-//            resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes");
-//            out.print(gson.toJson(resposta));
-//            return;
-//        }
-//
-//        ClienteEndereco clienteEndereco = gson.fromJson(jsonObject.get("ClienteEndereco"), ClienteEndereco.class);
-//        Fachada fachada = new Fachada();
-//
-//        Resultado<String> resultado = fachada.salvar(clienteEndereco);
-//
-//        if (!resultado.isSucesso()) {
-//            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            JsonObject resposta = new JsonObject();
-//            resposta.addProperty("erro", resultado.getErro());
-//            out.print(gson.toJson(resposta));
-//            return;
-//        }
-//        String json = gson.toJson(resultado.getValor());
-//        resp.setStatus(HttpServletResponse.SC_OK);
-//        out.print(json);
-//    }
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        PrintWriter out = resp.getWriter();
+
+        Gson gson = new Gson();
+        Resultado<JsonObject> ResultJsonObject = lerJsonComoObjeto(req);
+
+        if (!ResultJsonObject.isSucesso()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", ResultJsonObject.getErro());
+            out.print(gson.toJson(resposta));
+            return;
+        }
+
+        JsonObject jsonObject = ResultJsonObject.getValor();
+        if (!jsonObject.has("ClienteEndereco")) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes");
+            out.print(gson.toJson(resposta));
+            return;
+        }
+
+        ClienteEndereco clienteEndereco = gson.fromJson(jsonObject.get("ClienteEndereco"), ClienteEndereco.class);
+        System.out.println(clienteEndereco.getCliente().getId());
+        Fachada fachada = new Fachada();
+
+        Resultado<String> resultado = fachada.salvar(clienteEndereco);
+
+        if (!resultado.isSucesso()) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", resultado.getErro());
+            out.print(gson.toJson(resposta));
+            return;
+        }
+        String json = gson.toJson(resultado.getValor());
+        resp.setStatus(HttpServletResponse.SC_OK);
+        out.print(json);
+    }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {

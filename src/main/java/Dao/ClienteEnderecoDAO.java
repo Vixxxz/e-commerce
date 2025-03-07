@@ -65,6 +65,8 @@ public class ClienteEnderecoDAO implements IDAO{
 
             ClienteEndereco clienteEndereco = (ClienteEndereco) entidade;
 
+            System.out.println(clienteEndereco.getCliente().getId());
+
             Resultado<List<EntidadeDominio>> resultadoClientesEnderecos = consultar(clienteEndereco);
             List<EntidadeDominio> clientesEnderecos = resultadoClientesEnderecos.getValor();
             if(!clientesEnderecos.isEmpty()){
@@ -79,7 +81,11 @@ public class ClienteEnderecoDAO implements IDAO{
             IDAO enderecoDAO = new EnderecoDAO(connection);
 
             Resultado<List<EntidadeDominio>> resultadoEnderecos = enderecoDAO.consultar(clienteEndereco.getEndereco());
+            if(!resultadoEnderecos.isSucesso()){
+                return Resultado.erro(resultadoEnderecos.getErro());
+            }
             List<EntidadeDominio> enderecos = resultadoEnderecos.getValor();
+            System.out.println(enderecos.size());
 
             if (enderecos.isEmpty()) {
                 Resultado<EntidadeDominio> resultadoClienteEndereco = enderecoDAO.salvar(clienteEndereco.getEndereco());

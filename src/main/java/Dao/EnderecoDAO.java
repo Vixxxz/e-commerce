@@ -27,7 +27,7 @@ public class EnderecoDAO implements IDAO {
         sql.append("INSERT INTO endereco(end_cep, end_bai_id, end_logradouro, end_tp_logradouro, end_dt_cadastro) ");
         sql.append("VALUES(?,?,?,?,?)");
 
-        if (connection == null) {
+        if (connection == null || connection.isClosed()) {
             connection = Conexao.getConnectionMySQL();
         }
         connection.setAutoCommit(false);
@@ -118,6 +118,9 @@ public class EnderecoDAO implements IDAO {
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
         try {
+            if(connection.isClosed() || connection == null){
+                connection = Conexao.getConnectionMySQL();
+            }
             Endereco endereco = (Endereco) entidade;
             List<EntidadeDominio> enderecos = new ArrayList<>();
             List<Object> parametros = new ArrayList<>();
@@ -135,6 +138,7 @@ public class EnderecoDAO implements IDAO {
             }
             return Resultado.sucesso(enderecos);
         } catch (Exception e) {
+            e.printStackTrace();
             return Resultado.erro("Erro ao consultar Endereco");
         }
     }

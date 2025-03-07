@@ -6,7 +6,7 @@ import Util.Resultado;
 import java.util.List;
 
 public interface IFachada {
-    String salvar(EntidadeDominio entidade) throws Exception;
+    Resultado<String> salvar(EntidadeDominio entidade) throws Exception;
     Resultado<String> alterar(EntidadeDominio entidade);
     Resultado<String> excluir(EntidadeDominio entidade);
     Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade);

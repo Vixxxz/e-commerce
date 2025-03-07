@@ -39,38 +39,38 @@ public class Fachada implements IFachada {
         }
     }
 
-    public String salvar(EntidadeDominio entidade) throws Exception {
-//        try{
-//            StringBuilder sb = new StringBuilder();
-//            for(EntidadeDominio entidade : entidades) {
-//                switch (entidade) {
-//                    case Cliente cliente -> {
-//                        EncriptografaSenha criptografa = new EncriptografaSenha();
-//                        processarValidacoes(cliente, getValidacoes(cliente), sb);
-//                        cliente.setSenha(criptografa.processar(cliente, sb));
-//                    }
-//                    case ClienteEndereco clienteEndereco -> processarValidacoes(clienteEndereco, getValidacoes(clienteEndereco), sb);
-//                    case Bandeira bandeira -> processarValidacoes(bandeira, getValidacoes(bandeira), sb);
-//                    case Cartao cartao -> processarValidacoes(cartao, getValidacoes(cartao), sb);
-//                    }
-//                    case Transacao transacao -> {
-//                    }
-//                    case Log log -> {
-//                    }
-//                    case null, default ->
-//                            throw new IllegalArgumentException("Tipo de entidade não suportado: " + entidade);
-//                }
+    public Resultado<String> salvar(EntidadeDominio entidade) {
+        StringBuilder sb = new StringBuilder();
+        try{
+            switch (entidade) {
+                case ClienteEndereco clienteEndereco -> {
+                    processarValidacoes(clienteEndereco, getValidacoes(clienteEndereco), sb);
+                    if (!sb.isEmpty()) {
+                        return Resultado.erro(sb.toString());
+                    }
+                    ClienteEnderecoDAO clienteEnderecoDAO = new ClienteEnderecoDAO();
+                    System.out.println(clienteEndereco.toString());
+                    Resultado<EntidadeDominio> resultadoSalvarClienteEndereco = clienteEnderecoDAO.salvar(clienteEndereco);
+                    if (!resultadoSalvarClienteEndereco.isSucesso()) {
+                        return Resultado.erro(resultadoSalvarClienteEndereco.getErro());
+                    }
+                    return Resultado.sucesso("Endereço salvo com sucesso!");
+                }
+//                case Bandeira bandeira -> processarValidacoes(bandeira, getValidacoes(bandeira), sb);
+//                case Cartao cartao -> processarValidacoes(cartao, getValidacoes(cartao), sb);
 //            }
-//            if (sb.isEmpty()) {
-//                entidades = salvaEntidades(entidades, sb);
-//            } else {
-//                return ("Existem erros de validação: " + sb);
+//            case Transacao transacao -> {
 //            }
-//            return "CLIENTE SALVO COM SUCESSO!";
-//        }catch (Exception e) {
-//            throw new Exception(e.getMessage() + " " + entidades, e);
-//        }
-        return "AINDA NAO TA PRONTO :)";
+//            case Log log -> {
+//            }
+                case null, default -> {
+                    return Resultado.erro("Tipo de entidade não suportado: " + entidade);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Erro ao salvar endereço: " + e.getMessage());
+            return Resultado.erro("Erro interno ao salvar endereço.");
+        }
     }
 
     @Override
@@ -140,23 +140,23 @@ public class Fachada implements IFachada {
 
     @Override
     public Resultado<String> excluir(EntidadeDominio entidade) {
-            switch (entidade) {
-                case Cliente cliente -> {
-                    ClienteDAO clienteDAO = new ClienteDAO();
-                    Resultado<String> resultadoCliente = clienteDAO.excluir(cliente);
-                    if (!resultadoCliente.isSucesso()) {
-                        return Resultado.erro(resultadoCliente.getErro());
-                    }
-                    return Resultado.sucesso(resultadoCliente.getValor());
+        switch (entidade) {
+            case Cliente cliente -> {
+                ClienteDAO clienteDAO = new ClienteDAO();
+                Resultado<String> resultadoCliente = clienteDAO.excluir(cliente);
+                if (!resultadoCliente.isSucesso()) {
+                    return Resultado.erro(resultadoCliente.getErro());
                 }
-                case ClienteEndereco clienteEndereco ->{
-                    ClienteEnderecoDAO clienteEnderecoDAO = new ClienteEnderecoDAO();
-                    Resultado<String> resultadoClienteEndereco = clienteEnderecoDAO.excluir(clienteEndereco);
-                    if (!resultadoClienteEndereco.isSucesso()) {
-                        return Resultado.erro(resultadoClienteEndereco.getErro());
-                    }
-                    return Resultado.sucesso(resultadoClienteEndereco.getValor());
+                return Resultado.sucesso(resultadoCliente.getValor());
+            }
+            case ClienteEndereco clienteEndereco -> {
+                ClienteEnderecoDAO clienteEnderecoDAO = new ClienteEnderecoDAO();
+                Resultado<String> resultadoClienteEndereco = clienteEnderecoDAO.excluir(clienteEndereco);
+                if (!resultadoClienteEndereco.isSucesso()) {
+                    return Resultado.erro(resultadoClienteEndereco.getErro());
                 }
+                return Resultado.sucesso(resultadoClienteEndereco.getValor());
+            }
 //                case Bandeira bandeira ->{
 //                    BandeiraDAO bandeiraDAO = new BandeiraDAO(connection);
 //                    bandeiraDAO.excluir(bandeira);
@@ -165,10 +165,10 @@ public class Fachada implements IFachada {
 //                    CartaoDAO cartaoDAO = new CartaoDAO(connection);
 //                    cartaoDAO.excluir(cartao);
 //                }
-                case null, default -> {
+            case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
-                }
             }
+        }
     }
 
 //
@@ -192,10 +192,10 @@ public class Fachada implements IFachada {
                 }
                 return Resultado.sucesso(resultadoEntidades.getValor());
             }
-            case ClienteEndereco clienteEndereco ->{
+            case ClienteEndereco clienteEndereco -> {
                 ClienteEnderecoDAO clienteEnderecoDAO = new ClienteEnderecoDAO();
                 Resultado<List<EntidadeDominio>> resultadoEntidades = clienteEnderecoDAO.consultar(entidade);
-                if(!resultadoEntidades.isSucesso()) {
+                if (!resultadoEntidades.isSucesso()) {
                     return Resultado.erro(resultadoEntidades.getErro());
                 }
                 return Resultado.sucesso(resultadoEntidades.getValor());
