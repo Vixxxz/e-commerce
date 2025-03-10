@@ -106,7 +106,7 @@ public class ClienteDAO implements IDAO {
             Resultado<List<EntidadeDominio>> resultadoClientes = consultar(cliente);
 
             if(!resultadoClientes.isSucesso()){
-                return Resultado.erro("Nenhum cliente encontrado");
+                return Resultado.erro(resultadoClientes.getErro());
             }
             if (connection == null || connection.isClosed()) {
                 connection = Conexao.getConnectionMySQL();

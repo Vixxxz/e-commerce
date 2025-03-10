@@ -27,9 +27,6 @@ public class EnderecoDAO implements IDAO {
         sql.append("INSERT INTO endereco(end_cep, end_bai_id, end_logradouro, end_tp_logradouro, end_dt_cadastro) ");
         sql.append("VALUES(?,?,?,?,?)");
 
-        if (connection == null || connection.isClosed()) {
-            connection = Conexao.getConnectionMySQL();
-        }
         connection.setAutoCommit(false);
 
         IDAO bairroDAO = new BairroDAO(connection);

@@ -122,23 +122,23 @@ public class ControleEndereco extends HttpServlet {
         }
 
         JsonObject jsonObject = ResultJsonObject.getValor();
-        if (!jsonObject.has("Cliente")) {
+        if (!jsonObject.has("ClienteEndereco")) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{\"erro\": \"JSON inválido: Campos obrigatórios ausentes.\"}");
+            resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes.");
             out.print(gson.toJson(resposta));
             return;
         }
 
-        Cliente cliente = gson.fromJson(jsonObject.get("Cliente"), Cliente.class);
+        ClienteEndereco clienteEndereco = gson.fromJson(jsonObject.get("ClienteEndereco"), ClienteEndereco.class);
 
         IFachada fachada = new Fachada();
-        Resultado<String> resultado = fachada.alterar(cliente);
+        Resultado<String> resultado = fachada.alterar(clienteEndereco);
 
-        if (!resultado.isSucesso()) {
+        if(!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{\"erro\": \"" + resultado.getErro() + "\"}");
+            resposta.addProperty("erro", resultado.getErro());
             out.print(gson.toJson(resposta));
             return;
         }
