@@ -323,7 +323,7 @@ public class ClienteEnderecoDAO implements IDAO{
 
         for (EntidadeDominio clienteEnd : clienteEnderecos) {
             ClienteEndereco cliEndereco = (ClienteEndereco) clienteEnd;
-            if (!Objects.equals(clienteEndereco.getCliente().getId(), cliEndereco.getCliente().getId())) {
+            if (cliEndereco.getCliente() == null || (!Objects.equals(clienteEndereco.getCliente().getId(), cliEndereco.getCliente().getId()))) {
                 return true;
             }
         }

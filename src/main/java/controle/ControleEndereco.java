@@ -157,28 +157,28 @@ public class ControleEndereco extends HttpServlet {
         Gson gson = new Gson();
 
         IFachada fachada = new Fachada();
-        Cliente clienteFiltro = new Cliente();
+        ClienteEndereco clienteEnderecoFiltro = new ClienteEndereco();
         String idParam = req.getParameter("id");
 
         if (idParam == null || idParam.isEmpty()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "ID do cliente é obrigatório para exclusão.");
+            resposta.addProperty("erro", "ID do cliente endereco é obrigatório para exclusão.");
             out.print(gson.toJson(resposta));
             return;
         }
 
         try {
-            clienteFiltro.setId(Integer.parseInt(idParam));
+            clienteEnderecoFiltro.setId(Integer.parseInt(idParam));
         } catch (NumberFormatException e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "ID do cliente inválido.");
+            resposta.addProperty("erro", "ID do cliente endereco inválido.");
             out.print(gson.toJson(resposta));
             return;
         }
 
-        Resultado<String> resultado = fachada.excluir(clienteFiltro);
+        Resultado<String> resultado = fachada.excluir(clienteEnderecoFiltro);
 
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
