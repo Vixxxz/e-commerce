@@ -21,13 +21,15 @@ public class EnderecoDAO implements IDAO {
 
     @Override
     public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
+        if(connection == null || connection.isClosed()) {
+            connection = Conexao.getConnectionMySQL();
+        }
+        connection.setAutoCommit(false);
         Endereco endereco = (Endereco) entidade;
         StringBuilder sql = new StringBuilder();
 
         sql.append("INSERT INTO endereco(end_cep, end_bai_id, end_logradouro, end_tp_logradouro, end_dt_cadastro) ");
         sql.append("VALUES(?,?,?,?,?)");
-
-        connection.setAutoCommit(false);
 
         IDAO bairroDAO = new BairroDAO(connection);
 
@@ -109,7 +111,7 @@ public class EnderecoDAO implements IDAO {
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
         try {
-            if(connection.isClosed() || connection == null){
+            if(connection == null || connection.isClosed()){
                 connection = Conexao.getConnectionMySQL();
             }
             Endereco endereco = (Endereco) entidade;
@@ -219,5 +221,13 @@ public class EnderecoDAO implements IDAO {
         e.setBairro(b);
 
         return e;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
     }
 }

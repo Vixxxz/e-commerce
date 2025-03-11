@@ -122,6 +122,7 @@ public class ControleEndereco extends HttpServlet {
         }
 
         JsonObject jsonObject = ResultJsonObject.getValor();
+        System.out.println(jsonObject.toString());
         if (!jsonObject.has("ClienteEndereco")) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();

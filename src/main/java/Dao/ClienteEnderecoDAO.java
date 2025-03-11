@@ -72,11 +72,6 @@ public class ClienteEnderecoDAO implements IDAO{
             sql.append("cli_end_tp_residencia, cli_end_tp_end, cli_end_obs, cli_end_dt_cadastro) ");
             sql.append("VALUES (?,?,?,?,?,?,?)");
 
-            if(connection.isClosed() || connection == null){
-                connection = Conexao.getConnectionMySQL();
-            }
-            connection.setAutoCommit(false);
-
             IDAO enderecoDAO = new EnderecoDAO(connection);
 
             Resultado<List<EntidadeDominio>> resultadoEnderecos = enderecoDAO.consultar(clienteEndereco.getEndereco());
@@ -135,28 +130,23 @@ public class ClienteEnderecoDAO implements IDAO{
         try{
             ClienteEndereco clienteEndereco = (ClienteEndereco) entidade;
 
-//            ClienteEndereco cliEnd = new ClienteEndereco();
-//            cliEnd.setId(clienteEndereco.getId());
-//            Resultado<List<EntidadeDominio>> resultadoCliEnd = consultar(cliEnd);
-//            List<EntidadeDominio> listClienteEndereco = resultadoCliEnd.getValor();
-//            cliEnd = (ClienteEndereco) listClienteEndereco.getFirst();
-//            boolean isEnderecoAssociadoAOutrosClientes = isEnderecoAssociadoAOutrosClientes(cliEnd);
-
-            if(connection.isClosed() || connection == null){
-                connection = Conexao.getConnectionMySQL();
-            }
-            connection.setAutoCommit(false);
-
             StringBuilder sql = new StringBuilder();
             sql.append("UPDATE crud_v3.cliente_endereco SET ");
             sql.append("cli_end_cli_id = ?, cli_end_end_id = ?, cli_end_num = ?, ");
             sql.append("cli_end_tp_residencia = ?, cli_end_tp_end = ?, cli_end_obs = ? ");
             sql.append("WHERE cli_end_id = ?");
 
-            IDAO enderecoDAO = new EnderecoDAO(connection);
+            EnderecoDAO enderecoDAO = new EnderecoDAO();
 
             Resultado<List<EntidadeDominio>> resultadoEnderecos = enderecoDAO.consultar(clienteEndereco.getEndereco());
             List<EntidadeDominio> enderecos = resultadoEnderecos.getValor();
+
+            if(connection == null || connection.isClosed()){
+                connection = Conexao.getConnectionMySQL();
+            }
+            connection.setAutoCommit(false);
+
+            enderecoDAO.setConnection(connection);
 
             if (enderecos.isEmpty()) {
                 Resultado<EntidadeDominio> resultadoClienteEndereco = enderecoDAO.salvar(clienteEndereco.getEndereco());
@@ -174,19 +164,11 @@ public class ClienteEnderecoDAO implements IDAO{
                 pst.setString(6, clienteEndereco.getObservacoes());
                 pst.setInt(7, clienteEndereco.getId());
 
-                pst.executeUpdate();
-
-                try (ResultSet rs = pst.getGeneratedKeys()) {
-                    if (!rs.next()) {
-                        throw new SQLException("Falha ao inserir o ClienteEndereco.");
-                    }
+                int rowsUpdated = pst.executeUpdate();
+                if (rowsUpdated == 0) {
+                    return Resultado.erro("Nenhum cliente endereco encontrado com o ID");
                 }
             }
-
-//            if (!isEnderecoAssociadoAOutrosClientes) {
-//                System.out.println("status da conexao: " + connection.isClosed());
-//                enderecoDAO.excluir(cliEnd.getEndereco());
-//            }
 
             connection.commit();
             return Resultado.sucesso(clienteEndereco);
