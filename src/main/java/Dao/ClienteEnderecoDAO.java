@@ -272,6 +272,15 @@ public class ClienteEnderecoDAO implements IDAO{
 
     public Resultado<String> excluirClienteEEndereco(List<EntidadeDominio> entidades) {
         try {
+            List<Endereco> enderecosParaExcluir = new ArrayList<>();
+
+            for (EntidadeDominio cliEnd : entidades) {
+                ClienteEndereco clienteEndereco = (ClienteEndereco) cliEnd;
+                if (!isEnderecoAssociadoAOutrosClientes(clienteEndereco)) {
+                    enderecosParaExcluir.add(clienteEndereco.getEndereco());
+                }
+            }
+
             if (connection == null || connection.isClosed()) {
                 connection = Conexao.getConnectionMySQL();
             }
@@ -290,15 +299,6 @@ public class ClienteEnderecoDAO implements IDAO{
                         return Resultado.erro("Nenhum ClienteEndereco encontrado com o ID fornecido.");
                     }
                     System.out.println("Cliente Endereco Excluido");
-                }
-            }
-
-            List<Endereco> enderecosParaExcluir = new ArrayList<>();
-
-            for (EntidadeDominio cliEnd : entidades) {
-                ClienteEndereco clienteEndereco = (ClienteEndereco) cliEnd;
-                if (!isEnderecoAssociadoAOutrosClientes(clienteEndereco)) {
-                    enderecosParaExcluir.add(clienteEndereco.getEndereco());
                 }
             }
 
