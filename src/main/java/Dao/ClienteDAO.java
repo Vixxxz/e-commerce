@@ -223,9 +223,7 @@ public class ClienteDAO implements IDAO {
         List<EntidadeDominio> clienteEnderecos = resultadoClienteEndereco.getValor();
 
         if (!clienteEnderecos.isEmpty()) {
-            for (EntidadeDominio cliEnd : clienteEnderecos) {
-                clienteEnderecoDAO.excluir(cliEnd);
-            }
+            clienteEnderecoDAO.excluirClienteEEndereco(clienteEnderecos);
         }
     }
 

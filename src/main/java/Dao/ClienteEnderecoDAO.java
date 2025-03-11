@@ -5,9 +5,7 @@ import Util.Conexao;
 import Util.Resultado;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class ClienteEnderecoDAO implements IDAO{
     private Connection connection;
@@ -271,6 +269,68 @@ public class ClienteEnderecoDAO implements IDAO{
             }
         }
     }
+
+    public Resultado<String> excluirClienteEEndereco(List<EntidadeDominio> entidades) {
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = Conexao.getConnectionMySQL();
+            }
+            connection.setAutoCommit(false);
+
+            StringBuilder sql = new StringBuilder();
+            sql.append("DELETE FROM crud_v3.cliente_endereco WHERE cli_end_id = ?");
+            try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
+                for (EntidadeDominio cliEnd : entidades) {
+                    ClienteEndereco clienteEndereco = (ClienteEndereco) cliEnd;
+
+                    pst.setInt(1, clienteEndereco.getId());
+                    int rowsDeleted = pst.executeUpdate();
+
+                    if (rowsDeleted == 0) {
+                        return Resultado.erro("Nenhum ClienteEndereco encontrado com o ID fornecido.");
+                    }
+                    System.out.println("Cliente Endereco Excluido");
+                }
+            }
+
+            List<Endereco> enderecosParaExcluir = new ArrayList<>();
+
+            for (EntidadeDominio cliEnd : entidades) {
+                ClienteEndereco clienteEndereco = (ClienteEndereco) cliEnd;
+                if (!isEnderecoAssociadoAOutrosClientes(clienteEndereco)) {
+                    enderecosParaExcluir.add(clienteEndereco.getEndereco());
+                }
+            }
+
+            if (!enderecosParaExcluir.isEmpty()) {
+                EnderecoDAO enderecoDAO = new EnderecoDAO(connection);
+                for (Endereco endereco : enderecosParaExcluir) {
+                    enderecoDAO.excluir(endereco);
+                }
+            }
+
+            connection.commit();
+            return Resultado.sucesso("ClienteEndereco excluído com sucesso.");
+        } catch (SQLException | ClassNotFoundException e) {
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+                System.err.println("Rollback efetuado devido a erro: " + e.getMessage());
+                return Resultado.erro("Erro ao deletar ClienteEndereco: " + e.getMessage());
+            } catch (SQLException rollbackEx) {
+                System.err.println("Erro durante rollback: " + rollbackEx.getMessage());
+                return Resultado.erro("Erro durante rollback: " + rollbackEx.getMessage());
+            }
+        } finally {
+            try {
+                if (connection != null) connection.close();
+            } catch (SQLException closeEx) {
+                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
+            }
+        }
+    }
+
 
     private boolean isEnderecoAssociadoAOutrosClientes(ClienteEndereco clienteEndereco) throws SQLException {
         ClienteEndereco cliEnd = new ClienteEndereco();

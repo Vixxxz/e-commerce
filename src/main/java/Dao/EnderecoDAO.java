@@ -71,10 +71,6 @@ public class EnderecoDAO implements IDAO {
     @Override
     public Resultado<String> excluir(EntidadeDominio entidade) {
         try{
-            if (connection == null) {
-                connection = Conexao.getConnectionMySQL();
-            }
-
             Endereco endereco = (Endereco) entidade;
             System.out.println("status da conexao: " + connection.isClosed());
             Resultado<List<EntidadeDominio>> resultadoEndereco = consultar(endereco);
@@ -83,6 +79,11 @@ public class EnderecoDAO implements IDAO {
             if(enderecos.isEmpty()) {
                 return Resultado.erro("Endereco não cadastrado no sistema");
             }
+
+            if (connection == null || connection.isClosed()) {
+                connection = Conexao.getConnectionMySQL();
+            }
+            connection.setAutoCommit(false);
 
             StringBuilder sql = new StringBuilder();
             sql.append("DELETE FROM crud_v3.endereco e ")
