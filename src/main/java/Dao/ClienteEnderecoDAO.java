@@ -203,6 +203,8 @@ public class ClienteEnderecoDAO implements IDAO{
                 return Resultado.erro("ClienteEndereco não cadastrado no sistema");
             }
 
+            clienteEndereco = (ClienteEndereco) clienteEnderecos.getFirst();
+
             boolean isEnderecoAssociadoAOutrosClientes = isEnderecoAssociadoAOutrosClientes(clienteEndereco);
 
             if (connection == null || connection.isClosed()) {
