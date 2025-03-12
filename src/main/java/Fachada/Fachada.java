@@ -1,7 +1,9 @@
 package Fachada;
 
+import Dao.BandeiraDAO;
 import Dao.ClienteDAO;
 import Dao.ClienteEnderecoDAO;
+import Dominio.Bandeira;
 import Dominio.Cliente;
 import Dominio.ClienteEndereco;
 import Dominio.EntidadeDominio;
@@ -56,7 +58,18 @@ public class Fachada implements IFachada {
                     }
                     return Resultado.sucesso("Endereço salvo com sucesso!");
                 }
-//                case Bandeira bandeira -> processarValidacoes(bandeira, getValidacoes(bandeira), sb);
+                case Bandeira bandeira -> {
+                    processarValidacoes(bandeira, getValidacoes(bandeira), sb);
+                    if (!sb.isEmpty()) {
+                        return Resultado.erro(sb.toString());
+                    }
+                    BandeiraDAO bandeiraDAO = new BandeiraDAO();
+                    Resultado<EntidadeDominio> resultadoSalvarBandeira = bandeiraDAO.salvar(bandeira);
+                    if(!resultadoSalvarBandeira.isSucesso()) {
+                        return Resultado.erro(resultadoSalvarBandeira.getErro());
+                    }
+                    return Resultado.sucesso("Bandeira salva com sucesso!");
+                }
 //                case Cartao cartao -> processarValidacoes(cartao, getValidacoes(cartao), sb);
 //            }
 //            case Transacao transacao -> {
@@ -113,14 +126,23 @@ public class Fachada implements IFachada {
                     return Resultado.erro("Erro interno ao alterar endereço.");
                 }
             }
-//                case Bandeira bandeira -> {
-//                    processarValidacoes(bandeira, getValidacoes(bandeira), sb);
-//                    if(sb.isEmpty()) {
-//                        alteraBandeira(bandeira, erros);
-//                    }else {
-//                        throw new Exception("Existem erros de validação: " + sb);
-//                    }
-//                }
+                case Bandeira bandeira -> {
+                    processarValidacoes(bandeira, getValidacoes(bandeira), sb);
+                    if(!sb.isEmpty()) {
+                        return Resultado.erro(sb.toString());
+                    }
+                    try{
+                        BandeiraDAO bandeiraDAO = new BandeiraDAO();
+                        Resultado<EntidadeDominio> resultadoAlterarBandeira = bandeiraDAO.alterar(bandeira);
+                        if(!resultadoAlterarBandeira.isSucesso()) {
+                            return Resultado.erro(resultadoAlterarBandeira.getErro());
+                        }
+                        return Resultado.sucesso("Bandeira alterada com sucesso!");
+                    }catch (Exception e) {
+                        System.err.println("Erro ao alterar bandeira: " + e.getMessage());
+                        return Resultado.erro("Erro interno ao alterar bandeira.");
+                    }
+                }
 //                case Cartao cartao -> {
 //                    processarValidacoes(cartao, getValidacoes(cartao), sb);
 //                    if(sb.isEmpty()) {
@@ -157,10 +179,14 @@ public class Fachada implements IFachada {
                 }
                 return Resultado.sucesso(resultadoClienteEndereco.getValor());
             }
-//                case Bandeira bandeira ->{
-//                    BandeiraDAO bandeiraDAO = new BandeiraDAO(connection);
-//                    bandeiraDAO.excluir(bandeira);
-//                }
+                case Bandeira bandeira ->{
+                    BandeiraDAO bandeiraDAO = new BandeiraDAO();
+                    Resultado<String> resultadoBandeira = bandeiraDAO.excluir(bandeira);
+                    if (!resultadoBandeira.isSucesso()) {
+                        return Resultado.erro(resultadoBandeira.getErro());
+                    }
+                    return Resultado.sucesso(resultadoBandeira.getValor());
+                }
 //                case Cartao cartao ->{
 //                    CartaoDAO cartaoDAO = new CartaoDAO(connection);
 //                    cartaoDAO.excluir(cartao);
@@ -186,7 +212,7 @@ public class Fachada implements IFachada {
         switch (entidade) {
             case Cliente cliente -> {
                 ClienteDAO clienteDAO = new ClienteDAO();
-                Resultado<List<EntidadeDominio>> resultadoEntidades = clienteDAO.consultar(entidade);
+                Resultado<List<EntidadeDominio>> resultadoEntidades = clienteDAO.consultar(cliente);
                 if (!resultadoEntidades.isSucesso()) {
                     return Resultado.erro(resultadoEntidades.getErro());
                 }
@@ -194,16 +220,20 @@ public class Fachada implements IFachada {
             }
             case ClienteEndereco clienteEndereco -> {
                 ClienteEnderecoDAO clienteEnderecoDAO = new ClienteEnderecoDAO();
-                Resultado<List<EntidadeDominio>> resultadoEntidades = clienteEnderecoDAO.consultar(entidade);
+                Resultado<List<EntidadeDominio>> resultadoEntidades = clienteEnderecoDAO.consultar(clienteEndereco);
                 if (!resultadoEntidades.isSucesso()) {
                     return Resultado.erro(resultadoEntidades.getErro());
                 }
                 return Resultado.sucesso(resultadoEntidades.getValor());
             }
-//                case Bandeira bandeira ->{
-//                    BandeiraDAO bandeiraDAO = new BandeiraDAO(connection);
-//                    bandeiraDAO.excluir(bandeira);
-//                }
+                case Bandeira bandeira ->{
+                    BandeiraDAO bandeiraDAO = new BandeiraDAO();
+                    Resultado<List<EntidadeDominio>> resultadoClienteEndereco = bandeiraDAO.consultar(bandeira);
+                    if(!resultadoClienteEndereco.isSucesso()){
+                        return Resultado.erro(resultadoClienteEndereco.getErro());
+                    }
+                    return Resultado.sucesso(resultadoClienteEndereco.getValor());
+                }
 //                case Cartao cartao ->{
 //                    CartaoDAO cartaoDAO = new CartaoDAO(connection);
 //                    cartaoDAO.excluir(cartao);
@@ -230,9 +260,9 @@ public class Fachada implements IFachada {
             validacoes.add(new ValidaTelefone());
         } else if (entidade instanceof ClienteEndereco) {
             validacoes.add(new ValidaEndereco());
-        } //else if (entidade instanceof Bandeira) {
-//            validacoes.add(new ValidaDadosBandeira());
-//        } else if (entidade instanceof Cartao) {
+        } else if (entidade instanceof Bandeira) {
+            validacoes.add(new ValidaDadosBandeira());
+        } //else if (entidade instanceof Cartao) {
 //            validacoes.add(new ValidaDadosCartao());
 //            validacoes.add(new ValidaBandeiraExistente());
 //            validacoes.add(new ValidaCartaoPreferencial());
