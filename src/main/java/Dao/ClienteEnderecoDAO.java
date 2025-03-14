@@ -72,10 +72,17 @@ public class ClienteEnderecoDAO implements IDAO{
             sql.append("cli_end_tp_residencia, cli_end_tp_end, cli_end_obs, cli_end_dt_cadastro) ");
             sql.append("VALUES (?,?,?,?,?,?,?)");
 
-            IDAO enderecoDAO = new EnderecoDAO(connection);
+            EnderecoDAO enderecoDAO = new EnderecoDAO();
 
             Resultado<List<EntidadeDominio>> resultadoEnderecos = enderecoDAO.consultar(clienteEndereco.getEndereco());
             List<EntidadeDominio> enderecos = resultadoEnderecos.getValor();
+
+            if(connection == null || connection.isClosed()){
+                connection = Conexao.getConnectionMySQL();
+            }
+            connection.setAutoCommit(false);
+
+            enderecoDAO.setConnection(connection);
 
             if (enderecos.isEmpty()) {
                 Resultado<EntidadeDominio> resultadoClienteEndereco = enderecoDAO.salvar(clienteEndereco.getEndereco());

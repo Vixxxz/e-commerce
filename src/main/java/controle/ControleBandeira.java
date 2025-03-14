@@ -18,7 +18,7 @@ import java.io.PrintWriter;
 import java.io.Serial;
 import java.util.List;
 
-@WebServlet(name = "ControleEndereco", urlPatterns = "/controleendereco")
+@WebServlet(name = "ControleBandeira", urlPatterns = "/controleBandeira")
 public class ControleBandeira extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -32,14 +32,6 @@ public class ControleBandeira extends HttpServlet {
         Gson gson = new Gson();
 
         Resultado<Bandeira> resultadoBandeiraFiltro = extrairBandeiraFiltro(req);
-
-        if (!resultadoBandeiraFiltro.isSucesso()) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", resultadoBandeiraFiltro.getErro());
-            out.print(gson.toJson(resposta));
-            return;
-        }
 
         IFachada fachada = new Fachada();
         Bandeira bandeiraFiltro = resultadoBandeiraFiltro.getValor();

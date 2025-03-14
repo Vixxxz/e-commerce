@@ -18,7 +18,7 @@ import java.io.PrintWriter;
 import java.io.Serial;
 import java.util.List;
 
-@WebServlet(name = "ControleEndereco", urlPatterns = "/controleendereco")
+@WebServlet(name = "ControleEndereco", urlPatterns = "/controleEndereco")
 public class ControleEndereco extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;

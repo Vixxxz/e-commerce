@@ -29,7 +29,7 @@ class ManipulaDataFormCartao {
             console.log("JSON gerado: ", JSON.stringify(cartaoJson, null, 2));
 
             // Envia os dados para o servidor via API Fetch
-            const resposta = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/controlecartao', {
+            const resposta = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/controleCartao', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

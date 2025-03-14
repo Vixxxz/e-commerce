@@ -158,7 +158,7 @@ async function realizarConsultaEndereco(e) {
     e.preventDefault();
     const filtroForm = document.getElementById('filtroEndereco');
     const queryParams = criarQueryParams(new FormData(filtroForm));
-    const url = `${BASE_URL}/controleendereco?idCliente=${clienteId}${queryParams}`;
+    const url = `${BASE_URL}/controleEndereco?idCliente=${clienteId}${queryParams}`;
 
     try {
         const respostaJson = await fetchAPI(url, 'Erro ao buscar endereços');

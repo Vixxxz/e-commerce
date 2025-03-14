@@ -26,7 +26,7 @@ class ManipulaDataFormBandeira {
 
             console.log("JSON gerado: ", JSON.stringify(bandeiraJson, null, 2));
 
-            const resposta = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/controlebandeira', {
+            const resposta = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/controleBandeira', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

@@ -82,7 +82,7 @@ public class Fachada implements IFachada {
             }
         } catch (Exception e) {
             System.err.println("Erro ao salvar endereço: " + e.getMessage());
-            return Resultado.erro("Erro interno ao salvar endereço.");
+            return Resultado.erro("Erro interno ao salvar endereço." + e.getMessage());
         }
     }
 
@@ -226,14 +226,14 @@ public class Fachada implements IFachada {
                 }
                 return Resultado.sucesso(resultadoEntidades.getValor());
             }
-                case Bandeira bandeira ->{
-                    BandeiraDAO bandeiraDAO = new BandeiraDAO();
-                    Resultado<List<EntidadeDominio>> resultadoClienteEndereco = bandeiraDAO.consultar(bandeira);
-                    if(!resultadoClienteEndereco.isSucesso()){
-                        return Resultado.erro(resultadoClienteEndereco.getErro());
-                    }
-                    return Resultado.sucesso(resultadoClienteEndereco.getValor());
+            case Bandeira bandeira ->{
+                BandeiraDAO bandeiraDAO = new BandeiraDAO();
+                Resultado<List<EntidadeDominio>> resultadoClienteEndereco = bandeiraDAO.consultar(bandeira);
+                if(!resultadoClienteEndereco.isSucesso()){
+                    return Resultado.erro(resultadoClienteEndereco.getErro());
                 }
+                return Resultado.sucesso(resultadoClienteEndereco.getValor());
+            }
 //                case Cartao cartao ->{
 //                    CartaoDAO cartaoDAO = new CartaoDAO(connection);
 //                    cartaoDAO.excluir(cartao);
