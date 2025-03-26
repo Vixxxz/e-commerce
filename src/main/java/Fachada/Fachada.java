@@ -1,12 +1,10 @@
 package Fachada;
 
 import Dao.BandeiraDAO;
+import Dao.CartaoDAO;
 import Dao.ClienteDAO;
 import Dao.ClienteEnderecoDAO;
-import Dominio.Bandeira;
-import Dominio.Cliente;
-import Dominio.ClienteEndereco;
-import Dominio.EntidadeDominio;
+import Dominio.*;
 import Strategy.*;
 import Util.Resultado;
 
@@ -43,7 +41,7 @@ public class Fachada implements IFachada {
 
     public Resultado<String> salvar(EntidadeDominio entidade) {
         StringBuilder sb = new StringBuilder();
-        try{
+        try {
             switch (entidade) {
                 case ClienteEndereco clienteEndereco -> {
                     processarValidacoes(clienteEndereco, getValidacoes(clienteEndereco), sb);
@@ -65,13 +63,23 @@ public class Fachada implements IFachada {
                     }
                     BandeiraDAO bandeiraDAO = new BandeiraDAO();
                     Resultado<EntidadeDominio> resultadoSalvarBandeira = bandeiraDAO.salvar(bandeira);
-                    if(!resultadoSalvarBandeira.isSucesso()) {
+                    if (!resultadoSalvarBandeira.isSucesso()) {
                         return Resultado.erro(resultadoSalvarBandeira.getErro());
                     }
                     return Resultado.sucesso("Bandeira salva com sucesso!");
                 }
-//                case Cartao cartao -> processarValidacoes(cartao, getValidacoes(cartao), sb);
-//            }
+                case Cartao cartao -> {
+                    processarValidacoes(cartao, getValidacoes(cartao), sb);
+                    if (!sb.isEmpty()) {
+                        return Resultado.erro(sb.toString());
+                    }
+                    CartaoDAO cartaoDAO = new CartaoDAO();
+                    Resultado<EntidadeDominio> resultadoSalvarCartao = cartaoDAO.salvar(cartao);
+                    if (!resultadoSalvarCartao.isSucesso()) {
+                        return Resultado.erro(resultadoSalvarCartao.getErro());
+                    }
+                    return Resultado.sucesso("Cartão salvo com sucesso!");
+                }
 //            case Transacao transacao -> {
 //            }
 //            case Log log -> {
@@ -126,31 +134,40 @@ public class Fachada implements IFachada {
                     return Resultado.erro("Erro interno ao alterar endereço.");
                 }
             }
-                case Bandeira bandeira -> {
-                    processarValidacoes(bandeira, getValidacoes(bandeira), sb);
-                    if(!sb.isEmpty()) {
-                        return Resultado.erro(sb.toString());
-                    }
-                    try{
-                        BandeiraDAO bandeiraDAO = new BandeiraDAO();
-                        Resultado<EntidadeDominio> resultadoAlterarBandeira = bandeiraDAO.alterar(bandeira);
-                        if(!resultadoAlterarBandeira.isSucesso()) {
-                            return Resultado.erro(resultadoAlterarBandeira.getErro());
-                        }
-                        return Resultado.sucesso("Bandeira alterada com sucesso!");
-                    }catch (Exception e) {
-                        System.err.println("Erro ao alterar bandeira: " + e.getMessage());
-                        return Resultado.erro("Erro interno ao alterar bandeira.");
-                    }
+            case Bandeira bandeira -> {
+                processarValidacoes(bandeira, getValidacoes(bandeira), sb);
+                if (!sb.isEmpty()) {
+                    return Resultado.erro(sb.toString());
                 }
-//                case Cartao cartao -> {
-//                    processarValidacoes(cartao, getValidacoes(cartao), sb);
-//                    if(sb.isEmpty()) {
-//                        alteraCartao(cartao, erros);
-//                    }else{
-//                        throw new Exception("Existem erros de validação: " + sb);
-//                    }
-//                }
+                try {
+                    BandeiraDAO bandeiraDAO = new BandeiraDAO();
+                    Resultado<EntidadeDominio> resultadoAlterarBandeira = bandeiraDAO.alterar(bandeira);
+                    if (!resultadoAlterarBandeira.isSucesso()) {
+                        return Resultado.erro(resultadoAlterarBandeira.getErro());
+                    }
+                    return Resultado.sucesso("Bandeira alterada com sucesso!");
+                } catch (Exception e) {
+                    System.err.println("Erro ao alterar bandeira: " + e.getMessage());
+                    return Resultado.erro("Erro interno ao alterar bandeira.");
+                }
+            }
+            case Cartao cartao -> {
+                processarValidacoes(cartao, getValidacoes(cartao), sb);
+                if (!sb.isEmpty()) {
+                    return Resultado.erro(sb.toString());
+                }
+                try {
+                    CartaoDAO cartaoDAO = new CartaoDAO();
+                    Resultado<EntidadeDominio> resultadoAlterarCartao = cartaoDAO.alterar(cartao);
+                    if (!resultadoAlterarCartao.isSucesso()) {
+                        return Resultado.erro(resultadoAlterarCartao.getErro());
+                    }
+                    return Resultado.sucesso("Cartão alterado com sucesso!");
+                } catch (Exception e) {
+                    System.err.println("Erro ao alterar cartao: " + e.getMessage());
+                    return Resultado.erro("Erro interno ao alterar cartao.");
+                }
+            }
 //                    }
 //                    case Transacao transacao -> {
 //                    }
@@ -179,33 +196,27 @@ public class Fachada implements IFachada {
                 }
                 return Resultado.sucesso(resultadoClienteEndereco.getValor());
             }
-                case Bandeira bandeira ->{
-                    BandeiraDAO bandeiraDAO = new BandeiraDAO();
-                    Resultado<String> resultadoBandeira = bandeiraDAO.excluir(bandeira);
-                    if (!resultadoBandeira.isSucesso()) {
-                        return Resultado.erro(resultadoBandeira.getErro());
-                    }
-                    return Resultado.sucesso(resultadoBandeira.getValor());
+            case Bandeira bandeira -> {
+                BandeiraDAO bandeiraDAO = new BandeiraDAO();
+                Resultado<String> resultadoBandeira = bandeiraDAO.excluir(bandeira);
+                if (!resultadoBandeira.isSucesso()) {
+                    return Resultado.erro(resultadoBandeira.getErro());
                 }
-//                case Cartao cartao ->{
-//                    CartaoDAO cartaoDAO = new CartaoDAO(connection);
-//                    cartaoDAO.excluir(cartao);
-//                }
+                return Resultado.sucesso(resultadoBandeira.getValor());
+            }
+            case Cartao cartao -> {
+                CartaoDAO cartaoDAO = new CartaoDAO();
+                Resultado<String> resultadoCartao = cartaoDAO.excluir(cartao);
+                if (!resultadoCartao.isSucesso()) {
+                    return Resultado.erro(resultadoCartao.getErro());
+                }
+                return Resultado.sucesso(resultadoCartao.getValor());
+            }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
             }
         }
     }
-
-//
-//    private void excluirBandeira(Bandeira bandeira) throws Exception {
-//        try{
-//            BandeiraDAO bandeiraDAO = new BandeiraDAO(connection);
-//            bandeiraDAO.excluir(bandeira);
-//        } catch (Exception e) {
-//            throw new Exception(e.getMessage(), e);
-//        }
-//    }
 
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
@@ -226,18 +237,22 @@ public class Fachada implements IFachada {
                 }
                 return Resultado.sucesso(resultadoEntidades.getValor());
             }
-            case Bandeira bandeira ->{
+            case Bandeira bandeira -> {
                 BandeiraDAO bandeiraDAO = new BandeiraDAO();
-                Resultado<List<EntidadeDominio>> resultadoClienteEndereco = bandeiraDAO.consultar(bandeira);
-                if(!resultadoClienteEndereco.isSucesso()){
-                    return Resultado.erro(resultadoClienteEndereco.getErro());
+                Resultado<List<EntidadeDominio>> resultadoBandeira = bandeiraDAO.consultar(bandeira);
+                if (!resultadoBandeira.isSucesso()) {
+                    return Resultado.erro(resultadoBandeira.getErro());
                 }
-                return Resultado.sucesso(resultadoClienteEndereco.getValor());
+                return Resultado.sucesso(resultadoBandeira.getValor());
             }
-//                case Cartao cartao ->{
-//                    CartaoDAO cartaoDAO = new CartaoDAO(connection);
-//                    cartaoDAO.excluir(cartao);
-//                }
+            case Cartao cartao -> {
+                CartaoDAO cartaoDAO = new CartaoDAO();
+                Resultado<List<EntidadeDominio>> resultadoCartao = cartaoDAO.consultar(cartao);
+                if(!resultadoCartao.isSucesso()){
+                    return Resultado.erro(resultadoCartao.getErro());
+                }
+                return Resultado.sucesso(resultadoCartao.getValor());
+            }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
             }
@@ -262,11 +277,11 @@ public class Fachada implements IFachada {
             validacoes.add(new ValidaEndereco());
         } else if (entidade instanceof Bandeira) {
             validacoes.add(new ValidaDadosBandeira());
-        } //else if (entidade instanceof Cartao) {
-//            validacoes.add(new ValidaDadosCartao());
-//            validacoes.add(new ValidaBandeiraExistente());
-//            validacoes.add(new ValidaCartaoPreferencial());
-//        }
+        } else if (entidade instanceof Cartao) {
+            validacoes.add(new ValidaDadosCartao());
+            validacoes.add(new ValidaBandeiraExistente());
+            validacoes.add(new ValidaCartaoPreferencial());
+        }
         return validacoes;
     }
 }
