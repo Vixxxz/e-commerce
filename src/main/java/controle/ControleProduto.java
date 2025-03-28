@@ -1,6 +1,5 @@
 package controle;
 
-import Dao.CartaoDAO;
 import Dominio.*;
 import Fachada.Fachada;
 import Fachada.IFachada;
@@ -19,8 +18,8 @@ import java.io.PrintWriter;
 import java.io.Serial;
 import java.util.List;
 
-@WebServlet(name = "ControleCartao", urlPatterns = "/controleCartao")
-public class ControleCartao extends HttpServlet {
+@WebServlet(name = "ControleProduto", urlPatterns = "/controleProduto")
+public class ControleProduto extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -32,67 +31,30 @@ public class ControleCartao extends HttpServlet {
         PrintWriter out = resp.getWriter();
         Gson gson = new Gson();
 
-        Resultado<Cartao> resultadoCartaoFiltro = extrairCartaoFiltro(req);
+        Resultado<Produto> resultadoProdutoFiltro = extrairProdutoFiltro(req);
 
         IFachada fachada = new Fachada();
-        Cartao cartaoFiltro = resultadoCartaoFiltro.getValor();
-        Resultado<List<EntidadeDominio>> resultadoConsultaartao = fachada.consultar(cartaoFiltro);
+        Produto produtoFiltro = resultadoProdutoFiltro.getValor();
+        Resultado<List<EntidadeDominio>> resultadoConsultaProduto = fachada.consultar(produtoFiltro);
 
-        if (!resultadoConsultaartao.isSucesso()) {
+        if (!resultadoConsultaProduto.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", resultadoConsultaartao.getErro());
+            resposta.addProperty("erro", resultadoConsultaProduto.getErro());
             out.print(gson.toJson(resposta));
             return;
         }
 
-        String json = gson.toJson(resultadoConsultaartao.getValor());
+        String json = gson.toJson(resultadoConsultaProduto.getValor());
         resp.setStatus(HttpServletResponse.SC_OK);
         out.print(json);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        req.setCharacterEncoding("UTF-8");
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
         PrintWriter out = resp.getWriter();
-
-        Gson gson = new Gson();
-        Resultado<JsonObject> ResultJsonObject = lerJsonComoObjeto(req);
-
-        if (!ResultJsonObject.isSucesso()) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", ResultJsonObject.getErro());
-            out.print(gson.toJson(resposta));
-            return;
-        }
-
-        JsonObject jsonObject = ResultJsonObject.getValor();
-        if (!jsonObject.has("Cartao")) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes");
-            out.print(gson.toJson(resposta));
-            return;
-        }
-
-        Cartao cartao = gson.fromJson(jsonObject.get("Cartao"), Cartao.class);
-        Fachada fachada = new Fachada();
-        Resultado<String> resultado = fachada.salvar(cartao);
-
-        if (!resultado.isSucesso()) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", resultado.getErro());
-            out.print(gson.toJson(resposta));
-            return;
-        }
-
-        String json = gson.toJson(resultado.getValor());
         resp.setStatus(HttpServletResponse.SC_OK);
-        out.print(json);
+        out.print("O request funciona");
     }
 
     @Override
@@ -115,7 +77,7 @@ public class ControleCartao extends HttpServlet {
 
         JsonObject jsonObject = ResultJsonObject.getValor();
         System.out.println(jsonObject.toString());
-        if (!jsonObject.has("Cartao")) {
+        if (!jsonObject.has("Produto")) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
             resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes.");
@@ -123,9 +85,9 @@ public class ControleCartao extends HttpServlet {
             return;
         }
 
-        Cartao cartao = gson.fromJson(jsonObject.get("Cartao"), Cartao.class);
+        Produto produto = gson.fromJson(jsonObject.get("Produto"), Produto.class);
         IFachada fachada = new Fachada();
-        Resultado<String> resultado = fachada.alterar(cartao);
+        Resultado<String> resultado = fachada.alterar(produto);
 
         if(!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -149,28 +111,28 @@ public class ControleCartao extends HttpServlet {
         Gson gson = new Gson();
 
         IFachada fachada = new Fachada();
-        Cartao cartao = new Cartao();
+        Produto produto = new Produto();
         String idParam = req.getParameter("id");
 
         if (idParam == null || idParam.isEmpty()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "ID do cartao é obrigatório para exclusão.");
+            resposta.addProperty("erro", "ID do produto é obrigatório para exclusão.");
             out.print(gson.toJson(resposta));
             return;
         }
 
         try {
-            cartao.setId(Integer.parseInt(idParam));
+            produto.setId(Integer.parseInt(idParam));
         } catch (NumberFormatException e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "ID do cartao endereco inválido.");
+            resposta.addProperty("erro", "ID do produto é inválido.");
             out.print(gson.toJson(resposta));
             return;
         }
 
-        Resultado<String> resultado = fachada.excluir(cartao);
+        Resultado<String> resultado = fachada.excluir(produto);
 
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -185,46 +147,46 @@ public class ControleCartao extends HttpServlet {
         out.print(json);
     }
 
-    private Resultado<Cartao> extrairCartaoFiltro(HttpServletRequest req) {
-        Cartao cartaoFiltro = new Cartao();
-        Bandeira bandeiraFiltro = new Bandeira();
-        Cliente clienteFiltro = new Cliente();
+    private Resultado<Produto> extrairProdutoFiltro(HttpServletRequest req) {
+        Produto produtoFiltro = new Produto();
+        Marca marcaFiltro = new Marca();
+        Categoria categoriaFiltro = new Categoria();
 
         if(req.getParameter("id") != null){
-            cartaoFiltro.setId(Integer.parseInt(req.getParameter("id")));
+            produtoFiltro.setId(Integer.parseInt(req.getParameter("id")));
+        }
+        if (req.getParameter("sku") != null) {
+            produtoFiltro.setSku((req.getParameter("sku")));
+        }
+        if(req.getParameter("nome") != null) {
+            produtoFiltro.setNome((req.getParameter("nome")));
+        }
+        if(req.getParameter("preco") != null) {
+            produtoFiltro.setPreco(Double.valueOf((req.getParameter("preco"))));
+        }
+        if(req.getParameter("modelo") != null){
+            produtoFiltro.setModelo(req.getParameter("modelo"));
+        }
+        if(req.getParameter("cor") != null){
+            produtoFiltro.setCor(req.getParameter("cor"));
+        }
+        if(req.getParameter("tamanho") != null){
+            produtoFiltro.setTamanho(Integer.valueOf(req.getParameter("tamaho")));
+        }
+        if(req.getParameter("genero") != null){
+            produtoFiltro.setGenero(req.getParameter("genero"));
+        }
+        if(req.getParameter("marca") != null){
+            marcaFiltro.setNome(req.getParameter("marca"));
+        }
+        if(req.getParameter("categoria") != null){
+            categoriaFiltro.setNome(req.getParameter("categoria"));
         }
 
-        if (req.getParameter("numero") != null) {
-            cartaoFiltro.setNumero((req.getParameter("numero")));
-        }
-        if(req.getParameter("numSeguranca") != null) {
-            cartaoFiltro.setNumSeguranca((req.getParameter("numSeguranca")));
-        }
-        if(req.getParameter("nomeImpresso") != null) {
-            cartaoFiltro.setNomeImpresso((req.getParameter("nomeImpresso")));
-        }
-        if(req.getParameter("preferencial") != null){
-            cartaoFiltro.setPreferencial(Boolean.parseBoolean(req.getParameter("preferencial")));
-        }
+        produtoFiltro.setMarca(marcaFiltro);
+        produtoFiltro.setCategoria(categoriaFiltro);
 
-        if(req.getParameter("idBandeira") != null){
-            bandeiraFiltro.setId(Integer.parseInt(req.getParameter("idBandeira")));
-        }
-        if(req.getParameter("nomeBandeira") != null){
-            bandeiraFiltro.setNomeBandeira(req.getParameter("nomeBandeira"));
-        }
-
-        if(req.getParameter("idCliente") != null){
-            clienteFiltro.setId(Integer.parseInt(req.getParameter("idCliente")));
-        }
-        if(req.getParameter("cpf") != null){
-            clienteFiltro.setCpf(req.getParameter("cpf"));
-        }
-
-        cartaoFiltro.setBandeira(bandeiraFiltro);
-        cartaoFiltro.setCliente(clienteFiltro);
-
-        return Resultado.sucesso(cartaoFiltro);
+        return Resultado.sucesso(produtoFiltro);
     }
 
     private Resultado<JsonObject> lerJsonComoObjeto(HttpServletRequest req) throws IOException {
@@ -246,3 +208,4 @@ public class ControleCartao extends HttpServlet {
         return leitorJson.toString();
     }
 }
+
