@@ -1,0 +1,26 @@
+.homeVendas{
+    display: flex;
+    width: 800px;
+    padding: 54px 148px;
+    align-items: flex-end;
+    align-content: flex-end;
+    gap: 76px 216px;
+    flex-wrap: wrap;
+}
+
+
+.homeVendas h1{
+    display: flex;
+    width: 539px;
+    height: 58px;
+    flex-direction: row;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    align-content: flex-end;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+
+
+
