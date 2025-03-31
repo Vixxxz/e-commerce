@@ -1,12 +1,10 @@
 package Fachada;
 
-import Dao.BandeiraDAO;
-import Dao.CartaoDAO;
-import Dao.ClienteDAO;
-import Dao.ClienteEnderecoDAO;
+import Dao.*;
 import Dominio.*;
 import Strategy.*;
 import Util.Resultado;
+import enums.Operacao;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +16,10 @@ public class Fachada implements IFachada {
     public Resultado<String> salvarClienteEEndereco(Cliente cliente, List<ClienteEndereco> clienteEndereco) {
         StringBuilder sb = new StringBuilder();
         EncriptografaSenha criptografa = new EncriptografaSenha();
-        processarValidacoes(cliente, getValidacoes(cliente), sb);
+        processarValidacoes(cliente, getValidacoes(cliente, Operacao.SALVAR), sb);
         cliente.setSenha(criptografa.processar(cliente, sb));
         for (ClienteEndereco enderecoRelacionado : clienteEndereco) {
-            processarValidacoes(enderecoRelacionado, getValidacoes(enderecoRelacionado), sb);
+            processarValidacoes(enderecoRelacionado, getValidacoes(enderecoRelacionado, Operacao.SALVAR), sb);
         }
         if (!sb.isEmpty()) {
             return Resultado.erro(sb.toString());
@@ -44,7 +42,7 @@ public class Fachada implements IFachada {
         try {
             switch (entidade) {
                 case ClienteEndereco clienteEndereco -> {
-                    processarValidacoes(clienteEndereco, getValidacoes(clienteEndereco), sb);
+                    processarValidacoes(clienteEndereco, getValidacoes(clienteEndereco, Operacao.SALVAR), sb);
                     if (!sb.isEmpty()) {
                         return Resultado.erro(sb.toString());
                     }
@@ -57,7 +55,7 @@ public class Fachada implements IFachada {
                     return Resultado.sucesso("Endereço salvo com sucesso!");
                 }
                 case Bandeira bandeira -> {
-                    processarValidacoes(bandeira, getValidacoes(bandeira), sb);
+                    processarValidacoes(bandeira, getValidacoes(bandeira, Operacao.SALVAR), sb);
                     if (!sb.isEmpty()) {
                         return Resultado.erro(sb.toString());
                     }
@@ -69,7 +67,7 @@ public class Fachada implements IFachada {
                     return Resultado.sucesso("Bandeira salva com sucesso!");
                 }
                 case Cartao cartao -> {
-                    processarValidacoes(cartao, getValidacoes(cartao), sb);
+                    processarValidacoes(cartao, getValidacoes(cartao, Operacao.SALVAR), sb);
                     if (!sb.isEmpty()) {
                         return Resultado.erro(sb.toString());
                     }
@@ -80,10 +78,6 @@ public class Fachada implements IFachada {
                     }
                     return Resultado.sucesso("Cartão salvo com sucesso!");
                 }
-//            case Transacao transacao -> {
-//            }
-//            case Log log -> {
-//            }
                 case null, default -> {
                     return Resultado.erro("Tipo de entidade não suportado: " + entidade);
                 }
@@ -100,7 +94,7 @@ public class Fachada implements IFachada {
         switch (entidade) {
             case Cliente cliente -> {
                 EncriptografaSenha criptografa = new EncriptografaSenha();
-                processarValidacoes(cliente, getValidacoes(cliente), sb);
+                processarValidacoes(cliente, getValidacoes(cliente, Operacao.ALTERAR), sb);
                 cliente.setSenha(criptografa.processar(cliente, sb));
                 if (!sb.isEmpty()) {
                     return Resultado.erro(sb.toString());
@@ -118,7 +112,7 @@ public class Fachada implements IFachada {
                 }
             }
             case ClienteEndereco clienteEndereco -> {
-                processarValidacoes(clienteEndereco, getValidacoes(clienteEndereco), sb);
+                processarValidacoes(clienteEndereco, getValidacoes(clienteEndereco, Operacao.ALTERAR), sb);
                 if (!sb.isEmpty()) {
                     return Resultado.erro(sb.toString());
                 }
@@ -135,7 +129,7 @@ public class Fachada implements IFachada {
                 }
             }
             case Bandeira bandeira -> {
-                processarValidacoes(bandeira, getValidacoes(bandeira), sb);
+                processarValidacoes(bandeira, getValidacoes(bandeira, Operacao.ALTERAR), sb);
                 if (!sb.isEmpty()) {
                     return Resultado.erro(sb.toString());
                 }
@@ -152,7 +146,7 @@ public class Fachada implements IFachada {
                 }
             }
             case Cartao cartao -> {
-                processarValidacoes(cartao, getValidacoes(cartao), sb);
+                processarValidacoes(cartao, getValidacoes(cartao, Operacao.ALTERAR), sb);
                 if (!sb.isEmpty()) {
                     return Resultado.erro(sb.toString());
                 }
@@ -168,17 +162,30 @@ public class Fachada implements IFachada {
                     return Resultado.erro("Erro interno ao alterar cartao.");
                 }
             }
-//                    }
-//                    case Transacao transacao -> {
-//                    }
-//                    case Log log -> {
-//                    }
+            case Produto produto -> {
+                processarValidacoes(produto, getValidacoes(produto, Operacao.ALTERAR), sb);
+                if (!sb.isEmpty()) {
+                    return Resultado.erro(sb.toString());
+                }
+                try {
+                    ProdutoDAO produtoDAO = new ProdutoDAO();
+                    Resultado<EntidadeDominio> resultadoExcluirProduto = produtoDAO.alterar(produto);
+                    if (!resultadoExcluirProduto.isSucesso()) {
+                        return Resultado.erro(resultadoExcluirProduto.getErro());
+                    }
+                    return Resultado.sucesso("Produto " + produto.getSku() + " alterado com sucesso");
+                } catch (Exception e) {
+                    System.err.println("Erro ao excluir produto: " + e.getMessage());
+                    return Resultado.erro("Erro interno ao excluir produto.");
+                }
+            }
             case null, default -> throw new IllegalArgumentException("Tipo de entidade não suportado: " + entidade);
         }
     }
 
     @Override
     public Resultado<String> excluir(EntidadeDominio entidade) {
+        StringBuilder sb = new StringBuilder();
         switch (entidade) {
             case Cliente cliente -> {
                 ClienteDAO clienteDAO = new ClienteDAO();
@@ -211,6 +218,18 @@ public class Fachada implements IFachada {
                     return Resultado.erro(resultadoCartao.getErro());
                 }
                 return Resultado.sucesso(resultadoCartao.getValor());
+            }
+            case Produto produto -> {
+                ProdutoDAO produtoDAO = new ProdutoDAO();
+                processarValidacoes(produto, getValidacoes(produto, Operacao.EXCLUIR), sb);
+                if(!sb.isEmpty()){
+                    return Resultado.erro(sb.toString());
+                }
+                Resultado<String> resultadoProduto = produtoDAO.excluir(produto);
+                if (!resultadoProduto.isSucesso()) {
+                    return Resultado.erro(resultadoProduto.getErro());
+                }
+                return Resultado.sucesso(resultadoProduto.getValor());
             }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
@@ -248,10 +267,18 @@ public class Fachada implements IFachada {
             case Cartao cartao -> {
                 CartaoDAO cartaoDAO = new CartaoDAO();
                 Resultado<List<EntidadeDominio>> resultadoCartao = cartaoDAO.consultar(cartao);
-                if(!resultadoCartao.isSucesso()){
+                if (!resultadoCartao.isSucesso()) {
                     return Resultado.erro(resultadoCartao.getErro());
                 }
                 return Resultado.sucesso(resultadoCartao.getValor());
+            }
+            case Produto produto -> {
+                ProdutoDAO produtoDAO = new ProdutoDAO();
+                Resultado<List<EntidadeDominio>> resultadoProduto = produtoDAO.consultar(produto);
+                if (!resultadoProduto.isSucesso()) {
+                    return Resultado.erro(resultadoProduto.getErro());
+                }
+                return Resultado.sucesso(resultadoProduto.getValor());
             }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
@@ -265,22 +292,43 @@ public class Fachada implements IFachada {
         }
     }
 
-    private List<IStrategy> getValidacoes(EntidadeDominio entidade) {
+    private List<IStrategy> getValidacoes(EntidadeDominio entidade, Operacao operacao) {
         List<IStrategy> validacoes = new ArrayList<>();
-        if (entidade instanceof Cliente) {
-            validacoes.add(new ValidaDados());
-            validacoes.add(new ValidaCpf());
-            validacoes.add(new ValidaEmail());
-            validacoes.add(new ValidaSenha());
-            validacoes.add(new ValidaTelefone());
-        } else if (entidade instanceof ClienteEndereco) {
-            validacoes.add(new ValidaEndereco());
-        } else if (entidade instanceof Bandeira) {
-            validacoes.add(new ValidaDadosBandeira());
-        } else if (entidade instanceof Cartao) {
-            validacoes.add(new ValidaDadosCartao());
-            validacoes.add(new ValidaBandeiraExistente());
-            validacoes.add(new ValidaCartaoPreferencial());
+        switch (entidade) {
+            case Cliente ignored -> {
+                validacoes.add(new ValidaDados());
+                validacoes.add(new ValidaCpf());
+                validacoes.add(new ValidaEmail());
+                validacoes.add(new ValidaSenha());
+                validacoes.add(new ValidaTelefone());
+            }
+            case ClienteEndereco ignored -> validacoes.add(new ValidaEndereco());
+            case Cartao ignored -> {
+                validacoes.add(new ValidaDadosCartao());
+                validacoes.add(new ValidaBandeiraExistente());
+                validacoes.add(new ValidaCartaoPreferencial());
+            }
+            case Bandeira ignored -> validacoes.add(new ValidaDadosBandeira());
+            case Produto ignored -> {
+                switch (operacao) {
+                    case SALVAR -> {
+                        validacoes.add(new VerificaDadosProduto());
+                        validacoes.add(new VerificaDuplicataProduto());
+                        validacoes.add(new VerificaAlteracaoMarca());
+                        validacoes.add(new VerificaAlteracaoCategoria());
+                    }
+                    case EXCLUIR -> validacoes.add(new VerificaExistenciaProduto());
+                    case ALTERAR -> {
+                        validacoes.add(new VerificaDadosProduto());
+                        validacoes.add(new VerificaExistenciaProduto());
+                        validacoes.add(new VerificaAlteracaoMarca());
+                        validacoes.add(new VerificaAlteracaoCategoria());
+                    }
+                }
+            }
+            case null, default -> {
+                System.err.println("Tipo de Entidade não suportado na hora de buscar as validacoes");
+            }
         }
         return validacoes;
     }
