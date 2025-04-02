@@ -234,4 +234,60 @@ header h4{
     font-size: 16px;
 }
 
+/*TELA DE CARRINHO*/
 
+.item-carrinho{
+    display: flex;
+    width: 926px;
+    height: 418px;
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+    padding: 20px 10px;
+    margin: 55px 40px;
+}
+
+.item-carrinho img{
+    width: 100%;
+    height: 586.03px;
+}
+
+.item-carrinho-container{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.item-carrinho-container input{
+    width: 77px;
+    height: 36px;
+    border: 1px solid;
+    border-image-source: var(--fundo);
+    border-image-slice: 1;
+    border-radius: 4px;
+}
+
+.info-carrinho{
+    position: absolute;
+    right: 88px;
+    top: 278.5px;
+    font-weight: 800;
+}
+
+.info-carrinho-container{
+    width: 100%;
+    height: auto;
+    display: flex;
+    justify-content: space-between;
+}
+
+.info-carrinho button{
+    width: 95%;
+    height: 40px;
+    align-content: center;
+    background: var(--amarelo);
+    margin:15px 5px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+}
