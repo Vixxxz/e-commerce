@@ -58,7 +58,7 @@ function renderTabela(clientes) {
     const tbody = document.querySelector('#table-clientes tbody');
     tbody.innerHTML = clientes.map(cliente => `
         <tr>
-            <td>${escapeHtml(cliente.id || '')}</td>
+            <td class="idCliente">${escapeHtml(cliente.id || '')}</td>
             <td>${escapeHtml(cliente.nome || '')}</td>
             <td>${escapeHtml(cliente.cpf || '')}</td>
             <td>${escapeHtml(formatarData(cliente.dataNascimento) || '')}</td>

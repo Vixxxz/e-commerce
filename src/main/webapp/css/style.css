@@ -208,6 +208,7 @@ form input:focus {
     padding: 10px !important;
     text-transform: uppercase;
     border: 1px solid #ddd;
+    text-align: center;
 }
 
 .tabela td {

@@ -1,53 +1,66 @@
 class ManipulaForm {
-    constructor(form1Btn, form2Btn, form1, form2, form3Btn = null, form3 = null) {
-        this.form1Btn = form1Btn;
-        this.form2Btn = form2Btn;
-        this.form1 = form1;
-        this.form2 = form2;
-        this.form3Btn = form3Btn;
-        this.form3 = form3;
+    constructor(form1Btn, form2Btn, form1, form2, form3Btn = null, form3 = null, form4Btn = null, form4 = null) {
+        this.forms = [form1, form2, form3, form4].filter(f => f !== null);
+        this.buttons = [form1Btn, form2Btn, form3Btn, form4Btn].filter(b => b !== null);
+        this.tables = {}; // Armazena instâncias do DataTables
         this.init();
     }
 
     init() {
-        if (this.form3Btn && this.form3) {
-            // Caso haja um terceiro formulário e botão
-            window.addEventListener('load', () => {
-                this.showForm(this.form1, [this.form2, this.form3], this.form1Btn, [this.form2Btn, this.form3Btn]);
-            });
+        // Mostrar o primeiro formulário ao carregar a página
+        window.addEventListener('load', () => {
+            this.showForm(this.forms[0], this.buttons[0]);
+        });
 
-            this.form1Btn.addEventListener('click', () => {
-                this.showForm(this.form1, [this.form2, this.form3], this.form1Btn, [this.form2Btn, this.form3Btn]);
+        // Adicionar eventos de clique para cada botão
+        this.buttons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                this.showForm(this.forms[index], this.buttons[index]);
             });
+        });
+    }
 
-            this.form2Btn.addEventListener('click', () => {
-                this.showForm(this.form2, [this.form1, this.form3], this.form2Btn, [this.form1Btn, this.form3Btn]);
-            });
+    showForm(showForm, activeBtn) {
+        // Esconder todas as abas e remover paginação
+        this.forms.forEach(form => {
+            if (form !== showForm) {
+                this.destroyTable(form); // Destruir tabela ao sair da aba
+                form.style.display = "none";
+            }
+        });
 
-            this.form3Btn.addEventListener('click', () => {
-                this.showForm(this.form3, [this.form1, this.form2], this.form3Btn, [this.form1Btn, this.form2Btn]);
-            });
-        } else {
-            // Caso haja apenas dois formulários e botões
-            window.addEventListener('load', () => {
-                this.showForm(this.form1, [this.form2], this.form1Btn, [this.form2Btn]);
-            });
+        // Resetar botões
+        this.buttons.forEach(btn => btn.classList.remove('active-tab'));
 
-            this.form1Btn.addEventListener('click', () => {
-                this.showForm(this.form1, [this.form2], this.form1Btn, [this.form2Btn]);
-            });
+        // Exibir a aba correta
+        showForm.style.display = "block";
+        activeBtn.classList.add('active-tab');
 
-            this.form2Btn.addEventListener('click', () => {
-                this.showForm(this.form2, [this.form1], this.form2Btn, [this.form1Btn]);
-            });
+        // Reinicializar DataTables apenas se for necessário
+        this.initTable(showForm);
+    }
+
+    initTable(form) {
+        const table = form.querySelector("table"); // Encontra a tabela dentro do form
+        if (table) {
+            const tableId = table.id;
+            if (!$.fn.DataTable.isDataTable(`#${tableId}`)) {
+                // Somente inicializa se ainda não estiver inicializado
+                this.tables[tableId] = $(table).DataTable();
+            }
         }
     }
 
-    showForm(showForm, hideForms, activeBtn, inactiveBtns) {
-        showForm.style.display = "block";
-        hideForms.forEach(form => form.style.display = "none");
-
-        activeBtn.classList.add('active-tab');
-        inactiveBtns.forEach(btn => btn.classList.remove('active-tab'));
+    destroyTable(form) {
+        const table = form.querySelector("table");
+        if (table) {
+            const tableId = table.id;
+            if ($.fn.DataTable.isDataTable(`#${tableId}`)) {
+                // Se a tabela já está inicializada, destruí-la corretamente
+                this.tables[tableId].destroy();
+                $(`#${tableId}`).empty(); // Remove os elementos de paginação e cabeçalho
+                delete this.tables[tableId]; // Remove a referência da instância
+            }
+        }
     }
 }

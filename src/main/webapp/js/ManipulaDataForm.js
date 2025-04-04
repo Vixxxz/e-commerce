@@ -81,8 +81,11 @@ class ManipulaDataForm {
             // Recebe a resposta do servidor e a imprime
             const dado = await resposta.json();
 
-            console.log('Success: ', dado);
-            alert(dado.erro);
+            if (dado){
+                console.log('Success: ', dado);
+            }else {
+                alert(dado.erro);
+            }
         } catch (error) {
             console.error('Exceção capturada: ', error);
             alert("Falha ao enviar o formulário. Tente novamente." + error);
