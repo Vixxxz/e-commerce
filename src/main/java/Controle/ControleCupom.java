@@ -1,6 +1,7 @@
 package Controle;
 
 import Dominio.*;
+import Enums.TipoCupom;
 import Fachada.Fachada;
 import Fachada.IFachada;
 import Util.Resultado;
@@ -18,8 +19,8 @@ import java.io.PrintWriter;
 import java.io.Serial;
 import java.util.List;
 
-@WebServlet(name = "ControleTransportadora", urlPatterns = "/controleFrete")
-public class ControleTransportadora extends HttpServlet {
+@WebServlet(name = "ControleCupom", urlPatterns = "/controleCupom")
+public class ControleCupom extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -31,29 +32,29 @@ public class ControleTransportadora extends HttpServlet {
         PrintWriter out = resp.getWriter();
         Gson gson = new Gson();
 
-        Resultado<Transportadora> resultadoTransportadoraFiltro = extrairTransportadoraFiltro(req);
+        Resultado<Cupom> resultadoCupomFiltro = extrairCupomFiltro(req);
 
-        if (!resultadoTransportadoraFiltro.isSucesso()) {
+        if (!resultadoCupomFiltro.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{" + resultadoTransportadoraFiltro.getErro() + "}");
+            resposta.addProperty("erro", "{" + resultadoCupomFiltro.getErro() + "}");
             out.print(gson.toJson(resposta));
             return;
         }
 
         IFachada fachada = new Fachada();
-        Transportadora transportadoraFiltro = resultadoTransportadoraFiltro.getValor();
-        Resultado<List<EntidadeDominio>> resultadoConsultaTransportadora = fachada.consultar(transportadoraFiltro);
+        Cupom cupomFiltro = resultadoCupomFiltro.getValor();
+        Resultado<List<EntidadeDominio>> resultadoConsultaCupom = fachada.consultar(cupomFiltro);
 
-        if (!resultadoConsultaTransportadora.isSucesso()) {
+        if (!resultadoConsultaCupom.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "{\"erro\": \"" + resultadoConsultaTransportadora.getErro() + "\"}");
+            resposta.addProperty("erro", "{\"erro\": \"" + resultadoConsultaCupom.getErro() + "\"}");
             out.print(gson.toJson(resposta));
             return;
         }
 
-        String json = gson.toJson(resultadoConsultaTransportadora.getValor());
+        String json = gson.toJson(resultadoConsultaCupom.getValor());
         resp.setStatus(HttpServletResponse.SC_OK);
         out.print(json);
 
@@ -214,17 +215,28 @@ public class ControleTransportadora extends HttpServlet {
         return leitorJson.toString();
     }
 
-    private Resultado<Transportadora> extrairTransportadoraFiltro(HttpServletRequest req) {
-        Transportadora transportadoraFiltro = new Transportadora();
+    private Resultado<Cupom> extrairCupomFiltro(HttpServletRequest req) {
+        Cupom cupomFiltro = new Cupom();
+        Cliente clienteFiltro = new Cliente();
+
         if (req.getParameter("id") != null) {
-            transportadoraFiltro.setId(Integer.parseInt(req.getParameter("id")));
+            cupomFiltro.setId(Integer.parseInt(req.getParameter("id")));
         }
-        if (req.getParameter("nome") != null) {
-            transportadoraFiltro.setNome(req.getParameter("nome"));
+        if (req.getParameter("codigo") != null) {
+            cupomFiltro.setCodigo(req.getParameter("codigo"));
         }
-        if (req.getParameter("valor") != null) {
-            transportadoraFiltro.setValor(Double.valueOf(req.getParameter("valor")));
+        if (req.getParameter("tipo") != null) {
+            cupomFiltro.setTipo(TipoCupom.valueOf(req.getParameter("tipo")));
         }
-        return Resultado.sucesso(transportadoraFiltro);
+        if(req.getParameter("idCliente") != null){
+            clienteFiltro.setId(Integer.parseInt(req.getParameter("idCliente")));
+        }
+        if(req.getParameter("cpf") != null){
+            clienteFiltro.setCpf(req.getParameter("cpf"));
+        }
+
+        cupomFiltro.setCliente(clienteFiltro);
+
+        return Resultado.sucesso(cupomFiltro);
     }
 }

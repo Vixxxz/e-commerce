@@ -73,7 +73,7 @@ public class TransportadoraDAO implements IDAO{
 
                 try (ResultSet rs = pst.executeQuery()) {
                     while (rs.next()) {
-                        transportadoras.add(mapeiaCliente(rs));
+                        transportadoras.add(mapeiaTransportadora(rs));
                     }
                 }
             }
@@ -94,7 +94,7 @@ public class TransportadoraDAO implements IDAO{
         return value != null && !value.isBlank();
     }
 
-    private Transportadora mapeiaCliente(ResultSet rs) throws SQLException {
+    private Transportadora mapeiaTransportadora(ResultSet rs) throws SQLException {
         Transportadora tra = new Transportadora();
         tra.setId(rs.getInt("fre_id"));
         tra.setNome(rs.getString("fre_transportadora"));

@@ -24,4 +24,36 @@ public class Pedido extends EntidadeDominio{
         this.transportadora = transportadora;
         this.clienteEndereco = clienteEndereco;
     }
+
+    public Double getValorTotal() {
+        return valorTotal;
+    }
+
+    public void setValorTotal(Double valorTotal) {
+        this.valorTotal = valorTotal;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public Transportadora getTransportadora() {
+        return transportadora;
+    }
+
+    public void setTransportadora(Transportadora transportadora) {
+        this.transportadora = transportadora;
+    }
+
+    public ClienteEndereco getClienteEndereco() {
+        return clienteEndereco;
+    }
+
+    public void setClienteEndereco(ClienteEndereco clienteEndereco) {
+        this.clienteEndereco = clienteEndereco;
+    }
 }

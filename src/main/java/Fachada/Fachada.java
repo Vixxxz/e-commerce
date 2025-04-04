@@ -288,6 +288,14 @@ public class Fachada implements IFachada {
                 }
                 return Resultado.sucesso(resultadoTransportadora.getValor());
             }
+            case Cupom cupom -> {
+                CupomDAO cupomDAO = new CupomDAO();
+                Resultado<List<EntidadeDominio>> resultadoCupom = cupomDAO.consultar(cupom);
+                if(!resultadoCupom.isSucesso()){
+                    return Resultado.erro(resultadoCupom.getErro());
+                }
+                return Resultado.sucesso(resultadoCupom.getValor());
+            }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
             }
