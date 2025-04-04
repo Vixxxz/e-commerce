@@ -79,8 +79,8 @@ public class TransportadoraDAO implements IDAO{
             }
             return Resultado.sucesso(transportadoras);
         } catch (Exception e) {
-            System.err.println("Erro ao consultar clientes: " + e.getMessage());
-            return Resultado.erro("Erro ao consultar clientes: " + e.getMessage());
+            System.err.println("Erro ao consultar as transportadoras: " + e.getMessage());
+            return Resultado.erro("Erro ao consultar as transportadoras: " + e.getMessage());
         } finally {
             try {
                 if (connection != null) connection.close();

@@ -101,8 +101,8 @@ public class CupomDAO implements IDAO{
             }
             return Resultado.sucesso(cupons);
         } catch (Exception e) {
-            System.err.println("Erro ao consultar clientes: " + e.getMessage());
-            return Resultado.erro("Erro ao consultar clientes: " + e.getMessage());
+            System.err.println("Erro ao consultar cupons: " + e.getMessage());
+            return Resultado.erro("Erro ao consultar cupons: " + e.getMessage());
         } finally {
             try {
                 if (connection != null) connection.close();
