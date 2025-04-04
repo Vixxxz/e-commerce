@@ -1,6 +1,6 @@
 package Dominio;
 
-import enums.Genero;
+import Enums.Genero;
 
 public class Produto extends EntidadeDominio{
     private String sku;
@@ -13,10 +13,48 @@ public class Produto extends EntidadeDominio{
     private String descricao;
     private Marca marca;
     private Categoria categoria;
+    private Boolean ativo;
 
     public Produto() {}
 
-    public Produto(String sku, String nome, Double preco, String modelo, String cor, Integer tamanho, Genero genero, String descricao, Marca marca, Categoria categoria) {
+    //sem preço
+    public Produto(String sku, String nome,
+                   String modelo, String cor, Integer tamanho,
+                   Genero genero, String descricao, Marca marca,
+                   Categoria categoria, Boolean ativo) {
+        this.sku = sku;
+        this.nome = nome;
+        this.modelo = modelo;
+        this.cor = cor;
+        this.tamanho = tamanho;
+        this.genero = genero;
+        this.descricao = descricao;
+        this.marca = marca;
+        this.categoria = categoria;
+        this.ativo = ativo;
+    }
+
+    //sem preço e sem descrição
+    public Produto(String sku, String nome,
+                   String modelo, String cor, Integer tamanho,
+                   Genero genero, Marca marca,
+                   Categoria categoria, Boolean ativo) {
+        this.sku = sku;
+        this.nome = nome;
+        this.modelo = modelo;
+        this.cor = cor;
+        this.tamanho = tamanho;
+        this.genero = genero;
+        this.marca = marca;
+        this.categoria = categoria;
+        this.ativo = ativo;
+    }
+
+    //tudo menos id
+    public Produto(String sku, String nome, Double preco,
+                   String modelo, String cor, Integer tamanho,
+                   Genero genero, String descricao, Marca marca,
+                   Categoria categoria, Boolean ativo) {
         this.sku = sku;
         this.nome = nome;
         this.preco = preco;
@@ -27,9 +65,14 @@ public class Produto extends EntidadeDominio{
         this.descricao = descricao;
         this.marca = marca;
         this.categoria = categoria;
+        this.ativo = ativo;
     }
 
-    public Produto(String sku, String nome, Double preco, String modelo, String cor, Integer tamanho, Genero genero, Marca marca, Categoria categoria) {
+    //sem descrição
+    public Produto(String sku, String nome, Double preco,
+                   String modelo, String cor, Integer tamanho,
+                   Genero genero, Marca marca, Categoria categoria,
+                   Boolean ativo) {
         this.sku = sku;
         this.nome = nome;
         this.preco = preco;
@@ -39,9 +82,13 @@ public class Produto extends EntidadeDominio{
         this.genero = genero;
         this.marca = marca;
         this.categoria = categoria;
+        this.ativo = ativo;
     }
 
-    public Produto(Integer id, String sku, String nome, Double preco, String modelo, String cor, Integer tamanho, Genero genero, String descricao, Marca marca, Categoria categoria) {
+    public Produto(Integer id, String sku, String nome,
+                   Double preco, String modelo, String cor,
+                   Integer tamanho, Genero genero, String descricao,
+                   Marca marca, Categoria categoria, Boolean ativo) {
         super(id);
         this.sku = sku;
         this.nome = nome;
@@ -53,6 +100,7 @@ public class Produto extends EntidadeDominio{
         this.descricao = descricao;
         this.marca = marca;
         this.categoria = categoria;
+        this.ativo = ativo;
     }
 
     public String getSku() {
@@ -133,6 +181,14 @@ public class Produto extends EntidadeDominio{
 
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
+    }
+
+    public Boolean getAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(Boolean ativo) {
+        this.ativo = ativo;
     }
 
     @Override

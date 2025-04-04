@@ -4,7 +4,7 @@ import Dao.*;
 import Dominio.*;
 import Strategy.*;
 import Util.Resultado;
-import enums.Operacao;
+import Enums.Operacao;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -279,6 +279,14 @@ public class Fachada implements IFachada {
                     return Resultado.erro(resultadoProduto.getErro());
                 }
                 return Resultado.sucesso(resultadoProduto.getValor());
+            }
+            case Transportadora transportadora -> {
+                TransportadoraDAO transportadoraDAO = new TransportadoraDAO();
+                Resultado<List<EntidadeDominio>> resultadoTransportadora = transportadoraDAO.consultar(transportadora);
+                if(!resultadoTransportadora.isSucesso()){
+                    return Resultado.erro(resultadoTransportadora.getErro());
+                }
+                return Resultado.sucesso(resultadoTransportadora.getValor());
             }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");

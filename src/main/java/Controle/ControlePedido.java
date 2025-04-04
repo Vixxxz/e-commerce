@@ -1,12 +1,17 @@
-package controle;
+package Controle;
 
-import Dominio.*;
+import Dominio.Cliente;
+import Dominio.ClienteEndereco;
+import Dominio.EntidadeDominio;
+import Dominio.Pedido;
 import Fachada.Fachada;
 import Fachada.IFachada;
+import Util.ConversorData;
 import Util.Resultado;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -16,12 +21,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serial;
+import java.lang.reflect.Type;
+import java.util.Date;
 import java.util.List;
 
-@WebServlet(name = "ControleBandeira", urlPatterns = "/controleBandeira")
-public class ControleBandeira extends HttpServlet {
+@WebServlet(name = "ControlePedido", urlPatterns = "/controlePedido")
+public class ControlePedido extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -31,23 +39,32 @@ public class ControleBandeira extends HttpServlet {
         PrintWriter out = resp.getWriter();
         Gson gson = new Gson();
 
-        Resultado<Bandeira> resultadoBandeiraFiltro = extrairBandeiraFiltro(req);
+        Resultado<Pedido> resultadoPedidoFiltro = extrairPedidoFiltro(req);
 
-        IFachada fachada = new Fachada();
-        Bandeira bandeiraFiltro = resultadoBandeiraFiltro.getValor();
-        Resultado<List<EntidadeDominio>> resultadoConsultaBandeira = fachada.consultar(bandeiraFiltro);
-
-        if (!resultadoConsultaBandeira.isSucesso()) {
+        if (!resultadoPedidoFiltro.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", resultadoConsultaBandeira.getErro());
+            resposta.addProperty("erro", "{" + resultadoPedidoFiltro.getErro() + "}");
             out.print(gson.toJson(resposta));
             return;
         }
 
-        String json = gson.toJson(resultadoConsultaBandeira.getValor());
+        IFachada fachada = new Fachada();
+        Pedido pedidoFiltro = resultadoPedidoFiltro.getValor();
+        Resultado<List<EntidadeDominio>> resultadoConsultaPedido = fachada.consultar(pedidoFiltro);
+
+        if (!resultadoConsultaPedido.isSucesso()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", "{\"erro\": \"" + resultadoConsultaPedido.getErro() + "\"}");
+            out.print(gson.toJson(resposta));
+            return;
+        }
+
+        String json = gson.toJson(resultadoConsultaPedido.getValor());
         resp.setStatus(HttpServletResponse.SC_OK);
         out.print(json);
+
     }
 
     @Override
@@ -69,7 +86,7 @@ public class ControleBandeira extends HttpServlet {
         }
 
         JsonObject jsonObject = ResultJsonObject.getValor();
-        if (!jsonObject.has("Bandeira")) {
+        if (!jsonObject.has("Cliente") || !jsonObject.has("ClienteEndereco")) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
             resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes");
@@ -77,9 +94,13 @@ public class ControleBandeira extends HttpServlet {
             return;
         }
 
-        Bandeira bandeira = gson.fromJson(jsonObject.get("Bandeira"), Bandeira.class);
+        Cliente cliente = gson.fromJson(jsonObject.get("Cliente"), Cliente.class);
+        Type clienteEnderecoListType = new TypeToken<List<ClienteEndereco>>() {
+        }.getType();
+        List<ClienteEndereco> clienteEnderecos = gson.fromJson(jsonObject.get("ClienteEndereco"), clienteEnderecoListType);
         Fachada fachada = new Fachada();
-        Resultado<String> resultado = fachada.salvar(bandeira);
+
+        Resultado<String> resultado = fachada.salvarClienteEEndereco(cliente, clienteEnderecos);
 
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -88,7 +109,6 @@ public class ControleBandeira extends HttpServlet {
             out.print(gson.toJson(resposta));
             return;
         }
-
         String json = gson.toJson(resultado.getValor());
         resp.setStatus(HttpServletResponse.SC_OK);
         out.print(json);
@@ -113,27 +133,26 @@ public class ControleBandeira extends HttpServlet {
         }
 
         JsonObject jsonObject = ResultJsonObject.getValor();
-        System.out.println(jsonObject.toString());
-        if (!jsonObject.has("Bandeira")) {
+        if (!jsonObject.has("Cliente")) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes.");
+            resposta.addProperty("erro", "{\"erro\": \"JSON inválido: Campos obrigatórios ausentes.\"}");
             out.print(gson.toJson(resposta));
             return;
         }
 
-        Bandeira bandeira = gson.fromJson(jsonObject.get("Bandeira"), Bandeira.class);
-        IFachada fachada = new Fachada();
-        Resultado<String> resultado = fachada.alterar(bandeira);
+        Cliente cliente = gson.fromJson(jsonObject.get("Cliente"), Cliente.class);
 
-        if(!resultado.isSucesso()) {
+        IFachada fachada = new Fachada();
+        Resultado<String> resultado = fachada.alterar(cliente);
+
+        if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", resultado.getErro());
+            resposta.addProperty("erro", "{\"erro\": \"" + resultado.getErro() + "\"}");
             out.print(gson.toJson(resposta));
             return;
         }
-
         String json = gson.toJson(resultado.getValor());
         resp.setStatus(HttpServletResponse.SC_OK);
         out.print(json);
@@ -148,28 +167,28 @@ public class ControleBandeira extends HttpServlet {
         Gson gson = new Gson();
 
         IFachada fachada = new Fachada();
-        Bandeira bandeira = new Bandeira();
+        Cliente clienteFiltro = new Cliente();
         String idParam = req.getParameter("id");
 
         if (idParam == null || idParam.isEmpty()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "ID da bandeira é obrigatório para exclusão.");
+            resposta.addProperty("erro", "ID do cliente é obrigatório para exclusão.");
             out.print(gson.toJson(resposta));
             return;
         }
 
         try {
-            bandeira.setId(Integer.parseInt(idParam));
+            clienteFiltro.setId(Integer.parseInt(idParam));
         } catch (NumberFormatException e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "ID da bandeira endereco inválido.");
+            resposta.addProperty("erro", "ID do cliente inválido.");
             out.print(gson.toJson(resposta));
             return;
         }
 
-        Resultado<String> resultado = fachada.excluir(bandeira);
+        Resultado<String> resultado = fachada.excluir(clienteFiltro);
 
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -182,20 +201,6 @@ public class ControleBandeira extends HttpServlet {
         String json = gson.toJson(resultado.getValor());
         resp.setStatus(HttpServletResponse.SC_OK);
         out.print(json);
-    }
-
-    private Resultado<Bandeira> extrairBandeiraFiltro(HttpServletRequest req) {
-        Bandeira bandeiraFiltro = new Bandeira();
-
-        if(req.getParameter("id") != null){
-            bandeiraFiltro.setId(Integer.parseInt(req.getParameter("id")));
-        }
-
-        if (req.getParameter("bandeira") != null) {
-            bandeiraFiltro.setNomeBandeira((req.getParameter("bandeira")));
-        }
-
-        return Resultado.sucesso(bandeiraFiltro);
     }
 
     private Resultado<JsonObject> lerJsonComoObjeto(HttpServletRequest req) throws IOException {
@@ -215,5 +220,48 @@ public class ControleBandeira extends HttpServlet {
             }
         }
         return leitorJson.toString();
+    }
+
+    //todo: arrumar a função
+    private Resultado<Pedido> extrairPedidoFiltro(HttpServletRequest req) {
+        Cliente clienteFiltro = new Cliente();
+        if (req.getParameter("id") != null) {
+            clienteFiltro.setId(Integer.parseInt(req.getParameter("id")));
+        }
+        if (req.getParameter("ranking") != null) {
+            clienteFiltro.setRanking(req.getParameter("ranking"));
+        }
+        if (req.getParameter("nome") != null) {
+            clienteFiltro.setNome(req.getParameter("nome"));
+        }
+        if (req.getParameter("genero") != null) {
+            clienteFiltro.setGenero(req.getParameter("genero"));
+        }
+        if (req.getParameter("cpf") != null) {
+            clienteFiltro.setCpf(req.getParameter("cpf"));
+        }
+        if (req.getParameter("tipoTelefone") != null) {
+            clienteFiltro.setTipoTelefone(req.getParameter("tipoTelefone"));
+        }
+        if (req.getParameter("telefone") != null) {
+            clienteFiltro.setTelefone(req.getParameter("telefone"));
+        }
+        if (req.getParameter("email") != null) {
+            clienteFiltro.setEmail(req.getParameter("email"));
+        }
+        if (req.getParameter("senha") != null) {
+            clienteFiltro.setSenha(req.getParameter("senha"));
+        }
+        if (req.getParameter("dataNascimento") != null) {
+            String dataStr = req.getParameter("dataNascimento");
+
+            Resultado<Date> resultadoData = ConversorData.converter(dataStr);
+
+            if (!resultadoData.isSucesso()) {
+                return Resultado.erro(resultadoData.getErro());
+            }
+            clienteFiltro.setDataNascimento(resultadoData.getValor());
+        }
+        return Resultado.sucesso(null);
     }
 }

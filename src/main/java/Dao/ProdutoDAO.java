@@ -3,7 +3,7 @@ package Dao;
 import Dominio.*;
 import Util.Conexao;
 import Util.Resultado;
-import enums.Genero;
+import Enums.Genero;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -49,7 +49,8 @@ public class ProdutoDAO implements IDAO{
 
             StringBuilder sql = new StringBuilder();
             sql.append("UPDATE crud_v3.tenis t ");
-            sql.append("SET t.ten_sku=?, t.ten_nome =?, t.ten_valor_venda =?, t.ten_modelo=?, t.ten_cor=?, t.ten_tamanho =?, t.ten_genero =?, t.ten_descricao =?, ");
+            sql.append("SET t.ten_sku=?, t.ten_nome=?, t.ten_valor_venda=?, t.ten_modelo=?, t.ten_cor=?, ");
+            sql.append("t.ten_tamanho=?, t.ten_genero=?, t.ten_desc=?, t.ten_ativo=?, ");
             sql.append("t.ten_cat_id =?, t.ten_mar_id=? ");
             sql.append("WHERE t.ten_id =?");
 
@@ -60,9 +61,12 @@ public class ProdutoDAO implements IDAO{
                 pst.setString(4, produto.getModelo());
                 pst.setString(5, produto.getCor());
                 pst.setInt(6, produto.getTamanho());
-                pst.setObject(7, produto.getGenero());
-                pst.setInt(8, produto.getCategoria().getId());
-                pst.setInt(9, produto.getMarca().getId());
+                pst.setString(7, produto.getGenero().name());
+                pst.setString(8, produto.getDescricao());
+                pst.setBoolean(9, produto.getAtivo());
+                pst.setInt(10, produto.getCategoria().getId());
+                pst.setInt(11, produto.getMarca().getId());
+                pst.setInt(12, produto.getId());
 
                 int linhasAlteradas = pst.executeUpdate();
                 if(linhasAlteradas == 0){
@@ -72,8 +76,16 @@ public class ProdutoDAO implements IDAO{
             connection.commit();
             return Resultado.sucesso(produto);
         }catch (Exception e) {
-            System.err.println("Erro ao alterar o produto: "+ entidade.getId() + "Erro: " + e.getMessage());
-            return Resultado.erro("Erro ao alterar o produto: "+ entidade.getId() + "Erro: " + e.getMessage());
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+                System.err.println("Erro ao alterar o produto: "+ entidade.getId() + " Erro: " + e.getMessage());
+                return Resultado.erro("Erro ao alterar o produto: "+ entidade.getId() + " Erro: " + e.getMessage());
+            } catch (SQLException rollbackEx) {
+                System.err.println("Erro durante rollback: " + rollbackEx.getMessage());
+                return Resultado.erro("Erro durante rollback: " + rollbackEx.getMessage());
+            }
         } finally {
             try {
                 if (connection != null) connection.close();
@@ -92,7 +104,7 @@ public class ProdutoDAO implements IDAO{
             connection.setAutoCommit(false);
             Produto produto = (Produto) entidade;
             StringBuilder sql = new StringBuilder();
-            sql.append("DELETE FROM crud_v3.tenis t WHERE t.ten_id =?");
+            sql.append("UPDATE crud_v3.tenis t SET t.ten_ativo = false WHERE t.ten_id =?");
             try(PreparedStatement pst = connection.prepareStatement(sql.toString())){
                 pst.setInt(1, produto.getId());
                 int linhasAlteradas = pst.executeUpdate();
@@ -101,10 +113,10 @@ public class ProdutoDAO implements IDAO{
                 }
             }
             connection.commit();
-            return Resultado.sucesso("Produto excluído com sucesso!");
+            return Resultado.sucesso("Produto inativado com sucesso!");
         }catch (Exception e) {
-            System.err.println("Erro ao excluir o produto: "+ entidade.getId() + "Erro: " + e.getMessage());
-            return Resultado.erro("Erro ao excluir o produto: "+ entidade.getId() + "Erro: " + e.getMessage());
+            System.err.println("Erro ao inativar o produto: "+ entidade.getId() + "Erro: " + e.getMessage());
+            return Resultado.erro("Erro ao inativar o produto: "+ entidade.getId() + "Erro: " + e.getMessage());
         } finally {
             try {
                 if (connection != null) connection.close();
@@ -127,10 +139,15 @@ public class ProdutoDAO implements IDAO{
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT * ");
             sql.append("FROM crud_v3.tenis t ");
-            sql.append("INNER JOIN crud_v3.marca m on t.ten_mar_id = m.mar_id ");
-            sql.append("INNER JOIN crud_v3.categoria c on t.ten_cat_id = c.cat_id ");
+            sql.append("INNER JOIN crud_v3.marca m      on t.ten_mar_id = m.mar_id ");
+            sql.append("INNER JOIN crud_v3.categoria c  on t.ten_cat_id = c.cat_id ");
+            sql.append("LEFT JOIN crud_v3.estoque e     on t.ten_id     = e.est_ten_id ");
             sql.append("WHERE 1=1 ");
 
+            if(produto.getId() != null){
+                sql.append(" AND t.ten_id=? ");
+                parametros.add(produto.getId());
+            }
             if(isStringValida(produto.getSku())){
                 sql.append(" AND t.ten_sku =? ");
                 parametros.add(produto.getSku());
@@ -140,8 +157,8 @@ public class ProdutoDAO implements IDAO{
                 parametros.add(produto.getCor());
             }
             if(isStringValida(produto.getNome())){
-                sql.append(" AND t.ten_nome =? ");
-                parametros.add(produto.getNome());
+                sql.append(" AND LOWER(t.ten_nome) LIKE? ");
+                parametros.add("%" + produto.getNome().toLowerCase() + "%");
             }
             if(isStringValida(produto.getModelo())){
                 sql.append(" AND t.ten_modelo =? ");
@@ -158,6 +175,10 @@ public class ProdutoDAO implements IDAO{
             if(produto.getTamanho() != null){
                 sql.append(" AND t.ten_tamanho =? ");
                 parametros.add(produto.getTamanho());
+            }
+            if (produto.getAtivo() != null) {
+                sql.append(" AND t.ten_ativo = ? ");
+                parametros.add(produto.getAtivo());
             }
             if(produto.getMarca() != null){
                 if(isStringValida(produto.getMarca().getNome())) {
@@ -209,7 +230,7 @@ public class ProdutoDAO implements IDAO{
         pro.setModelo(rs.getString("ten_modelo"));
         pro.setCor(rs.getString("ten_cor"));
         pro.setTamanho(rs.getInt("ten_tamanho"));
-        pro.setGenero(rs.getObject("ten_genero", Genero.class));
+        pro.setGenero(Genero.valueOf(rs.getString("ten_genero")));
         pro.setDescricao(rs.getString("ten_desc"));
 
         Marca mar = new Marca();

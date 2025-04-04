@@ -1,4 +1,4 @@
-package controle;
+package Controle;
 
 import Dominio.*;
 import Fachada.Fachada;
@@ -18,8 +18,8 @@ import java.io.PrintWriter;
 import java.io.Serial;
 import java.util.List;
 
-@WebServlet(name = "ControleEndereco", urlPatterns = "/controleEndereco")
-public class ControleEndereco extends HttpServlet {
+@WebServlet(name = "ControleCartao", urlPatterns = "/controleCartao")
+public class ControleCartao extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -31,29 +31,21 @@ public class ControleEndereco extends HttpServlet {
         PrintWriter out = resp.getWriter();
         Gson gson = new Gson();
 
-        Resultado<ClienteEndereco> resultadoClienteFiltro = extrairEnderecoFiltro(req);
-
-        if (!resultadoClienteFiltro.isSucesso()) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", resultadoClienteFiltro.getErro());
-            out.print(gson.toJson(resposta));
-            return;
-        }
+        Resultado<Cartao> resultadoCartaoFiltro = extrairCartaoFiltro(req);
 
         IFachada fachada = new Fachada();
-        ClienteEndereco clienteEnderecoFiltro = resultadoClienteFiltro.getValor();
-        Resultado<List<EntidadeDominio>> resultadoConsultaClienteEndereco = fachada.consultar(clienteEnderecoFiltro);
+        Cartao cartaoFiltro = resultadoCartaoFiltro.getValor();
+        Resultado<List<EntidadeDominio>> resultadoConsultaartao = fachada.consultar(cartaoFiltro);
 
-        if (!resultadoConsultaClienteEndereco.isSucesso()) {
+        if (!resultadoConsultaartao.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", resultadoConsultaClienteEndereco.getErro());
+            resposta.addProperty("erro", resultadoConsultaartao.getErro());
             out.print(gson.toJson(resposta));
             return;
         }
 
-        String json = gson.toJson(resultadoConsultaClienteEndereco.getValor());
+        String json = gson.toJson(resultadoConsultaartao.getValor());
         resp.setStatus(HttpServletResponse.SC_OK);
         out.print(json);
     }
@@ -77,7 +69,7 @@ public class ControleEndereco extends HttpServlet {
         }
 
         JsonObject jsonObject = ResultJsonObject.getValor();
-        if (!jsonObject.has("ClienteEndereco")) {
+        if (!jsonObject.has("Cartao")) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
             resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes");
@@ -85,11 +77,9 @@ public class ControleEndereco extends HttpServlet {
             return;
         }
 
-        ClienteEndereco clienteEndereco = gson.fromJson(jsonObject.get("ClienteEndereco"), ClienteEndereco.class);
-        System.out.println(clienteEndereco.getCliente().getId());
+        Cartao cartao = gson.fromJson(jsonObject.get("Cartao"), Cartao.class);
         Fachada fachada = new Fachada();
-
-        Resultado<String> resultado = fachada.salvar(clienteEndereco);
+        Resultado<String> resultado = fachada.salvar(cartao);
 
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -98,6 +88,7 @@ public class ControleEndereco extends HttpServlet {
             out.print(gson.toJson(resposta));
             return;
         }
+
         String json = gson.toJson(resultado.getValor());
         resp.setStatus(HttpServletResponse.SC_OK);
         out.print(json);
@@ -123,7 +114,7 @@ public class ControleEndereco extends HttpServlet {
 
         JsonObject jsonObject = ResultJsonObject.getValor();
         System.out.println(jsonObject.toString());
-        if (!jsonObject.has("ClienteEndereco")) {
+        if (!jsonObject.has("Cartao")) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
             resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes.");
@@ -131,10 +122,9 @@ public class ControleEndereco extends HttpServlet {
             return;
         }
 
-        ClienteEndereco clienteEndereco = gson.fromJson(jsonObject.get("ClienteEndereco"), ClienteEndereco.class);
-
+        Cartao cartao = gson.fromJson(jsonObject.get("Cartao"), Cartao.class);
         IFachada fachada = new Fachada();
-        Resultado<String> resultado = fachada.alterar(clienteEndereco);
+        Resultado<String> resultado = fachada.alterar(cartao);
 
         if(!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -143,6 +133,7 @@ public class ControleEndereco extends HttpServlet {
             out.print(gson.toJson(resposta));
             return;
         }
+
         String json = gson.toJson(resultado.getValor());
         resp.setStatus(HttpServletResponse.SC_OK);
         out.print(json);
@@ -157,28 +148,28 @@ public class ControleEndereco extends HttpServlet {
         Gson gson = new Gson();
 
         IFachada fachada = new Fachada();
-        ClienteEndereco clienteEnderecoFiltro = new ClienteEndereco();
+        Cartao cartao = new Cartao();
         String idParam = req.getParameter("id");
 
         if (idParam == null || idParam.isEmpty()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "ID do cliente endereco é obrigatório para exclusão.");
+            resposta.addProperty("erro", "ID do cartao é obrigatório para exclusão.");
             out.print(gson.toJson(resposta));
             return;
         }
 
         try {
-            clienteEnderecoFiltro.setId(Integer.parseInt(idParam));
+            cartao.setId(Integer.parseInt(idParam));
         } catch (NumberFormatException e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "ID do cliente endereco inválido.");
+            resposta.addProperty("erro", "ID do cartao endereco inválido.");
             out.print(gson.toJson(resposta));
             return;
         }
 
-        Resultado<String> resultado = fachada.excluir(clienteEnderecoFiltro);
+        Resultado<String> resultado = fachada.excluir(cartao);
 
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -193,81 +184,46 @@ public class ControleEndereco extends HttpServlet {
         out.print(json);
     }
 
-    private Resultado<ClienteEndereco> extrairEnderecoFiltro(HttpServletRequest req) {
-        ClienteEndereco clienteEnderecoFiltro = new ClienteEndereco();
-        Endereco enderecoFiltro = new Endereco();
-        Bairro bairroFiltro = new Bairro();
-        Cidade cidadeFiltro = new Cidade();
-        Uf ufFiltro = new Uf();
-        Pais paisFiltro = new Pais();
+    private Resultado<Cartao> extrairCartaoFiltro(HttpServletRequest req) {
+        Cartao cartaoFiltro = new Cartao();
+        Bandeira bandeiraFiltro = new Bandeira();
         Cliente clienteFiltro = new Cliente();
+
+        if(req.getParameter("id") != null){
+            cartaoFiltro.setId(Integer.parseInt(req.getParameter("id")));
+        }
+
+        if (req.getParameter("numero") != null) {
+            cartaoFiltro.setNumero((req.getParameter("numero")));
+        }
+        if(req.getParameter("numSeguranca") != null) {
+            cartaoFiltro.setNumSeguranca((req.getParameter("numSeguranca")));
+        }
+        if(req.getParameter("nomeImpresso") != null) {
+            cartaoFiltro.setNomeImpresso((req.getParameter("nomeImpresso")));
+        }
+        if(req.getParameter("preferencial") != null){
+            cartaoFiltro.setPreferencial(Boolean.parseBoolean(req.getParameter("preferencial")));
+        }
+
+        if(req.getParameter("idBandeira") != null){
+            bandeiraFiltro.setId(Integer.parseInt(req.getParameter("idBandeira")));
+        }
+        if(req.getParameter("nomeBandeira") != null){
+            bandeiraFiltro.setNomeBandeira(req.getParameter("nomeBandeira"));
+        }
 
         if(req.getParameter("idCliente") != null){
             clienteFiltro.setId(Integer.parseInt(req.getParameter("idCliente")));
         }
-
-        if (req.getParameter("idClienteEndereco") != null) {
-            clienteEnderecoFiltro.setId(Integer.parseInt(req.getParameter("idClienteEndereco")));
-        }
-        if (req.getParameter("numero") != null) {
-            clienteEnderecoFiltro.setNumero(req.getParameter("numero"));
-        }
-        if (req.getParameter("tipoResidencia") != null) {
-            clienteEnderecoFiltro.setTipoEndereco(req.getParameter("tipoResidencia"));
-        }
-        if (req.getParameter("obs") != null) {
-            clienteEnderecoFiltro.setObservacoes(req.getParameter("obs"));
+        if(req.getParameter("cpf") != null){
+            clienteFiltro.setCpf(req.getParameter("cpf"));
         }
 
-        if (req.getParameter("idEndereco") != null) {
-            enderecoFiltro.setId(Integer.valueOf(req.getParameter("idEndereco")));
-        }
-        if (req.getParameter("cep") != null) {
-            enderecoFiltro.setCep(req.getParameter("cep"));
-        }
-        if (req.getParameter("logradouro") != null) {
-            enderecoFiltro.setLogradouro(req.getParameter("logradouro"));
-        }
-        if (req.getParameter("tipoLogradouro") != null) {
-            enderecoFiltro.setTipoLogradouro(req.getParameter("tipoLogradouro"));
-        }
+        cartaoFiltro.setBandeira(bandeiraFiltro);
+        cartaoFiltro.setCliente(clienteFiltro);
 
-        if (req.getParameter("idBairro") != null) {
-            bairroFiltro.setId(Integer.valueOf(req.getParameter("idBairro")));
-        }
-        if (req.getParameter("bairro") != null) {
-            bairroFiltro.setBairro(req.getParameter("bairro"));
-        }
-
-        if (req.getParameter("idCidade") != null) {
-            cidadeFiltro.setId(Integer.valueOf(req.getParameter("idCidade")));
-        }
-        if (req.getParameter("cidade") != null) {
-            cidadeFiltro.setCidade((req.getParameter("cidade")));
-        }
-
-        if (req.getParameter("idUf") != null) {
-            ufFiltro.setId(Integer.valueOf(req.getParameter("idUf")));
-        }
-        if (req.getParameter("uf") != null) {
-            ufFiltro.setUf((req.getParameter("uf")));
-        }
-
-        if (req.getParameter("idPais") != null) {
-            paisFiltro.setId(Integer.valueOf(req.getParameter("idPais")));
-        }
-        if (req.getParameter("pais") != null) {
-            paisFiltro.setPais((req.getParameter("pais")));
-        }
-
-        ufFiltro.setPais(paisFiltro);
-        cidadeFiltro.setUf(ufFiltro);
-        bairroFiltro.setCidade(cidadeFiltro);
-        enderecoFiltro.setBairro(bairroFiltro);
-        clienteEnderecoFiltro.setEndereco(enderecoFiltro);
-        clienteEnderecoFiltro.setCliente(clienteFiltro);
-
-        return Resultado.sucesso(clienteEnderecoFiltro);
+        return Resultado.sucesso(cartaoFiltro);
     }
 
     private Resultado<JsonObject> lerJsonComoObjeto(HttpServletRequest req) throws IOException {

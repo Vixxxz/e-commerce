@@ -1,4 +1,4 @@
-package controle;
+package Controle;
 
 import Dominio.*;
 import Fachada.Fachada;
@@ -7,6 +7,7 @@ import Util.Resultado;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import Enums.Genero;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -174,13 +175,18 @@ public class ControleProduto extends HttpServlet {
             produtoFiltro.setTamanho(Integer.valueOf(req.getParameter("tamaho")));
         }
         if(req.getParameter("genero") != null){
-            produtoFiltro.setGenero(req.getParameter("genero"));
+            produtoFiltro.setGenero(Genero.valueOf(req.getParameter("genero")));
         }
         if(req.getParameter("marca") != null){
             marcaFiltro.setNome(req.getParameter("marca"));
         }
         if(req.getParameter("categoria") != null){
             categoriaFiltro.setNome(req.getParameter("categoria"));
+        }
+        if(req.getParameter("ativo") != null){
+            produtoFiltro.setAtivo(Boolean.valueOf(req.getParameter("ativo")));
+        }else{
+            produtoFiltro.setAtivo(true);
         }
 
         produtoFiltro.setMarca(marcaFiltro);
