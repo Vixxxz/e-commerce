@@ -13,6 +13,28 @@ public class Fachada implements IFachada {
     public Fachada() {
     }
 
+    public Resultado<String> salvarPedidoProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos){
+        StringBuilder sb = new StringBuilder();
+        processarValidacoes(pedido, getValidacoes(pedido, Operacao.SALVAR), sb);
+        for(PedidoProduto pedidoProduto : pedidoProdutos){
+            processarValidacoes(pedidoProduto, getValidacoes(pedidoProduto, Operacao.SALVAR), sb);
+        }
+        if(!sb.isEmpty()){
+            return Resultado.erro(sb.toString());
+        }
+        try{
+            PedidoDAO pedidoDAO = new PedidoDAO();
+            Resultado<Pedido> resultadoSalvarPedidoEProduto = pedidoDAO.salvarPedidoEProduto(pedido, pedidoProdutos);
+            if (!resultadoSalvarPedidoEProduto.isSucesso()) {
+                return Resultado.erro(resultadoSalvarPedidoEProduto.getErro());
+            }
+            return Resultado.sucesso("Pedido e produtos salvos com sucesso!");
+        }catch (Exception e) {
+            System.err.println("Erro ao salvar pedido e pedido_produto: " + e.getMessage());
+            return Resultado.erro("Erro interno ao salvar o pedido e seus produtos.");
+        }
+    }
+
     public Resultado<String> salvarClienteEEndereco(Cliente cliente, List<ClienteEndereco> clienteEndereco) {
         StringBuilder sb = new StringBuilder();
         EncriptografaSenha criptografa = new EncriptografaSenha();

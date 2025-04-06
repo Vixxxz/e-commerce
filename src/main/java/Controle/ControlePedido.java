@@ -1,9 +1,6 @@
 package Controle;
 
-import Dominio.Cliente;
-import Dominio.ClienteEndereco;
-import Dominio.EntidadeDominio;
-import Dominio.Pedido;
+import Dominio.*;
 import Fachada.Fachada;
 import Fachada.IFachada;
 import Util.ConversorData;
@@ -86,7 +83,7 @@ public class ControlePedido extends HttpServlet {
         }
 
         JsonObject jsonObject = ResultJsonObject.getValor();
-        if (!jsonObject.has("Cliente") || !jsonObject.has("ClienteEndereco")) {
+        if (!jsonObject.has("pedido") || !jsonObject.has("PedidoProdutos")) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
             resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes");
@@ -94,13 +91,12 @@ public class ControlePedido extends HttpServlet {
             return;
         }
 
-        Cliente cliente = gson.fromJson(jsonObject.get("Cliente"), Cliente.class);
-        Type clienteEnderecoListType = new TypeToken<List<ClienteEndereco>>() {
+        Pedido pedido = gson.fromJson(jsonObject.get("pedido"), Pedido.class);
+        Type pedidoProdutoListType = new TypeToken<List<PedidoProduto>>() {
         }.getType();
-        List<ClienteEndereco> clienteEnderecos = gson.fromJson(jsonObject.get("ClienteEndereco"), clienteEnderecoListType);
+        List<PedidoProduto> pedidoProdutos = gson.fromJson(jsonObject.get("PedidoProdutos"), pedidoProdutoListType);
         Fachada fachada = new Fachada();
-
-        Resultado<String> resultado = fachada.salvarClienteEEndereco(cliente, clienteEnderecos);
+        Resultado<String> resultado = fachada.salvarPedidoProduto(pedido, pedidoProdutos);
 
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -224,44 +220,6 @@ public class ControlePedido extends HttpServlet {
 
     //todo: arrumar a função
     private Resultado<Pedido> extrairPedidoFiltro(HttpServletRequest req) {
-        Cliente clienteFiltro = new Cliente();
-        if (req.getParameter("id") != null) {
-            clienteFiltro.setId(Integer.parseInt(req.getParameter("id")));
-        }
-        if (req.getParameter("ranking") != null) {
-            clienteFiltro.setRanking(req.getParameter("ranking"));
-        }
-        if (req.getParameter("nome") != null) {
-            clienteFiltro.setNome(req.getParameter("nome"));
-        }
-        if (req.getParameter("genero") != null) {
-            clienteFiltro.setGenero(req.getParameter("genero"));
-        }
-        if (req.getParameter("cpf") != null) {
-            clienteFiltro.setCpf(req.getParameter("cpf"));
-        }
-        if (req.getParameter("tipoTelefone") != null) {
-            clienteFiltro.setTipoTelefone(req.getParameter("tipoTelefone"));
-        }
-        if (req.getParameter("telefone") != null) {
-            clienteFiltro.setTelefone(req.getParameter("telefone"));
-        }
-        if (req.getParameter("email") != null) {
-            clienteFiltro.setEmail(req.getParameter("email"));
-        }
-        if (req.getParameter("senha") != null) {
-            clienteFiltro.setSenha(req.getParameter("senha"));
-        }
-        if (req.getParameter("dataNascimento") != null) {
-            String dataStr = req.getParameter("dataNascimento");
-
-            Resultado<Date> resultadoData = ConversorData.converter(dataStr);
-
-            if (!resultadoData.isSucesso()) {
-                return Resultado.erro(resultadoData.getErro());
-            }
-            clienteFiltro.setDataNascimento(resultadoData.getValor());
-        }
         return Resultado.sucesso(null);
     }
 }

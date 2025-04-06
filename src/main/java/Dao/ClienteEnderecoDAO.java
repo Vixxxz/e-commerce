@@ -396,7 +396,7 @@ public class ClienteEnderecoDAO implements IDAO{
     private void adicionarCondicoesClienteEndereco(StringBuilder sql, ClienteEndereco clienteEndereco, List<Object> parametros) {
         adicionarCondicao(sql, "ce.cli_end_id = ?", clienteEndereco.getId(), parametros);
         adicionarCondicao(sql, "ce.cli_end_num = ?", clienteEndereco.getNumero(), parametros, true);
-        adicionarCondicao(sql, "ce.cli_end_tp_end = ?", clienteEndereco.getTipoEndereco(), parametros, true);
+        adicionarCondicao(sql, "ce.cli_end_tp_end LIKE ?", clienteEndereco.getTipoEndereco(), parametros, true);
         adicionarCondicao(sql, "ce.cli_end_tp_residencia = ?", clienteEndereco.getTipoResidencia(), parametros, true);
         adicionarCondicao(sql, "ce.cli_end_obs = ?", clienteEndereco.getObservacoes(), parametros, true);
 

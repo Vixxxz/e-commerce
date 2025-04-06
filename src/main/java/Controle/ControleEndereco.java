@@ -222,7 +222,9 @@ public class ControleEndereco extends HttpServlet {
         if (req.getParameter("obs") != null) {
             clienteEnderecoFiltro.setObservacoes(req.getParameter("obs"));
         }
-
+        if(req.getParameter("tipoEndereco") != null){
+            clienteEnderecoFiltro.setTipoEndereco(req.getParameter("tipoEndereco"));
+        }
         if (req.getParameter("idEndereco") != null) {
             enderecoFiltro.setId(Integer.valueOf(req.getParameter("idEndereco")));
         }
