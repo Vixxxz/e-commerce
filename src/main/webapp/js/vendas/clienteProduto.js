@@ -11,6 +11,31 @@ document.addEventListener("DOMContentLoaded", () => {
     if (produtoModelo) {
         carregarDadosProduto(produtoModelo);
     }
+    document.addEventListener("click", (event) => {
+        if (event.target.closest("#add-carrinho")) {
+            const sku = document.querySelector("#produto-sku")?.innerText;
+            const nome = document.querySelector("#produto-nome")?.innerText;
+            const preco = document.querySelector("#produto-preco")?.innerText.replace("R$ ", "").replace(",", ".");
+            const imagem = document.querySelector("#produto-imagem")?.getAttribute("src");
+            const tamanhoSelecionado = document.querySelector("input[name='tamanho']:checked")?.value;
+
+            if (!sku || !tamanhoSelecionado) {
+                alert("Erro ao identificar produto ou tamanho.");
+                return;
+            }
+
+            adicionarProdutoAoCarrinho({
+                sku,
+                nome,
+                preco: parseFloat(preco),
+                tamanho: parseInt(tamanhoSelecionado),
+                imagem,
+                quantidade: 1
+            });
+
+            alert("Produto adicionado ao carrinho!");
+        }
+    });
 });
 
 async function carregarDadosProduto(modelo) {
@@ -27,6 +52,23 @@ async function carregarDadosProduto(modelo) {
     }
 }
 
+function adicionarProdutoAoCarrinho(produto) {
+    const carrinho = JSON.parse(sessionStorage.getItem("carrinho")) || [];
+
+    const index = carrinho.findIndex(item =>
+        item.sku === produto.sku &&
+        item.tamanho === produto.tamanho
+    );
+
+    if (index > -1) {
+        carrinho[index].quantidade += 1;
+    } else {
+        carrinho.push(produto);
+    }
+
+    sessionStorage.setItem("carrinho", JSON.stringify(carrinho));
+}
+
 function preencherDados(produtos) {
     produtoScreen.innerHTML = "";
     if (produtos.length === 0) {
@@ -41,7 +83,7 @@ function preencherDados(produtos) {
 
     produtoScreen.innerHTML = `
         <div>
-            <img src="../../../img/${escapeHtml(produto.foto)}" alt="Tenis" id="produto-imagem">
+            <img src="../../../img/${escapeHtml(produto.caminhoFoto)}" alt="Tenis" id="produto-imagem">
         </div>
         <div class="info-produto">
             <div style="display: flex; flex-direction: column">

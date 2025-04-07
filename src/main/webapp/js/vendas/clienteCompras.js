@@ -62,7 +62,7 @@ function filtrarTenis() {
 
     const filtrados = produtosOriginais.filter(produto => {
         const nomeMatch = produto.nome.toLowerCase().includes(busca);
-        const categoriaMatch = !categoria || produto.categoria?.nome === categoria;
+        const categoriaMatch = !categoria || produto.categoria?.nome === Categoria;
         return nomeMatch && categoriaMatch;
     });
 
