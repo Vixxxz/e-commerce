@@ -49,6 +49,5 @@ function paginarTabela(idtabela) {
 
 document.addEventListener("DOMContentLoaded", function () {
     paginarTabela('table-vendas');
-    paginarTabela('table-trocas');
-    paginarTabela('table-produtos');
-})
+
+});
