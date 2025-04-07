@@ -5,10 +5,7 @@ import Enums.Genero;
 import Util.Conexao;
 import Util.Resultado;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,9 +19,63 @@ public class EstoqueDAO implements IDAO{
     public EstoqueDAO() {
     }
 
+    public Resultado<EntidadeDominio>atualizarEstoque(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
+        Connection connectionAntiga = connection;
+        connection = Conexao.getConnectionMySQL();
+        PedidoProduto pedidoProduto = (PedidoProduto) entidade;
+        Estoque est = new Estoque();
+        est.setProduto(pedidoProduto.getProduto());
+        Resultado<List<EntidadeDominio>>resultadoEstoque = consultar(est);
+        List<EntidadeDominio>estoques = resultadoEstoque.getValor();
+        if(estoques.isEmpty()){
+            return Resultado.erro("Não existe estoque para o produto selecionado: " + pedidoProduto.getProduto().getSku());
+        }
+        connection = connectionAntiga;
+        Estoque ultimoEstoque = (Estoque) estoques.getFirst();
+        est.setQuantidade(ultimoEstoque.getQuantidade() - pedidoProduto.getQuantidade());
+        est.setMovimentacao(-pedidoProduto.getQuantidade());
+        est.setValorCusto(ultimoEstoque.getValorCusto());
+        est.setMarca(ultimoEstoque.getMarca());
+        Resultado<EntidadeDominio>resultadoSalvaEstoque = salvar(est);
+        if(!resultadoSalvaEstoque.isSucesso()){
+            return Resultado.erro("Não foi possível atualizar o estoque.");
+        }
+        return Resultado.sucesso(est);
+    }
+
     @Override
     public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
-        return null;
+        if (connection == null || connection.isClosed()) {
+            connection = Conexao.getConnectionMySQL();
+        }
+        connection.setAutoCommit(false);
+
+        Estoque estoque = (Estoque) entidade;
+        StringBuilder sql = new StringBuilder();
+        sql.append("INSERT INTO estoque(est_quantidade, est_dt_cadastro, est_ten_id, est_valor_custo, ");
+        sql.append("est_mar_id, est_movimentacao) ");
+        sql.append("VALUES (?,?,?,?,?,?)");
+
+        estoque.complementarDtCadastro();
+
+        try (PreparedStatement pst = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
+            pst.setInt(1, estoque.getQuantidade());
+            pst.setDate(2, new Date(estoque.getDtCadastro().getTime()));
+            pst.setInt(3, estoque.getProduto().getId());
+            pst.setDouble(4, estoque.getValorCusto());
+            pst.setInt(5, estoque.getMarca().getId());
+            pst.setInt(6, estoque.getMovimentacao());
+            pst.executeUpdate();
+
+            try (ResultSet rs = pst.getGeneratedKeys()) {
+                if (!rs.next()) {
+                    throw new SQLException("Falha ao inserir o estoque.");
+                }
+                int idEstoque = rs.getInt(1);
+                estoque.setId(idEstoque);
+            }
+            return Resultado.sucesso(estoque);
+        }
     }
 
     @Override
@@ -79,6 +130,7 @@ public class EstoqueDAO implements IDAO{
                     parametros.add(produto.getSku());
                 }
             }
+            sql.append(" ORDER BY e.est_dt_cadastro DESC ");
 
             try(PreparedStatement pst = connection.prepareStatement(sql.toString())){
                 for(int i = 0; i < parametros.size(); i++){
@@ -130,5 +182,13 @@ public class EstoqueDAO implements IDAO{
         est.setProduto(pro);
 
         return est;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
     }
 }

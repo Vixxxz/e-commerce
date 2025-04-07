@@ -13,18 +13,21 @@ public class Fachada implements IFachada {
     public Fachada() {
     }
 
-    public Resultado<String> salvarPedidoProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos){
+    public Resultado<String> salvarPedidoProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos){
         StringBuilder sb = new StringBuilder();
         processarValidacoes(pedido, getValidacoes(pedido, Operacao.SALVAR), sb);
         for(PedidoProduto pedidoProduto : pedidoProdutos){
             processarValidacoes(pedidoProduto, getValidacoes(pedidoProduto, Operacao.SALVAR), sb);
+        }
+        for(CartaoPedido cartaoPedido : cartaoPedidos){
+            processarValidacoes(cartaoPedido, getValidacoes(cartaoPedido, Operacao.SALVAR), sb);
         }
         if(!sb.isEmpty()){
             return Resultado.erro(sb.toString());
         }
         try{
             PedidoDAO pedidoDAO = new PedidoDAO();
-            Resultado<Pedido> resultadoSalvarPedidoEProduto = pedidoDAO.salvarPedidoEProduto(pedido, pedidoProdutos);
+            Resultado<Pedido> resultadoSalvarPedidoEProduto = pedidoDAO.salvarPedidoEProduto(pedido, pedidoProdutos, cartaoPedidos);
             if (!resultadoSalvarPedidoEProduto.isSucesso()) {
                 return Resultado.erro(resultadoSalvarPedidoEProduto.getErro());
             }
@@ -371,6 +374,15 @@ public class Fachada implements IFachada {
                         validacoes.add(new VerificaAlteracaoCategoria());
                     }
                 }
+            }
+            case Pedido ignore ->{
+
+            }
+            case PedidoProduto ignore ->{
+
+            }
+            case CartaoPedido ignore ->{
+
             }
             case null, default -> {
                 System.err.println("Tipo de Entidade não suportado na hora de buscar as validacoes");

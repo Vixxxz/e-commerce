@@ -1,22 +1,22 @@
 package Dao;
 
+import Dominio.CartaoPedido;
 import Dominio.EntidadeDominio;
-import Dominio.Pedido;
-import Dominio.PedidoProduto;
+import Dominio.Estoque;
 import Util.Conexao;
 import Util.Resultado;
 
 import java.sql.*;
 import java.util.List;
 
-public class PedidoProdutoDAO implements IDAO{
+public class CartaoPedidoDAO implements IDAO{
     private Connection connection;
 
-    public PedidoProdutoDAO(Connection connection) {
+    public CartaoPedidoDAO(Connection connection) {
         this.connection = connection;
     }
 
-    public PedidoProdutoDAO() {
+    public CartaoPedidoDAO() {
     }
 
     @Override
@@ -26,28 +26,27 @@ public class PedidoProdutoDAO implements IDAO{
         }
         connection.setAutoCommit(false);
 
-        PedidoProduto pedidoProduto = (PedidoProduto) entidade;
+        CartaoPedido cartaoPedido = (CartaoPedido) entidade;
         StringBuilder sql = new StringBuilder();
-        sql.append("INSERT INTO pedido_tenis(ped_ten_ped_id, ped_ten_ten_id, ped_ten_quantidade, ped_ten_dt_adicao) ");
-        sql.append("VALUES (?,?,?,?)");
+        sql.append("INSERT INTO cartao_pedido(car_ped_car_id, car_ped_ped_id, car_ped_dt_cadastro) ");
+        sql.append("VALUES (?,?,?)");
 
-        pedidoProduto.complementarDtCadastro();
+        cartaoPedido.complementarDtCadastro();
 
         try (PreparedStatement pst = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
-            pst.setDouble(1, pedidoProduto.getPedido().getId());
-            pst.setInt(2, pedidoProduto.getProduto().getId());
-            pst.setInt(3, pedidoProduto.getQuantidade());
-            pst.setDate(4, new Date(pedidoProduto.getDtCadastro().getTime()));
+            pst.setInt(1, cartaoPedido.getCartao().getId());
+            pst.setInt(2, cartaoPedido.getPedido().getId());
+            pst.setDate(3, new Date(cartaoPedido.getDtCadastro().getTime()));
             pst.executeUpdate();
 
             try (ResultSet rs = pst.getGeneratedKeys()) {
                 if (!rs.next()) {
-                    throw new SQLException("Falha ao inserir o pedido.");
+                    throw new SQLException("Falha ao inserir o cartao_pedido.");
                 }
-                int idPedidoProduto = rs.getInt(1);
-                pedidoProduto.setId(idPedidoProduto);
+                int idCartaoPedido = rs.getInt(1);
+                cartaoPedido.setId(idCartaoPedido);
             }
-            return Resultado.sucesso(pedidoProduto);
+            return Resultado.sucesso(cartaoPedido);
         }
     }
 

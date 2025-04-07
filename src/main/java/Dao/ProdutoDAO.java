@@ -232,6 +232,7 @@ public class ProdutoDAO implements IDAO{
         pro.setTamanho(rs.getInt("ten_tamanho"));
         pro.setGenero(Genero.valueOf(rs.getString("ten_genero")));
         pro.setDescricao(rs.getString("ten_desc"));
+        pro.setCaminhoFoto(rs.getString("ten_foto"));
 
         Marca mar = new Marca();
         mar.setId(rs.getInt("ten_mar_id"));

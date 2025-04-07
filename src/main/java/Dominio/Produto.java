@@ -14,6 +14,7 @@ public class Produto extends EntidadeDominio{
     private Marca marca;
     private Categoria categoria;
     private Boolean ativo;
+    private String caminhoFoto;
 
     public Produto() {}
 
@@ -21,7 +22,7 @@ public class Produto extends EntidadeDominio{
     public Produto(String sku, String nome,
                    String modelo, String cor, Integer tamanho,
                    Genero genero, String descricao, Marca marca,
-                   Categoria categoria, Boolean ativo) {
+                   Categoria categoria, Boolean ativo, String caminhoFoto) {
         this.sku = sku;
         this.nome = nome;
         this.modelo = modelo;
@@ -32,13 +33,14 @@ public class Produto extends EntidadeDominio{
         this.marca = marca;
         this.categoria = categoria;
         this.ativo = ativo;
+        this.caminhoFoto = caminhoFoto;
     }
 
     //sem preço e sem descrição
     public Produto(String sku, String nome,
                    String modelo, String cor, Integer tamanho,
                    Genero genero, Marca marca,
-                   Categoria categoria, Boolean ativo) {
+                   Categoria categoria, Boolean ativo, String caminhoFoto) {
         this.sku = sku;
         this.nome = nome;
         this.modelo = modelo;
@@ -48,13 +50,14 @@ public class Produto extends EntidadeDominio{
         this.marca = marca;
         this.categoria = categoria;
         this.ativo = ativo;
+        this.caminhoFoto = caminhoFoto;
     }
 
     //tudo menos id
     public Produto(String sku, String nome, Double preco,
                    String modelo, String cor, Integer tamanho,
                    Genero genero, String descricao, Marca marca,
-                   Categoria categoria, Boolean ativo) {
+                   Categoria categoria, Boolean ativo, String caminhoFoto) {
         this.sku = sku;
         this.nome = nome;
         this.preco = preco;
@@ -66,13 +69,14 @@ public class Produto extends EntidadeDominio{
         this.marca = marca;
         this.categoria = categoria;
         this.ativo = ativo;
+        this.caminhoFoto = caminhoFoto;
     }
 
     //sem descrição
     public Produto(String sku, String nome, Double preco,
                    String modelo, String cor, Integer tamanho,
                    Genero genero, Marca marca, Categoria categoria,
-                   Boolean ativo) {
+                   Boolean ativo, String caminhoFoto) {
         this.sku = sku;
         this.nome = nome;
         this.preco = preco;
@@ -83,12 +87,13 @@ public class Produto extends EntidadeDominio{
         this.marca = marca;
         this.categoria = categoria;
         this.ativo = ativo;
+        this.caminhoFoto = caminhoFoto;
     }
 
     public Produto(Integer id, String sku, String nome,
                    Double preco, String modelo, String cor,
                    Integer tamanho, Genero genero, String descricao,
-                   Marca marca, Categoria categoria, Boolean ativo) {
+                   Marca marca, Categoria categoria, Boolean ativo, String caminhoFoto) {
         super(id);
         this.sku = sku;
         this.nome = nome;
@@ -101,6 +106,7 @@ public class Produto extends EntidadeDominio{
         this.marca = marca;
         this.categoria = categoria;
         this.ativo = ativo;
+        this.caminhoFoto = caminhoFoto;
     }
 
     public String getSku() {
@@ -189,6 +195,14 @@ public class Produto extends EntidadeDominio{
 
     public void setAtivo(Boolean ativo) {
         this.ativo = ativo;
+    }
+
+    public String getCaminhoFoto() {
+        return caminhoFoto;
+    }
+
+    public void setCaminhoFoto(String caminhoFoto) {
+        this.caminhoFoto = caminhoFoto;
     }
 
     @Override
