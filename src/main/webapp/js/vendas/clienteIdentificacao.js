@@ -1,18 +1,27 @@
 document.addEventListener("DOMContentLoaded", () => {
     const carrinho = JSON.parse(sessionStorage.getItem("carrinho")) || [];
-    const totalCarrinho = parseFloat(sessionStorage.getItem("totalCarrinho")) || 0;
     const produtosContainer = document.querySelector(".info-pedido-produtos");
-    const totalSpan = document.querySelector(".info-pedido-container span:last-child");
-    const produtosSpan = document.querySelector(".info-pedido-container span:first-child + span");
+    const totalSpan = document.getElementById("total-geral");
+    const produtosSpan = document.getElementById("produtos-total");
     const btnProsseguir = document.querySelector("button");
     const cpfInput = document.getElementById("cpf-ident");
 
+    const calcularTotalCarrinho = () => {
+        return carrinho.reduce((total, produto) => {
+            return total + (parseFloat(produto.preco) * (produto.quantidade || 1));
+        }, 0);
+    };
+
     const renderProdutosResumo = () => {
-        produtosContainer.innerHTML = ""; // Limpa os produtos fixos
+        produtosContainer.innerHTML = "";
 
         carrinho.forEach(produto => {
             const wrapper = document.createElement("div");
             wrapper.className = "info-pedido-produto-wrapper";
+
+            const preco = parseFloat(
+                produto.preco.toString().replace("R$", "").replace(".", "").replace(",", ".")
+            );
 
             wrapper.innerHTML = `
             <div class="info-pedido-produto">
@@ -20,14 +29,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="info-pedido-produto-container">
                     <span>${produto.sku}</span>
                     <h6>${produto.nome}</h6>
-                    <p>R$ ${parseFloat(produto.preco).toFixed(2).replace(".", ",")}</p>
+                    <p>R$ ${(preco * (produto.quantidade || 1)).toFixed(2).replace(".", ",")}</p>
                     <span>Tamanho: ${produto.tamanho}</span>
+                    <span>Quantidade: ${produto.quantidade || 1}</span>
                 </div>
             </div>
         `;
 
             produtosContainer.appendChild(wrapper);
         });
+
+        const totalCarrinho = calcularTotalCarrinho();
 
         produtosSpan.innerText = `R$ ${totalCarrinho.toFixed(2).replace(".", ",")}`;
         totalSpan.innerText = `R$ ${totalCarrinho.toFixed(2).replace(".", ",")}`;
@@ -46,12 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!response.ok) throw new Error("Erro ao buscar cliente");
 
             const clienteData = await response.json();
-            const cliente = clienteData[0]?.cliente || clienteData[0]; // adaptável ao seu backend
+            const cliente = clienteData[0]?.cliente || clienteData[0];
 
-            // JSON do pedido inicial
+            const valorTotal = calcularTotalCarrinho();
+
             const pedidoJson = {
                 pedido: {
-                    valorTotal: totalCarrinho,
+                    valorTotal: valorTotal,
                     status: "APROVADA",
                     cliente: {
                         id: cliente.id
