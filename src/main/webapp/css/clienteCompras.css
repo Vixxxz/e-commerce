@@ -224,6 +224,21 @@ header h4{
     font-weight: bold;
 }
 
+.info-pedido-produto-wrapper {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.info-pedido-produto {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
 .tamanhos-container{
     padding: 10px;
     border-radius: 10px;
