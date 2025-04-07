@@ -3,22 +3,23 @@ const searchInput = document.getElementById("pesquisa");
 const categorySelect = document.getElementById("categorias");
 const produtosContainer = document.getElementById("produtos-grid");
 
+let produtosOriginais = [];
+
 document.addEventListener("DOMContentLoaded", function() {
     consultaProdutos();
-})
+});
 
-async function consultaProdutos(){
-    try{
+async function consultaProdutos() {
+    try {
         const response = await fetchAPI(`${BASE_URL}/controleProduto`, "Erro ao buscar produtos");
         const produtos = Array.isArray(response) ? response : [response];
 
+        produtosOriginais = produtos;
         produtos.length ? renderProdutos(produtos) : mostrarErro('Nenhum produto encontrado ou resposta inválida.');
     } catch (error) {
-        mostrarErro('Erro ao buscar produtos. ', error);
+        mostrarErro('Erro ao buscar produtos.', error);
     }
-
 }
-
 
 function renderProdutos(produtos) {
     produtosContainer.innerHTML = "";
@@ -27,21 +28,22 @@ function renderProdutos(produtos) {
         return;
     }
 
-    const modelosUnicos = new Set();
-    const produtosFiltrados = produtos.filter(produto => {
-        if (modelosUnicos.has(produto.modelo)) return false;
-        modelosUnicos.add(produto.modelo);
-        return true;
+    const modelosUnicos = new Map();
+    produtos.forEach(produto => {
+        // Se já tiver o modelo, pula
+        if (!modelosUnicos.has(produto.modelo)) {
+            modelosUnicos.set(produto.modelo, produto);
+        }
     });
 
-    produtosFiltrados.forEach(produto => {
+    modelosUnicos.forEach(produto => {
         const div = document.createElement("div");
         div.classList.add("card");
 
         const parcela = (produto.preco / 10).toFixed(2);
 
         div.innerHTML = `
-            <img src="../../../img/${escapeHtml(produto.foto || '')}" alt="${escapeHtml(produto.nome || '')}"/>
+            <img src="../../../img/${escapeHtml(produto.caminhoFoto || '')}" alt="${escapeHtml(produto.nome || '')}"/>
             <h2>${escapeHtml(produto.nome || '')}</h2>
             <p class="price">R$ ${escapeHtml(produto.preco.toFixed(2))}</p>
             <p>Até 10x de R$ ${parcela}</p>
@@ -54,14 +56,13 @@ function renderProdutos(produtos) {
     });
 }
 
-// Filtro por texto e categoria
 function filtrarTenis() {
     const busca = searchInput.value.toLowerCase();
     const categoria = categorySelect.value;
 
-    const filtrados = tenis.filter(t => {
-        const nomeMatch = t.nome.toLowerCase().includes(busca);
-        const categoriaMatch = !categoria || t.categoria === categoria;
+    const filtrados = produtosOriginais.filter(produto => {
+        const nomeMatch = produto.nome.toLowerCase().includes(busca);
+        const categoriaMatch = !categoria || produto.categoria?.nome === categoria;
         return nomeMatch && categoriaMatch;
     });
 
@@ -71,7 +72,6 @@ function filtrarTenis() {
 // Eventos
 searchInput.addEventListener("input", filtrarTenis);
 categorySelect.addEventListener("change", filtrarTenis);
-
 
 function escapeHtml(str) {
     const div = document.createElement('div');
