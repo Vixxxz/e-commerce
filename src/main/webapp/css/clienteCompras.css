@@ -490,3 +490,110 @@ header h4{
     font-weight: bold;
     color: var(--cinza);
 }
+
+.selecionado {
+    border: 2px solid #00f;
+    background-color: #e0f0ff;
+}
+
+
+/*TELA DE PAGAMENTO*/
+
+.cupom{
+    display: flex;
+    width: 80%;
+    height: auto;
+    margin-bottom: 25px;
+}
+
+.cupom-radio{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cupom-radio-container{
+    width: 245px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border: 2px solid #7a52c1;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #7a52c1;
+    transition: 0.3s;
+}
+
+.cupom-radio-container input{
+    display: none;
+}
+
+.circulo {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--fundo);
+}
+
+.cupom-radio-container:hover {
+    background-color: #f3f3f3;
+}
+
+/* Quando estiver selecionado */
+.cupom-radio-container input:checked + .circle {
+    background: var(--fundo);
+}
+
+.cupom-radio-container input:disabled {
+    border-color: #ccc;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.cupom-radio-container input:disabled .circle {
+    background: gray;
+}
+
+.cupom-input input{
+    width: 200px;
+    height: 44px;
+    border: 2px solid transparent;
+    border-image-source: var(--fundo);
+    border-image-slice: 1;
+    border-radius: 4px;
+    padding: 5px;
+    color: #333;
+}
+
+
+.cupom-input button{
+    width: 170px;
+    height: 40px;
+    align-content: center;
+    background: var(--amarelo);
+    margin-left:35px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+/*TELA CONCLUSAO DE PEDIDO*/
+.conclusao-pedido{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 35px;
+}
+
+.conclusao-pedido button{
+    width: 170px;
+    height: 40px;
+    align-content: center;
+    background: var(--amarelo);
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+}

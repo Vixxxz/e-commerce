@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const produtosContainer = document.querySelector(".info-pedido-produtos");
     const totalSpan = document.getElementById("total-geral");
     const produtosSpan = document.getElementById("produtos-total");
-    const btnProsseguir = document.getElementById("btnProsseguir");
+    const btnProsseguir = document.getElementById("btnFinalizar");
 
     const calcularTotalCarrinho = () => {
         return carrinho.reduce((total, produto) => {
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
         totalSpan.innerText = `R$ ${totalCarrinho.toFixed(2).replace(".", ",")}`;
     };
 
-    async function carregarEnderecosEntrega() {
+    async function carregarCupons() {
         const container = document.querySelector(".enderecos");
         const idCliente = pedido.pedido.clienteEndereco.cliente.id
         const url = `http://localhost:8080/ecommerce_tenis_war_exploded/controleEndereco?idCliente=${idCliente}&tipoEndereco=Entrega`;
@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    async function carregarTransportadoras() {
+    async function carregarCartoes() {
         const container = document.querySelector(".transportadoras");
         const url = "http://localhost:8080/ecommerce_tenis_war_exploded/controleFrete";
 
@@ -123,13 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    async function atualizaPreco(valor){
-        let totalCarrinho = calcularTotalCarrinho();
-        totalCarrinho += valor;
-        totalSpan.innerText = `R$ ${totalCarrinho.toFixed(2).replace(".", ",")}`;
-    }
-
-    const continuarEstruturaInicialPedido = async () => {
+    const finalizarPedido = async () => {
         try {
             const transportadoraId = sessionStorage.getItem("transportadoraSelecionada");
             const clienteEnderecoId = sessionStorage.getItem("enderecoSelecionado");
@@ -153,9 +147,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    btnProsseguir.addEventListener("click", continuarEstruturaInicialPedido);
+    btnProsseguir.addEventListener("click", finalizarPedido);
 
-    carregarEnderecosEntrega();
-    carregarTransportadoras();
+    carregarCupons();
+    carregarCartoes();
     renderProdutosResumo(); // carrega resumo sem frete inicialmente
 });

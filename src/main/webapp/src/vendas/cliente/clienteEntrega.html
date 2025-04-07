@@ -1,73 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="../../../css/clienteCompras.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <meta charset="UTF-8">
     <title>Entrega</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../../css/clienteCompras.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <!--TODO: Adicionar links-->
-        <a href="#"><i id="voltar" class="fa-solid fa-less-than"></i></a>
-        <h2 class="texto-gradient" style="margin-left: 38%">E-COMMERCE</h2>
-    </header>
-    <div class="cabecalho">
-        <div>
-            <span> Home/Tênis/Carrinho/Identificação/Entrega </span>
-            <div class="entrega-cabecalho">
-                <h3>Entrega</h3>
-                <button type="button">Adicionar Novo</button>
-            </div>
-        </div>
-            <div>
-                <h3 style="margin-left: -815px;">TIPO ENTREGA</h3>
-            </div>
+<header>
+    <a href="clienteIdentificacao.html"><i id="voltar" class="fa-solid fa-less-than"></i></a>
+    <h2 class="texto-gradient text-center">E-COMMERCE</h2>
+</header>
+
+<div class="cabecalho">
+    <span>Home/Tênis/Carrinho/Identificação/Entrega</span>
+    <div class="entrega-cabecalho">
+        <h3>Entrega</h3>
+        <a href="../../criaEndereco.html">
+            <button type="button">Adicionar Novo</button>
+        </a>
     </div>
-    <div class="enderecos">
-        <div class="endereco-container">
-            <img src="../../../img/local.svg" alt="pointer local">
-            <div class="endereco-info">
-                <span class="texto-gradient">CEP: 00000-000</span>
-                <span class="texto-gradient">Número: 123</span>
-                <span class="texto-gradient">Logradouro: Rua Exemplo</span>
-                <span class="texto-gradient">Titpo Residencia: Casa</span>
-            </div>
-        </div>
+    <h3>TIPO ENTREGA</h3>
+</div>
+
+<!-- Endereços carregados via JS -->
+<div class="enderecos"></div>
+
+<!-- Transportadoras carregadas via JS -->
+<div class="tipo-entrega transportadoras"></div>
+
+<!-- Resumo do pedido -->
+<div class="info-pedido">
+    <h3 style="margin-bottom: 20px">RESUMO DO PEDIDO</h3>
+    <div class="info-pedido-container" style="color: gray">
+        <span>Produtos</span>
+        <span id="produtos-total">R$ 0,00</span>
     </div>
-    <div class="tipo-entrega">
-        <div class="agencia">
-            <span>Jadlog</span>
-        </div>
-        <div class="agencia">
-            <span>Jadlog</span>
-        </div>
-        <div class="agencia">
-            <span>Jadlog</span>
-        </div>
+    <div class="info-pedido-container">
+        <span>Total</span>
+        <span id="total-geral">R$ 0,00</span>
     </div>
-    <div class="info-pedido">
-        <h3 style="margin-bottom: 20px">RESUMO DO PEDIDO</h3>
-        <div class="info-pedido-container" style="color: gray">
-            <span>Produtos</span>
-            <span>R$ 1.314,63</span>
-        </div>
-        <div class="info-pedido-container">
-            <span>Total</span>
-            <span>R$ 1.414,98</span>
-        </div>
-        <button>PROSSEGUIR</button>
-        <div class="info-pedido-produtos">
-            <img src="../../../img/tenis.png" alt="img-tenis">
-            <div class="info-pedido-produto-container">
-                <span>puma</span>
-                <h6>Tênis Puma Speedcat Og Feminino</h6>
-                <p>R$ 699,99</p>
-                <span>Tamanho: 38</span>
-            </div>
+    <button id="btnProsseguir">PROSSEGUIR</button>
+    <div class="info-pedido-produtos">
+        <img src="../../../img/tenis.png" alt="img-tenis">
+        <div class="info-pedido-produto-container">
+            <span>puma</span>
+            <h6>Tênis Puma Speedcat Og Feminino</h6>
+            <p>R$ 699,99</p>
+            <span>Tamanho: 38</span>
         </div>
     </div>
-    <script src="../../../js/vendas/clienteEntrega.js"></script>
+</div>
+
+<script src="../../../js/vendas/clienteEntrega.js"></script>
 </body>
 </html>

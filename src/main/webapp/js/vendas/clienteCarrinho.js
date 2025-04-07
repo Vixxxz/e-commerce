@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     .reduce((total, item) => total + item.movimentacao, 0);
 
                 if (estoqueAtual < produto.quantidade) {
-                    window.location.href = "erroEstoque.html";
+                    alert("Tentando comprar mais do que disponível no estoque")
                     return;
                 }
             } catch (error) {

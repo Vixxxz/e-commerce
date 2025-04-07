@@ -66,8 +66,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 pedido: {
                     valorTotal: valorTotal,
                     status: "APROVADA",
-                    cliente: {
-                        id: cliente.id
+                    transportadora: {
+                        id: null
+                    },
+                    clienteEndereco: {
+                        id: null,
+                        cliente:{
+                            id: cliente.id
+                        },
+                        endereco:{
+                            id: null
+                        }
                     }
                 },
                 PedidoProdutos: carrinho.map(prod => ({

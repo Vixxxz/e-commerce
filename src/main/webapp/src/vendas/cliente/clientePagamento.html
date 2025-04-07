@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../../css/clienteCompras.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <title>Pagamento</title>
+</head>
+<body>
+<header>
+    <!--TODO: Adicionar links-->
+    <a href="#"><i id="voltar" class="fa-solid fa-less-than"></i></a>
+    <h2 class="texto-gradient" style="margin-left: 38%">E-COMMERCE</h2>
+</header>
+<div class="cabecalho">
+    <div>
+        <span> Home/Tênis/Carrinho/Identificação/Entrega </span>
+        <div class="entrega-cabecalho">
+            <h3>Pagamento</h3>
+        </div>
+    </div>
+</div>
+<section>
+    <div class="cupom row">
+        <div class="cupom-radio col">
+            <h5>Cupom Troca</h5>
+            <div class="cupom-radio-container">
+                <input type="radio" name="cupom" value="cupom-x" checked>
+                <span class="circulo"></span>
+                <span>Cupom Exemplo</span>
+            </div>
+            <div class="cupom-radio-container">
+                <input type="radio" name="cupom" value="cupom-x" disabled>
+                <span class="circulo"></span>
+                <span>Cupom Exemplo</span>
+            </div>
+        </div>
+        <div class="cupom-input col">
+            <form action="">
+                <h5>Cupom Promocional</h5>
+                <input type="text" id="promocional" placeholder="Insira o código">
+                <button type="submit">Buscar</button>
+            </form>
+        </div>
+    </div>
+    <div class="metodos">
+        <div class="entrega-cabecalho">
+            <h4>Método de Pagamento</h4>
+            <a href="../../../src/cadCartao.html"><button type="button">Adicionar Novo</button></a>
+        </div>
+        <div class="endereco-container">
+            <img src="../../../img/credit-card.svg" alt="pointer local">
+            <div class="card-info">
+                <span class="texto-gradient">Bandeira: Visa</span>
+                <span class="texto-gradient">Nome: Carlos Alberto</span>
+                <span class="texto-gradient">Número: 4260559067128308</span>
+            </div>
+        </div>
+        <div class="endereco-container">
+            <img src="../../../img/credit-card.svg" alt="pointer local">
+            <div class="card-info">
+                <span class="texto-gradient">Bandeira: Visa</span>
+                <span class="texto-gradient">Nome: Carlos Alberto</span>
+                <span class="texto-gradient">Número: 4260559067128308</span>
+            </div>
+        </div>
+    </div>
+    <div class="info-pedido">
+        <h3 style="margin-bottom: 20px">RESUMO DO PEDIDO</h3>
+        <div class="info-pedido-container" style="color: gray">
+            <span>Produtos</span>
+            <span id="produtos-total">R$ 0,00</span>
+        </div>
+        <div class="info-pedido-container">
+            <span>Total</span>
+            <span id="total-geral">R$ 0,00</span>
+        </div>
+        <button id="btnFinalizar">FINALIZAR</button>
+        <div class="info-pedido-produtos">
+            <img src="../../../img/tenis.png" alt="img-tenis">
+            <div class="info-pedido-produto-container">
+                <span>puma</span>
+                <h6>Tênis Puma Speedcat Og Feminino</h6>
+                <p>R$ 699,99</p>
+                <span>Tamanho: 38</span>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>
