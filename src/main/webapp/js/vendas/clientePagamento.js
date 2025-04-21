@@ -12,6 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 0);
     };
 
+    window.addEventListener('DOMContentLoaded', ()=>{
+        carregarCupons();
+        carregarCartoes();
+        renderProdutosResumo(); //carregar produtos inicalmente
+    })
+
     const renderProdutosResumo = () => {
         produtosContainer.innerHTML = "";
 
@@ -87,39 +93,39 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function carregarCartoes() {
-        const container = document.querySelector(".transportadoras");
-        const url = "http://localhost:8080/ecommerce_tenis_war_exploded/controleFrete";
+        const container = document.querySelector("#cartoes");
+        const url = "http://localhost:8080/ecommerce_tenis_war_exploded/controleCartao";
 
         try {
             const resposta = await fetch(url);
-            const transportadoras = await resposta.json();
+            const cartoes = await resposta.json();
             container.innerHTML = "";
 
-            transportadoras.forEach(item => {
+            cartoes.forEach(item => {
                 const div = document.createElement("div");
-                div.classList.add("agencia");
+                div.classList.add("endereco-container");
+                //TODO: ver o que precisa do Cartao para passar
                 div.setAttribute("data-id", item.id);
-                div.setAttribute("data-valor", item.valor);
 
                 div.innerHTML = `
-                    <div class="agencia-info">
-                        <span class="texto-gradient">${item.nome}</span>
-                        <span class="texto-gradient">Valor: R$ ${item.valor.toFixed(2)}</span>
+                    <img src="../../../img/credit-card.svg" alt="pointer local">
+                    <div class="card-info">
+                        <span class="texto-gradient">Bandeira: ${item.bandeira.nomeBandeira}</span>
+                        <span class="texto-gradient">Nome: ${item.nomeImpresso}</span>
+                        <span class="texto-gradient">Número: ${item.numero}</span>
                     </div>
                 `;
 
                 div.addEventListener("click", () => {
                     document.querySelectorAll(".agencia").forEach(e => e.classList.remove("selecionado"));
                     div.classList.add("selecionado");
-                    sessionStorage.setItem("transportadoraSelecionada", item.id);
-                    atualizaPreco(item.valor); // atualiza totais com frete
                 });
 
                 container.appendChild(div);
             });
         } catch (erro) {
-            console.error("Erro ao buscar transportadoras:", erro);
-            container.innerHTML = "<p style='color:red;'>Erro ao carregar transportadoras.</p>";
+            console.error("Erro ao buscar cartoes:", erro);
+            container.innerHTML = "<p style='color:red;'>Erro ao carregar cartoes.</p>";
         }
     }
 
@@ -139,7 +145,14 @@ document.addEventListener("DOMContentLoaded", () => {
             pedido.pedido.clienteEndereco.endereco.id = enderecoId;
 
             sessionStorage.setItem("pedidoJson", JSON.stringify(pedido));
-            window.location.href = "../../vendas/cliente/clientePagamento.html";
+            const resposta = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/controlePedido', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(sessionStorage)
+            });
+            window.location.href = "../../vendas/cliente/clienteConfirmcacao.html";
 
         } catch (err) {
             console.error("Erro ao montar pedido:", err);
@@ -148,8 +161,4 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     btnProsseguir.addEventListener("click", finalizarPedido);
-
-    carregarCupons();
-    carregarCartoes();
-    renderProdutosResumo(); // carrega resumo sem frete inicialmente
 });

@@ -10,7 +10,7 @@
 <body>
 <header>
     <!--TODO: Adicionar links-->
-    <a href="#"><i id="voltar" class="fa-solid fa-less-than"></i></a>
+    <a href="clienteEntrega.html"><i id="voltar" class="fa-solid fa-less-than"></i></a>
     <h2 class="texto-gradient" style="margin-left: 38%">E-COMMERCE</h2>
 </header>
 <div class="cabecalho">
@@ -45,24 +45,26 @@
         </div>
     </div>
     <div class="metodos">
-        <div class="entrega-cabecalho">
+        <div class="cartao-cabecalho">
             <h4>Método de Pagamento</h4>
-            <a href="../../../src/cadCartao.html"><button type="button">Adicionar Novo</button></a>
+            <a href="../../../src/cadCartao.html" class=><button>Adicionar Novo</button></a>
         </div>
-        <div class="endereco-container">
-            <img src="../../../img/credit-card.svg" alt="pointer local">
-            <div class="card-info">
-                <span class="texto-gradient">Bandeira: Visa</span>
-                <span class="texto-gradient">Nome: Carlos Alberto</span>
-                <span class="texto-gradient">Número: 4260559067128308</span>
+        <div id="cartoes">
+            <div class="endereco-container">
+                <img src="../../../img/credit-card.svg" alt="pointer local">
+                <div class="card-info">
+                    <span class="texto-gradient">Bandeira: Visa</span>
+                    <span class="texto-gradient">Nome: Carlos Alberto</span>
+                    <span class="texto-gradient">Número: 4260559067128308</span>
+                </div>
             </div>
-        </div>
-        <div class="endereco-container">
-            <img src="../../../img/credit-card.svg" alt="pointer local">
-            <div class="card-info">
-                <span class="texto-gradient">Bandeira: Visa</span>
-                <span class="texto-gradient">Nome: Carlos Alberto</span>
-                <span class="texto-gradient">Número: 4260559067128308</span>
+            <div class="endereco-container">
+                <img src="../../../img/credit-card.svg" alt="pointer local">
+                <div class="card-info">
+                    <span class="texto-gradient">Bandeira: Visa</span>
+                    <span class="texto-gradient">Nome: Carlos Alberto</span>
+                    <span class="texto-gradient">Número: 4260559067128308</span>
+                </div>
             </div>
         </div>
     </div>
@@ -88,5 +90,6 @@
         </div>
     </div>
 </section>
+<script src="../../../js/vendas/clientePagamento.js"></script>
 </body>
 </html>

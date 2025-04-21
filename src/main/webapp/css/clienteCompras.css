@@ -498,6 +498,22 @@ header h4{
 
 
 /*TELA DE PAGAMENTO*/
+.cartao-cabecalho{
+    display: flex;
+    flex-direction: row;
+}
+
+.cartao-cabecalho button{
+    width: 170px;
+    height: 40px;
+    align-content: center;
+    background: var(--amarelo);
+    margin-left:35px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
 
 .cupom{
     display: flex;
