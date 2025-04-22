@@ -131,28 +131,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const finalizarPedido = async () => {
         try {
-            const transportadoraId = sessionStorage.getItem("transportadoraSelecionada");
-            const clienteEnderecoId = sessionStorage.getItem("enderecoSelecionado");
-            const enderecoId = sessionStorage.getItem("enderecoID");
+            const cartaoId = document.querySelector(".endereco-container.selecionado")
+                .dataset.id;
 
-            if (!transportadoraId || !clienteEnderecoId || !enderecoId) {
-                alert("Selecione um endereço e uma transportadora antes de continuar.");
+            if (!cartaoId) {
+                alert("Selecione um cartão antes de finalizar o pedido.");
                 return;
             }
 
-            pedido.pedido.transportadora.id = transportadoraId;
-            pedido.pedido.clienteEndereco.id = clienteEnderecoId;
-            pedido.pedido.clienteEndereco.endereco.id = enderecoId;
+            pedido.CartaoPedido = [
+                {
+                    cartao: {
+                        id: parseInt(cartaoId)
+                    }
+                }
+            ];
 
             sessionStorage.setItem("pedidoJson", JSON.stringify(pedido));
+
             const resposta = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/controlePedido', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(sessionStorage)
+                body: sessionStorage.getItem("pedidoJson")
             });
-            window.location.href = "../../vendas/cliente/clienteConfirmcacao.html";
+
+            console.log('pedido gerado, salvando...');
+            if (!resposta.ok) throw new Error("Erro ao finalizar pedido");
+            console.log('pedido salvo com sucesso!');
+            window.location.href = "../../vendas/cliente/clientePagamento.html";
 
         } catch (err) {
             console.error("Erro ao montar pedido:", err);
