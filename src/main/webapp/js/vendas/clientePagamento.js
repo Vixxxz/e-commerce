@@ -5,18 +5,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalSpan = document.getElementById("total-geral");
     const produtosSpan = document.getElementById("produtos-total");
     const btnProsseguir = document.getElementById("btnFinalizar");
+    const formCupom = document.getElementById("form-cupom");
+
+    formCupom.addEventListener("submit", async (event) => {
+        event.preventDefault(); // Impede o refresh da página
+
+        const codCupom = document.getElementById("promocional").value.trim();
+
+        if (!codCupom) {
+            alert("Digite um código de cupom.");
+            return;
+        }
+        await carregarCuponsPromocional(codCupom);
+    });
 
     const calcularTotalCarrinho = () => {
         return carrinho.reduce((total, produto) => {
             return total + (parseFloat(produto.preco) * (produto.quantidade || 1));
         }, 0);
     };
-
-    window.addEventListener('DOMContentLoaded', ()=>{
-        carregarCupons();
-        carregarCartoes();
-        renderProdutosResumo(); //carregar produtos inicalmente
-    })
 
     const renderProdutosResumo = () => {
         produtosContainer.innerHTML = "";
@@ -51,50 +58,84 @@ document.addEventListener("DOMContentLoaded", () => {
         totalSpan.innerText = `R$ ${totalCarrinho.toFixed(2).replace(".", ",")}`;
     };
 
-    async function carregarCupons() {
-        const container = document.querySelector(".enderecos");
-        const idCliente = pedido.pedido.clienteEndereco.cliente.id
-        const url = `http://localhost:8080/ecommerce_tenis_war_exploded/controleEndereco?idCliente=${idCliente}&tipoEndereco=Entrega`;
+    async function carregarCuponsPromocional(codCupom) {
+        const container = document.querySelector(".cupom-input.col #resultado-cupom");
+        const url = `http://localhost:8080/ecommerce_tenis_war_exploded/controleCupom?codigo=${codCupom}`;
 
         try {
             const resposta = await fetch(url);
-            const enderecos = await resposta.json();
-            container.innerHTML = "";
+            const cupom = await resposta.json();
 
-            enderecos.forEach(item => {
-                const endereco = item.endereco;
+            container.innerHTML = ""; // Limpa antes de adicionar novo conteúdo
 
+            if (!cupom || cupom.length === 0) {
+                container.innerHTML = "<p style='color: red;'>Cupom não encontrado.</p>";
+                return;
+            }
+
+            cupom.forEach(item => {
                 const div = document.createElement("div");
-                div.classList.add("endereco-container");
-                div.setAttribute("data-id", item.id);
+                div.classList.add("cupom-detalhes");
+                div.innerHTML = `
+                <p><strong>Nome:</strong> ${item.nome}</p>
+                <p><strong>Desconto:</strong> ${item.tipoDesconto === "PORCENTAGEM" ? item.valor + "%" : "R$ " + item.valor}</p>
+                <p><strong>Validade:</strong> ${item.validade}</p>
+            `;
+                container.appendChild(div);
+            });
+
+        } catch (erro) {
+            console.error("Erro ao buscar cupom:", erro);
+            container.innerHTML = "<p style='color:red;'>Erro ao carregar cupom.</p>";
+        }
+    }
+
+    async function carregarCuponsTroca() {
+        const idCliente = pedido?.pedido?.clienteEndereco?.cliente?.id;
+        if (!idCliente) return;
+
+        const container = document.querySelector(".cupom-radio.col");
+        const url = `http://localhost:8080/ecommerce_tenis_war_exploded/controleCupom?idCliente=${encodeURIComponent(idCliente)}`;
+
+        try {
+            const resposta = await fetch(url);
+            if (!resposta.ok) throw new Error("Erro ao buscar cupons");
+
+            const cupons = await resposta.json();
+            container.innerHTML = "<h5>Cupom Troca</h5>";
+
+            if (!Array.isArray(cupons) || cupons.length === 0) {
+                container.innerHTML += "<p style='color: red;'>Nenhum cupom disponível.</p>";
+                return;
+            }
+
+            cupons.forEach((item, index) => {
+                const div = document.createElement("div");
+                div.classList.add("cupom-radio-container");
+
+                const isValido = item.valido === true;
+                const checked = index === 0 && isValido ? "checked" : "";
+                const disabled = isValido ? "" : "disabled";
 
                 div.innerHTML = `
-                    <img src="../../../img/local.svg" alt="pointer local">
-                    <div class="endereco-info">
-                        <span class="texto-gradient">CEP: ${endereco.cep}</span>
-                        <span class="texto-gradient">Número: ${item.numero}</span>
-                        <span class="texto-gradient">Logradouro: ${endereco.tipoLogradouro} ${endereco.logradouro}</span>
-                    </div>
-                `;
-
-                div.addEventListener("click", () => {
-                    document.querySelectorAll(".endereco-container").forEach(e => e.classList.remove("selecionado"));
-                    div.classList.add("selecionado");
-                    sessionStorage.setItem("enderecoSelecionado", item.id);
-                    sessionStorage.setItem("enderecoID", endereco.id);
-                });
+                <input type="radio" name="cupom" value="${item.codigo}" ${checked} ${disabled}>
+                <span class="circulo"></span>
+                <span>${item.nome}</span>
+            `;
 
                 container.appendChild(div);
             });
+
         } catch (erro) {
-            console.error("Erro ao buscar endereços:", erro);
-            container.innerHTML = "<p style='color:red;'>Erro ao carregar endereços.</p>";
+            console.error("Erro ao buscar cupons:", erro);
+            container.innerHTML += "<p style='color:red;'>Erro ao carregar cupons.</p>";
         }
     }
 
     async function carregarCartoes() {
+        const idCliente = pedido.pedido.clienteEndereco.cliente.id
         const container = document.querySelector("#cartoes");
-        const url = "http://localhost:8080/ecommerce_tenis_war_exploded/controleCartao";
+        const url = `http://localhost:8080/ecommerce_tenis_war_exploded/controleCartao?idCliente=${idCliente}`;
 
         try {
             const resposta = await fetch(url);
@@ -169,4 +210,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     btnProsseguir.addEventListener("click", finalizarPedido);
+
+    carregarCuponsTroca();
+    carregarCartoes();
+    renderProdutosResumo();
 });
