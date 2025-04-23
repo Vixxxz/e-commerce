@@ -19,9 +19,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const wrapper = document.createElement("div");
             wrapper.className = "info-pedido-produto-wrapper";
 
+            console.log("preco antes de formatar: " + produto.preco);
+
             const preco = parseFloat(
-                produto.preco.toString().replace("R$", "").replace(".", "").replace(",", ".")
+                produto.preco
+                    .toString()
+                    .replace(",", ".") // Substitui vírgula por ponto para o decimal
             );
+
+            console.log("o preco formato e: " + preco);
 
             wrapper.innerHTML = `
             <div class="info-pedido-produto">
@@ -60,11 +66,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const clienteData = await response.json();
             const cliente = clienteData[0]?.cliente || clienteData[0];
 
-            const valorTotal = calcularTotalCarrinho();
-
             const pedidoJson = {
                 pedido: {
-                    valorTotal: valorTotal,
+                    valorTotal: null,
                     status: "APROVADA",
                     transportadora: {
                         id: null

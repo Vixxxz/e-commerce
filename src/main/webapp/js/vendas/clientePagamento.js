@@ -33,7 +33,9 @@ document.addEventListener("DOMContentLoaded", () => {
             wrapper.className = "info-pedido-produto-wrapper";
 
             const preco = parseFloat(
-                produto.preco.toString().replace("R$", "").replace(".", "").replace(",", ".")
+                produto.preco
+                    .toString()
+                    .replace(",", ".") // Substitui vírgula por ponto para o decimal
             );
 
             wrapper.innerHTML = `
@@ -55,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalCarrinho = calcularTotalCarrinho();
 
         produtosSpan.innerText = `R$ ${totalCarrinho.toFixed(2).replace(".", ",")}`;
-        totalSpan.innerText = `R$ ${totalCarrinho.toFixed(2).replace(".", ",")}`;
+        totalSpan.innerText = `R$ ${pedido.valorTotal.toFixed(2).replace(".", ",")}`;
     };
 
     async function carregarCuponsPromocional(codCupom) {
@@ -157,20 +159,20 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="texto-gradient">Bandeira: ${item.bandeira.nomeBandeira}</span>
               <span class="texto-gradient">Nome: ${item.nomeImpresso}</span>
               <span class="texto-gradient">Número: ${item.numero}</span>
-<!--              <input type="number" class="valor-input" min="10" placeholder="Valor (mín. R$10)" />-->
+              <input type="number" class="valor-input" min="10" placeholder="Valor (mín. R$10)" />
             </div>
           `;
 
-                // const input = div.querySelector(".valor-input");
-                //
-                // input.addEventListener("input", () => {
-                //     const valor = parseFloat(input.value);
-                //     if (valor < 10 && valor !== 0) {
-                //         input.setCustomValidity("Valor mínimo é R$10 por cartão.");
-                //     } else {
-                //         input.setCustomValidity("");
-                //     }
-                // });
+                const input = div.querySelector(".valor-input");
+
+                input.addEventListener("input", () => {
+                    const valor = parseFloat(input.value);
+                    if (valor < 10 && valor !== 0) {
+                        input.setCustomValidity("Valor mínimo é R$10 por cartão.");
+                    } else {
+                        input.setCustomValidity("");
+                    }
+                });
 
                 div.addEventListener("click", () => {
                     div.classList.toggle("selecionado");
@@ -220,19 +222,20 @@ document.addEventListener("DOMContentLoaded", () => {
             }));
 
             sessionStorage.setItem("pedidoJson", JSON.stringify(pedido));
+            console.log(JSON.stringify(pedido));
 
-            const resposta = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/controlePedido', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: sessionStorage.getItem("pedidoJson")
-            });
-
-            console.log('pedido gerado, salvando...');
-            if (!resposta.ok) throw new Error("Erro ao finalizar pedido");
-            console.log('pedido salvo com sucesso!');
-            window.location.href = "../../vendas/cliente/clientePagamento.html";
+            // const resposta = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/controlePedido', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json'
+            //     },
+            //     body: sessionStorage.getItem("pedidoJson")
+            // });
+            //
+            // console.log('pedido gerado, salvando...');
+            // if (!resposta.ok) throw new Error("Erro ao finalizar pedido");
+            // console.log('pedido salvo com sucesso!');
+            // window.location.href = "../../vendas/cliente/clientePagamento.html";
 
         } catch (err) {
             console.error("Erro ao montar pedido:", err);

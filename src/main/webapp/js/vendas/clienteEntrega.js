@@ -20,7 +20,9 @@ document.addEventListener("DOMContentLoaded", () => {
             wrapper.className = "info-pedido-produto-wrapper";
 
             const preco = parseFloat(
-                produto.preco.toString().replace("R$", "").replace(".", "").replace(",", ".")
+                produto.preco
+                    .toString()
+                    .replace(",", ".") // Substitui vírgula por ponto para o decimal
             );
 
             wrapper.innerHTML = `
@@ -112,6 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.querySelectorAll(".agencia").forEach(e => e.classList.remove("selecionado"));
                     div.classList.add("selecionado");
                     sessionStorage.setItem("transportadoraSelecionada", item.id);
+                    sessionStorage.setItem("valorTransportadora", item.valor);
                     atualizaPreco(item.valor); // atualiza totais com frete
                 });
 
@@ -132,6 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const continuarEstruturaInicialPedido = async () => {
         try {
             const transportadoraId = sessionStorage.getItem("transportadoraSelecionada");
+            const valorTransportadora = parseFloat(sessionStorage.getItem("valorTransportadora")) || 0;
             const clienteEnderecoId = sessionStorage.getItem("enderecoSelecionado");
             const enderecoId = sessionStorage.getItem("enderecoID");
 
@@ -140,6 +144,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            const totalCarrinho = calcularTotalCarrinho()
+
+            pedido.pedido.valorTotal = totalCarrinho + valorTransportadora;
             pedido.pedido.transportadora.id = transportadoraId;
             pedido.pedido.clienteEndereco.id = clienteEnderecoId;
             pedido.pedido.clienteEndereco.endereco.id = enderecoId;
