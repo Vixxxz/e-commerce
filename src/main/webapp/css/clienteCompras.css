@@ -498,6 +498,11 @@ header h4{
 
 
 /*TELA DE PAGAMENTO*/
+.valor-input {
+    margin-top: 10px;
+    width: 100%;
+}
+
 .cartao-cabecalho {
     display: flex;
     flex-direction: row;

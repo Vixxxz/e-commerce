@@ -157,12 +157,23 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="texto-gradient">Bandeira: ${item.bandeira.nomeBandeira}</span>
               <span class="texto-gradient">Nome: ${item.nomeImpresso}</span>
               <span class="texto-gradient">Número: ${item.numero}</span>
+<!--              <input type="number" class="valor-input" min="10" placeholder="Valor (mín. R$10)" />-->
             </div>
           `;
 
+                // const input = div.querySelector(".valor-input");
+                //
+                // input.addEventListener("input", () => {
+                //     const valor = parseFloat(input.value);
+                //     if (valor < 10 && valor !== 0) {
+                //         input.setCustomValidity("Valor mínimo é R$10 por cartão.");
+                //     } else {
+                //         input.setCustomValidity("");
+                //     }
+                // });
+
                 div.addEventListener("click", () => {
-                    document.querySelectorAll(".cartao-container").forEach(e => e.classList.remove("selecionado"));
-                    div.classList.add("selecionado");
+                    div.classList.toggle("selecionado");
                 });
 
                 container.appendChild(div);
@@ -175,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const finalizarPedido = async () => {
         try {
-            const cartaoId = document.querySelector(".endereco-container.selecionado")
+            const cartaoId = document.querySelector(".cartao-container.selecionado")
                 .dataset.id;
 
             if (!cartaoId) {
