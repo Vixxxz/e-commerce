@@ -133,32 +133,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function carregarCartoes() {
-        const idCliente = pedido.pedido.clienteEndereco.cliente.id
+        const idCliente = pedido?.pedido?.clienteEndereco?.cliente?.id;
+        if (!idCliente) return;
+
         const container = document.querySelector("#cartoes");
         const url = `http://localhost:8080/ecommerce_tenis_war_exploded/controleCartao?idCliente=${idCliente}`;
 
         try {
             const resposta = await fetch(url);
+            if (!resposta.ok) throw new Error("Erro na requisição de cartões");
+
             const cartoes = await resposta.json();
             container.innerHTML = "";
 
             cartoes.forEach(item => {
                 const div = document.createElement("div");
-                div.classList.add("endereco-container");
-                //TODO: ver o que precisa do Cartao para passar
+                div.classList.add("cartao-container");
                 div.setAttribute("data-id", item.id);
 
                 div.innerHTML = `
-                    <img src="../../../img/credit-card.svg" alt="pointer local">
-                    <div class="card-info">
-                        <span class="texto-gradient">Bandeira: ${item.bandeira.nomeBandeira}</span>
-                        <span class="texto-gradient">Nome: ${item.nomeImpresso}</span>
-                        <span class="texto-gradient">Número: ${item.numero}</span>
-                    </div>
-                `;
+            <img src="../../../img/credit-card.svg" alt="Cartão de crédito">
+            <div class="card-info">
+              <span class="texto-gradient">Bandeira: ${item.bandeira.nomeBandeira}</span>
+              <span class="texto-gradient">Nome: ${item.nomeImpresso}</span>
+              <span class="texto-gradient">Número: ${item.numero}</span>
+            </div>
+          `;
 
                 div.addEventListener("click", () => {
-                    document.querySelectorAll(".agencia").forEach(e => e.classList.remove("selecionado"));
+                    document.querySelectorAll(".cartao-container").forEach(e => e.classList.remove("selecionado"));
                     div.classList.add("selecionado");
                 });
 

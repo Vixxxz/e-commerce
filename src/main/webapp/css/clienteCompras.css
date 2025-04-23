@@ -498,22 +498,52 @@ header h4{
 
 
 /*TELA DE PAGAMENTO*/
-.cartao-cabecalho{
+.cartao-cabecalho {
     display: flex;
     flex-direction: row;
+    align-items: center;
+    gap: 20px;
+    /*justify-content: space-between;*/
 }
 
-.cartao-cabecalho button{
+.cartao-cabecalho button {
     width: 170px;
     height: 40px;
-    align-content: center;
     background: var(--amarelo);
-    margin-left:35px;
+    margin-left: 0;
     border: none;
     border-radius: 10px;
     font-weight: bold;
+    cursor: pointer;
 }
 
+.cartao-container {
+    display: flex;
+    width: 534px;
+    height: 242px;
+    padding: 40px 31px;
+    margin: 35px 0px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    gap: 10px;
+    border-radius: 20px;
+    border: 1px solid var(--fundo, #1B56A8);
+    background: #F9F7F7;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+}
+
+.cartao-container.selecionado {
+    border: 2px solid #00f;
+    background-color: #e0f0ff;
+}
+
+.card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
 
 .cupom{
     display: flex;
