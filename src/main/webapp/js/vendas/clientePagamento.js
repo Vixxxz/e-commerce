@@ -184,6 +184,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    function obterCartoesSelecionados() {
+        const selecionados = document.querySelectorAll(".cartao-container.selecionado");
+
+        return Array.from(selecionados).map(div => {
+            const id = parseInt(div.getAttribute("data-id"));
+            const input = div.querySelector(".valor-input");
+            const valor = input ? parseFloat(input.value) : null;
+
+            return {
+                id: id,
+                valor: valor
+            };
+        });
+    }
+
+
     const finalizarPedido = async () => {
         try {
             const cartaoId = document.querySelector(".cartao-container.selecionado")
@@ -194,13 +210,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            pedido.CartaoPedido = [
-                {
-                    cartao: {
-                        id: parseInt(cartaoId)
-                    }
-                }
-            ];
+            const cartoesSelecionados = obterCartoesSelecionados();
+
+            pedido.CartaoPedido = cartoesSelecionados.map(cartao => ({
+                cartao: {
+                    id: cartao.id
+                },
+                valor: cartao.valor
+            }));
 
             sessionStorage.setItem("pedidoJson", JSON.stringify(pedido));
 

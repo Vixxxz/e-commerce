@@ -71,10 +71,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
                     clienteEndereco: {
                         id: null,
-                        cliente:{
+                        cliente: {
                             id: cliente.id
                         },
-                        endereco:{
+                        endereco: {
                             id: null
                         }
                     }
@@ -90,7 +90,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     },
                     quantidade: prod.quantidade
-                }))
+                })),
+                CartaoPedido: [] // vazio por enquanto
             };
 
             sessionStorage.setItem("pedidoJson", JSON.stringify(pedidoJson));
