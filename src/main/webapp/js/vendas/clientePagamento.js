@@ -32,11 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const wrapper = document.createElement("div");
             wrapper.className = "info-pedido-produto-wrapper";
 
-            const preco = parseFloat(
-                produto.preco
-                    .toString()
-                    .replace(",", ".") // Substitui vírgula por ponto para o decimal
-            );
+            const preco = sessionStorage.getItem("totalCarrinho");
 
             wrapper.innerHTML = `
             <div class="info-pedido-produto">

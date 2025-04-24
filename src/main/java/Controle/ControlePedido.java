@@ -92,12 +92,15 @@ public class ControlePedido extends HttpServlet {
         }
 
         Pedido pedido = gson.fromJson(jsonObject.get("pedido"), Pedido.class);
+
         Type pedidoProdutoListType = new TypeToken<List<PedidoProduto>>() {
         }.getType();
         List<PedidoProduto> pedidoProdutos = gson.fromJson(jsonObject.get("PedidoProdutos"), pedidoProdutoListType);
+
         Type cartaoPedidoListType = new TypeToken<List<CartaoPedido>>() {
         }.getType();
         List<CartaoPedido> cartaoPedidos = gson.fromJson(jsonObject.get("CartaoPedido"), cartaoPedidoListType);
+
         Fachada fachada = new Fachada();
         Resultado<String> resultado = fachada.salvarPedidoProduto(pedido, pedidoProdutos, cartaoPedidos);
 
