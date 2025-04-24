@@ -111,6 +111,17 @@ function preencherDados(produtos) {
             </div>
         </div>
     `;
+
+    document.querySelectorAll('input[name="tamanho"]').forEach(input => {
+        input.addEventListener('change', () => {
+            document.querySelectorAll('.btn-tamanho').forEach(label => {
+                label.classList.remove('checked');
+            });
+
+            input.closest('label').classList.add('checked');
+        });
+    });
+
 }
 
 

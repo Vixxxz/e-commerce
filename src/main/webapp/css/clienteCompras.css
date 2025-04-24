@@ -92,7 +92,7 @@ header h4{
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     padding: 25px;
 }
 
@@ -265,9 +265,9 @@ header h4{
     display: none;
 }
 
-.btn-tamanho.checked {
-    background-color: white;
-    color: var(--fundo);
+.checked {
+    border: 2px solid #00f;
+    background-color: #e0f0ff;
 }
 /*TELA DE CARRINHO*/
 

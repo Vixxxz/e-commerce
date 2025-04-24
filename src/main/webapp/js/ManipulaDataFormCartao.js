@@ -91,13 +91,13 @@ class ManipulaDataFormCartao {
                 numSeguranca,
                 nomeImpresso,
                 preferencial, // Sempre retorna `false` se não estiver marcado
-            },
-            Bandeira: {
-                nomeBandeira: bandeira,
-            },
-            Cliente: {
-                cpf,
-            },
+                bandeira: {
+                    nomeBandeira: bandeira,
+                },
+                cliente: {
+                    cpf,
+                },
+            }
         };
     }
 }

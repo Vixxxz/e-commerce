@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalCarrinho = calcularTotalCarrinho();
 
         produtosSpan.innerText = `R$ ${totalCarrinho.toFixed(2).replace(".", ",")}`;
-        totalSpan.innerText = `R$ ${pedido.valorTotal.toFixed(2).replace(".", ",")}`;
+        totalSpan.innerText = `R$ ${pedido.va   lorTotal.toFixed(2).replace(".", ",")}`;
     };
 
     async function carregarCuponsPromocional(codCupom) {
