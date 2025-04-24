@@ -103,13 +103,25 @@ public class Fachada implements IFachada {
                     }
                     return Resultado.sucesso("Cartão salvo com sucesso!");
                 }
+//                case ReservaEstoque reservaEstoque -> {
+//                    processarValidacoes(reservaEstoque, getValidacoes(reservaEstoque, Operacao.SALVAR), sb);
+//                    if(!sb.isEmpty()){
+//                        return Resultado.erro(sb.toString());
+//                    }
+//                    ReservaDAO reservaDAO = new ReservaDAO();
+//                    Resultado<EntidadeDominio> resultadoSalvaReserva = reservaDAO.salvar(reservaEstoque);
+//                    if(!resultadoSalvaReserva.isSucesso()){
+//                        return Resultado.erro(resultadoSalvaReserva.getErro());
+//                    }
+//                    return Resultado.sucesso("Reserva realizada com sucesso!");
+//                }
                 case null, default -> {
                     return Resultado.erro("Tipo de entidade não suportado: " + entidade);
                 }
             }
         } catch (Exception e) {
-            System.err.println("Erro ao salvar endereço: " + e.getMessage());
-            return Resultado.erro("Erro interno ao salvar endereço." + e.getMessage());
+            System.err.println("Erro ao salvar: " + e.getMessage());
+            return Resultado.erro("Erro interno ao salvar." + e.getMessage());
         }
     }
 
@@ -382,6 +394,9 @@ public class Fachada implements IFachada {
 
             }
             case CartaoPedido ignore ->{
+
+            }
+            case ReservaEstoque ignore ->{
 
             }
             case null, default -> {

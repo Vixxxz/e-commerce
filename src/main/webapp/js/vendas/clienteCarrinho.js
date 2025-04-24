@@ -68,28 +68,43 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.querySelector("button").addEventListener("click", async () => {
-        for (const produto of carrinho) {
-            try {
-                const response = await fetch(`http://localhost:8080/ecommerce_tenis_war_exploded/controleEstoque?sku=${encodeURIComponent(produto.sku)}`);
-                if (!response.ok) throw new Error("Erro ao buscar estoque");
-
-                const dados = await response.json();
-                const estoqueAtual = dados
-                    .filter(item => item.produto.sku === produto.sku)
-                    .reduce((total, item) => total + item.movimentacao, 0);
-
-                if (estoqueAtual < produto.quantidade) {
-                    alert("Tentando comprar mais do que disponível no estoque")
-                    return;
-                }
-            } catch (error) {
-                console.error("Erro ao verificar estoque:", error);
-                alert("Erro ao verificar estoque.");
+        try {
+            // Verifica se há produtos no carrinho
+            if (!carrinho || carrinho.length === 0) {
+                alert('Carrinho vazio!');
                 return;
             }
-        }
 
-        window.location.href = "../../vendas/cliente/clienteIdentificacao.html";
+            // Estrutura correta do JSON conforme requisito
+            const payload = {
+                reserva: carrinho.map(item => ({
+                    produto: { id: item.idTenis },
+                    marca: { id: item.marca },
+                    quantidade: item.quantidade
+                }))
+            };
+
+            // Envia uma única requisição com todos os itens
+            const response = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/reservarEstoque', {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                alert('Erro ao reservar estoque: ' + (data.message || 'Erro desconhecido'));
+                return;
+            }
+
+            // Redireciona para checkout se tudo estiver OK
+            window.location.href = "../../vendas/cliente/clienteIdentificacao.html";
+
+        } catch (error) {
+            console.error("Erro durante o processo de reserva:", error);
+            alert("Ocorreu um erro inesperado durante a reserva do estoque.");
+        }
     });
 
     renderCarrinho();

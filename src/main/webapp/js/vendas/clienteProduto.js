@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const preco = document.querySelector("#produto-preco")?.innerText.replace("R$ ", "").replace(",", ".");
             const imagem = document.querySelector("#produto-imagem")?.getAttribute("src");
             const tamanhoSelecionado = document.querySelector("input[name='tamanho']:checked")?.value;
+            const produtoStorage = sessionStorage.getItem("produto");
+            const produto = produtoStorage ? JSON.parse(produtoStorage) : null;
 
             if (!sku || !tamanhoSelecionado) {
                 alert("Erro ao identificar produto ou tamanho.");
@@ -25,6 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             adicionarProdutoAoCarrinho({
+                idTenis: produto.id,
+                marca: produto.marca.id,
                 sku,
                 nome,
                 preco: parseFloat(preco),
@@ -42,6 +46,8 @@ async function carregarDadosProduto(modelo) {
     try {
         const response = await fetchAPI(`${BASE_URL}/controleProduto?modelo=${modelo}`, "Erro ao buscar produto");
         const produto = Array.isArray(response) ? response : [response];
+
+        sessionStorage.setItem("produto", JSON.stringify(produto));
 
         console.log("Produto recebido:", produto);
         preencherDados(produto);
