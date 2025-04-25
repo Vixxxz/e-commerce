@@ -47,11 +47,10 @@ async function carregarDadosProduto(modelo) {
         const response = await fetchAPI(`${BASE_URL}/controleProduto?modelo=${modelo}`, "Erro ao buscar produto");
         const produto = Array.isArray(response) ? response : [response];
 
-        sessionStorage.setItem("produto", JSON.stringify(produto));
+        sessionStorage.setItem("produto", JSON.stringify(Array.isArray(response) ? response[0] : response));
 
-        console.log("Produto recebido:", produto);
+        console.log("Produto recebido:", JSON.stringify(Array.isArray(response) ? response[0] : response, null, 2));
         preencherDados(produto);
-
 
     } catch (error) {
         console.error("Erro ao carregar produto:", error);
