@@ -87,10 +87,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     produto: {
                         id: prod.id,
                         marca: {
-                            id: prod.marca_id || 1
+                            id: prod.marca_id
                         },
                         categoria: {
-                            id: prod.categoria_id || 1
+                            id: prod.categoria_id
                         }
                     },
                     quantidade: prod.quantidade
