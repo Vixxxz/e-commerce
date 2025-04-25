@@ -109,11 +109,11 @@ public class Fachada implements IFachada {
                         return Resultado.erro(sb.toString());
                     }
                     ReservaDAO reservaDAO = new ReservaDAO();
-                    Resultado<EntidadeDominio> resultadoSalvaReserva = reservaDAO.salvar(reservaEstoque);
+                    Resultado<String> resultadoSalvaReserva = reservaDAO.CriaOuAtualizaReserva(reservaEstoque);
                     if(!resultadoSalvaReserva.isSucesso()){
                         return Resultado.erro(resultadoSalvaReserva.getErro());
                     }
-                    return Resultado.sucesso("Reserva realizada com sucesso!");
+                    return Resultado.sucesso(resultadoSalvaReserva.getValor());
                 }
                 case null, default -> {
                     return Resultado.erro("Tipo de entidade não suportado: " + entidade);

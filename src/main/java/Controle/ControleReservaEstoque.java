@@ -26,6 +26,7 @@ public class ControleReservaEstoque extends HttpServlet {
         PrintWriter out = resp.getWriter();
         HttpSession session = req.getSession();
         String sessaoId = session.getId();
+
         Gson gson = new Gson();
 
         Resultado<JsonObject> ResultJsonObject = lerJsonComoObjeto(req);
