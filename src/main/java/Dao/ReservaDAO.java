@@ -47,7 +47,7 @@ public class ReservaDAO implements IDAO{
                 pst.setInt(1, reservaEstoque.getProduto().getId());
                 pst.setInt(2, reservaEstoque.getMarca().getId());
                 pst.setInt(3, reservaEstoque.getQuantidade());
-                pst.setDate(4, new Date(reservaEstoque.getDtCadastro().getTime()));
+                pst.setTimestamp(4, new Timestamp(reservaEstoque.getDtCadastro().getTime()));
                 pst.setString(5, reservaEstoque.getSessao());
                 pst.executeUpdate();
 

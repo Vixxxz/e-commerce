@@ -91,21 +91,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            const data = await response.json();
-
-            if (!data.success) {
-                alert('Erro ao reservar estoque: ' + (data.message || 'Erro desconhecido'));
-                return;
+            if (response.status === 201) {
+                window.location.href = "../../vendas/cliente/clienteIdentificacao.html";
+            } else {
+                const data = await response.json();
+                const errorMsg = data.erro || data.message || 'Erro desconhecido ao reservar estoque';
+                alert(errorMsg);
             }
-
-            // Redireciona para checkout se tudo estiver OK
-            window.location.href = "../../vendas/cliente/clienteIdentificacao.html";
 
         } catch (error) {
             console.error("Erro durante o processo de reserva:", error);
             alert("Ocorreu um erro inesperado durante a reserva do estoque.");
         }
     });
-
     renderCarrinho();
 });

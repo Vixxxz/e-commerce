@@ -78,64 +78,6 @@ public class ControleReservaEstoque extends HttpServlet {
         String json = gson.toJson("Reserva feita com sucesso!");
         resp.setStatus(HttpServletResponse.SC_CREATED);
         out.print(json);
-
-//        BufferedReader reader = request.getReader();
-//        ItemCarrinho[] carrinho = new Gson().fromJson(reader, ItemCarrinho[].class);
-//
-//        try (Connection conn = getConnection()) {
-//            conn.setAutoCommit(false);
-//
-//            for (ItemCarrinho item : carrinho) {
-//                int tenId = item.tenId;
-//                int marId = item.marId;
-//                int qtd = item.qtd;
-//
-//                String checkSql = "SELECT est_quantidade FROM estoque WHERE est_ten_id = ? AND est_mar_id = ? FOR UPDATE";
-//                try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
-//                    ps.setInt(1, tenId);
-//                    ps.setInt(2, marId);
-//                    ResultSet rs = ps.executeQuery();
-//                    if (rs.next()) {
-//                        int estoqueAtual = rs.getInt("est_quantidade");
-//                        if (estoqueAtual < qtd) {
-//                            conn.rollback();
-//                            response.setStatus(HttpServletResponse.SC_CONFLICT);
-//                            out.print("{\"success\": false, \"message\": \"Estoque insuficiente para o item." + tenId + "\"}");
-//                            return;
-//                        }
-//                    } else {
-//                        conn.rollback();
-//                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-//                        out.print("{\"success\": false, \"message\": \"Produto não encontrado." + tenId + "\"}");
-//                        return;
-//                    }
-//                }
-//
-//                String insertSql = "INSERT INTO estoque_reserva (res_ten_id, res_mar_id, res_qtd, res_data, res_sessao) VALUES (?, ?, ?, NOW(), ?)";
-//                try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
-//                    ps.setInt(1, tenId);
-//                    ps.setInt(2, marId);
-//                    ps.setInt(3, qtd);
-//                    ps.setString(4, sessaoId);
-//                    ps.executeUpdate();
-//                }
-//
-//                String updateSql = "UPDATE estoque SET est_quantidade = est_quantidade - ? WHERE est_ten_id = ? AND est_mar_id = ?";
-//                try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
-//                    ps.setInt(1, qtd);
-//                    ps.setInt(2, tenId);
-//                    ps.setInt(3, marId);
-//                    ps.executeUpdate();
-//                }
-//            }
-//
-//            conn.commit();
-//            out.print("{\"success\": true}");
-//
-//        } catch (SQLException e) {
-//            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            out.print("{\"success\": false, \"message\": \"Erro ao reservar estoque." + e.getMessage() + "\"}");
-//        }
     }
 
     private Resultado<JsonObject> lerJsonComoObjeto(HttpServletRequest req) throws IOException {
