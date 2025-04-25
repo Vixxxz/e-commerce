@@ -5,10 +5,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.*;
 import java.lang.reflect.Type;
-import java.sql.*;
 import java.util.*;
 
-import Dominio.PedidoProduto;
 import Dominio.ReservaEstoque;
 import Fachada.Fachada;
 import Util.Resultado;

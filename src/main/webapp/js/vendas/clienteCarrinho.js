@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
             };
 
             // Envia uma única requisição com todos os itens
-            const response = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/reservarEstoque', {
+            const response = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/reservaEstoque', {
                 method: 'POST',
                 body: JSON.stringify(payload),
                 headers: { 'Content-Type': 'application/json' }
