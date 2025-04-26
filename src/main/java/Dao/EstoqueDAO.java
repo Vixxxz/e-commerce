@@ -156,6 +156,34 @@ public class EstoqueDAO implements IDAO{
         }
     }
 
+    public Resultado<String> reserva(EntidadeDominio entidade) {
+        try{
+            if(connection == null || connection.isClosed()){
+                connection = Conexao.getConnectionMySQL();
+            }
+
+            Estoque estoque = (Estoque) entidade;
+
+            StringBuilder sql = new StringBuilder("SELECT e.est_quantidade FROM estoque e WHERE e.est_ten_id = ? AND e.est_mar_id = ? FOR UPDATE");
+
+            try(PreparedStatement pst = connection.prepareStatement(sql.toString())){
+                pst.setInt(1, estoque.getProduto().getId());
+                pst.setInt(2, estoque.getMarca().getId());
+
+                pst.executeQuery();
+            }
+            return Resultado.sucesso("Linhas bloqueadas com sucesso");
+        }catch (Exception e) {
+            System.err.println("Erro ao bloquear linhas para reserva: " + e.getMessage());
+            try {
+                if (connection != null) connection.close();
+            } catch (SQLException closeEx) {
+                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
+            }
+            return Resultado.erro("Erro ao bloquear linhas para reserva: " + e.getMessage());
+        }
+    }
+
     private Estoque mapeiaEstoque(ResultSet rs) throws SQLException {
         Produto pro = new Produto();
         pro.setId(rs.getInt("ten_id"));

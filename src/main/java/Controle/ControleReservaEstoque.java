@@ -5,12 +5,11 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.*;
 import java.lang.reflect.Type;
-import java.sql.*;
 import java.util.*;
 
-import Dominio.PedidoProduto;
-import Dominio.ReservaEstoque;
-import Fachada.Fachada;
+import Dominio.*;
+import Enums.Ativo;
+import Fachada.*;
 import Util.Resultado;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
@@ -28,6 +27,7 @@ public class ControleReservaEstoque extends HttpServlet {
         PrintWriter out = resp.getWriter();
         HttpSession session = req.getSession();
         String sessaoId = session.getId();
+
         Gson gson = new Gson();
 
         Resultado<JsonObject> ResultJsonObject = lerJsonComoObjeto(req);
@@ -80,63 +80,56 @@ public class ControleReservaEstoque extends HttpServlet {
         String json = gson.toJson("Reserva feita com sucesso!");
         resp.setStatus(HttpServletResponse.SC_CREATED);
         out.print(json);
+    }
 
-//        BufferedReader reader = request.getReader();
-//        ItemCarrinho[] carrinho = new Gson().fromJson(reader, ItemCarrinho[].class);
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        PrintWriter out = resp.getWriter();
+        HttpSession session = req.getSession(false);
+        String sessaoId = session.getId();
+        Gson gson = new Gson();
+
+        Resultado<ReservaEstoque> resultadoReservaFiltro = extrairReservaFiltro(req);
+
+        IFachada fachada = new Fachada();
+        ReservaEstoque reservaFiltro = resultadoReservaFiltro.getValor();
+        reservaFiltro.setSessao(sessaoId);
+        Resultado<List<EntidadeDominio>> resultadoConsultaReserva = fachada.consultar(reservaFiltro);
+
+        if (!resultadoConsultaReserva.isSucesso()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", resultadoConsultaReserva.getErro());
+            out.print(gson.toJson(resposta));
+            return;
+        }
+
+        String json = gson.toJson(resultadoConsultaReserva.getValor());
+        resp.setStatus(HttpServletResponse.SC_OK);
+        out.print(json);
+
+//        try (Connection conn = Conexao.getConnectionMySQL();
+//             PreparedStatement ps = conn.prepareStatement(
+//                     "SELECT res_ten_id FROM estoque_reserva WHERE res_sessao = ? AND res_status = 'EXPIRADO'"
+//             )) {
 //
-//        try (Connection conn = getConnection()) {
-//            conn.setAutoCommit(false);
+//            ps.setString(1, sessaoId);
+//            ResultSet rs = ps.executeQuery();
 //
-//            for (ItemCarrinho item : carrinho) {
-//                int tenId = item.tenId;
-//                int marId = item.marId;
-//                int qtd = item.qtd;
-//
-//                String checkSql = "SELECT est_quantidade FROM estoque WHERE est_ten_id = ? AND est_mar_id = ? FOR UPDATE";
-//                try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
-//                    ps.setInt(1, tenId);
-//                    ps.setInt(2, marId);
-//                    ResultSet rs = ps.executeQuery();
-//                    if (rs.next()) {
-//                        int estoqueAtual = rs.getInt("est_quantidade");
-//                        if (estoqueAtual < qtd) {
-//                            conn.rollback();
-//                            response.setStatus(HttpServletResponse.SC_CONFLICT);
-//                            out.print("{\"success\": false, \"message\": \"Estoque insuficiente para o item." + tenId + "\"}");
-//                            return;
-//                        }
-//                    } else {
-//                        conn.rollback();
-//                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-//                        out.print("{\"success\": false, \"message\": \"Produto não encontrado." + tenId + "\"}");
-//                        return;
-//                    }
-//                }
-//
-//                String insertSql = "INSERT INTO estoque_reserva (res_ten_id, res_mar_id, res_qtd, res_data, res_sessao) VALUES (?, ?, ?, NOW(), ?)";
-//                try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
-//                    ps.setInt(1, tenId);
-//                    ps.setInt(2, marId);
-//                    ps.setInt(3, qtd);
-//                    ps.setString(4, sessaoId);
-//                    ps.executeUpdate();
-//                }
-//
-//                String updateSql = "UPDATE estoque SET est_quantidade = est_quantidade - ? WHERE est_ten_id = ? AND est_mar_id = ?";
-//                try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
-//                    ps.setInt(1, qtd);
-//                    ps.setInt(2, tenId);
-//                    ps.setInt(3, marId);
-//                    ps.executeUpdate();
-//                }
+//            while (rs.next()) {
+//                expirados.add(rs.getInt("res_ten_id"));
 //            }
 //
-//            conn.commit();
-//            out.print("{\"success\": true}");
-//
-//        } catch (SQLException e) {
+//        } catch (SQLException | ClassNotFoundException e) {
 //            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            out.print("{\"success\": false, \"message\": \"Erro ao reservar estoque." + e.getMessage() + "\"}");
+//            return;
+//        }
+//
+//        try (PrintWriter out = response.getWriter()) {
+//            out.print(new Gson().toJson(expirados));
 //        }
     }
 
@@ -157,5 +150,33 @@ public class ControleReservaEstoque extends HttpServlet {
             }
         }
         return leitorJson.toString();
+    }
+
+    private Resultado<ReservaEstoque> extrairReservaFiltro(HttpServletRequest req) {
+        Produto produtoFiltro = new Produto();
+        Marca marcaFiltro = new Marca();
+        ReservaEstoque reservaFiltro = new ReservaEstoque();
+
+        if(req.getParameter("idProduto") != null){
+            produtoFiltro.setId(Integer.parseInt(req.getParameter("idProduto")));
+        }
+
+        if(req.getParameter("idMarca") != null){
+            marcaFiltro.setId(Integer.parseInt(req.getParameter("idMarca")));
+        }
+
+        if(req.getParameter("id") != null){
+            reservaFiltro.setId(Integer.parseInt(req.getParameter("id")));
+        }
+
+        if(req.getParameter("qtd") != null){
+            reservaFiltro.setQuantidade(Integer.parseInt(req.getParameter("qtd")));
+        }
+
+        if(req.getParameter("status") != null){
+            reservaFiltro.setStatus(Ativo.valueOf(req.getParameter("status")));
+        }
+
+        return Resultado.sucesso(reservaFiltro);
     }
 }

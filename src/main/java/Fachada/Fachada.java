@@ -103,18 +103,18 @@ public class Fachada implements IFachada {
                     }
                     return Resultado.sucesso("Cartão salvo com sucesso!");
                 }
-//                case ReservaEstoque reservaEstoque -> {
-//                    processarValidacoes(reservaEstoque, getValidacoes(reservaEstoque, Operacao.SALVAR), sb);
-//                    if(!sb.isEmpty()){
-//                        return Resultado.erro(sb.toString());
-//                    }
-//                    ReservaDAO reservaDAO = new ReservaDAO();
-//                    Resultado<EntidadeDominio> resultadoSalvaReserva = reservaDAO.salvar(reservaEstoque);
-//                    if(!resultadoSalvaReserva.isSucesso()){
-//                        return Resultado.erro(resultadoSalvaReserva.getErro());
-//                    }
-//                    return Resultado.sucesso("Reserva realizada com sucesso!");
-//                }
+                case ReservaEstoque reservaEstoque -> {
+                    processarValidacoes(reservaEstoque, getValidacoes(reservaEstoque, Operacao.SALVAR), sb);
+                    if(!sb.isEmpty()){
+                        return Resultado.erro(sb.toString());
+                    }
+                    ReservaDAO reservaDAO = new ReservaDAO();
+                    Resultado<String> resultadoSalvaReserva = reservaDAO.CriaOuAtualizaReserva(reservaEstoque);
+                    if(!resultadoSalvaReserva.isSucesso()){
+                        return Resultado.erro(resultadoSalvaReserva.getErro());
+                    }
+                    return Resultado.sucesso(resultadoSalvaReserva.getValor());
+                }
                 case null, default -> {
                     return Resultado.erro("Tipo de entidade não suportado: " + entidade);
                 }
@@ -341,6 +341,14 @@ public class Fachada implements IFachada {
                 }
                 return Resultado.sucesso(resultadoEstoque.getValor());
             }
+            case ReservaEstoque reserva ->{
+                ReservaDAO reservaDAO = new ReservaDAO();
+                Resultado<List<EntidadeDominio>> resultadoReserva = reservaDAO.consultar(reserva);
+                if(!resultadoReserva.isSucesso()){
+                    return Resultado.erro(resultadoReserva.getErro());
+                }
+                return Resultado.sucesso(resultadoReserva.getValor());
+            }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
             }
@@ -397,7 +405,12 @@ public class Fachada implements IFachada {
 
             }
             case ReservaEstoque ignore ->{
-
+                switch (operacao){
+                    case SALVAR -> {
+                        validacoes.add(new ValidaDadosReserva());
+                        validacoes.add(new ValidaEstoque());
+                    }
+                }
             }
             case null, default -> {
                 System.err.println("Tipo de Entidade não suportado na hora de buscar as validacoes");
