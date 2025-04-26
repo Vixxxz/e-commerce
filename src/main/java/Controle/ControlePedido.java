@@ -3,7 +3,6 @@ package Controle;
 import Dominio.*;
 import Fachada.Fachada;
 import Fachada.IFachada;
-import Util.ConversorData;
 import Util.Resultado;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serial;
 import java.lang.reflect.Type;
-import java.util.Date;
 import java.util.List;
 
 @WebServlet(name = "ControlePedido", urlPatterns = "/controlePedido")

@@ -1,10 +1,13 @@
 package Dominio;
 
+import Enums.Ativo;
+
 public class ReservaEstoque extends EntidadeDominio{
     private Produto produto;
     private Marca marca;
     private Integer quantidade;
     private String sessao;
+    private Ativo status;
 
     public ReservaEstoque(Produto produto, Marca marca, Integer quantidade, String sessao) {
         this.produto = produto;
@@ -53,5 +56,13 @@ public class ReservaEstoque extends EntidadeDominio{
 
     public void setSessao(String sessao) {
         this.sessao = sessao;
+    }
+
+    public Ativo getStatus() {
+        return status;
+    }
+
+    public void setStatus(Ativo status) {
+        this.status = status;
     }
 }

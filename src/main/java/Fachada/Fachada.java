@@ -341,6 +341,14 @@ public class Fachada implements IFachada {
                 }
                 return Resultado.sucesso(resultadoEstoque.getValor());
             }
+            case ReservaEstoque reserva ->{
+                ReservaDAO reservaDAO = new ReservaDAO();
+                Resultado<List<EntidadeDominio>> resultadoReserva = reservaDAO.consultar(reserva);
+                if(!resultadoReserva.isSucesso()){
+                    return Resultado.erro(resultadoReserva.getErro());
+                }
+                return Resultado.sucesso(resultadoReserva.getValor());
+            }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
             }

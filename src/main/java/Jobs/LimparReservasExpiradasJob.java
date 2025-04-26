@@ -43,7 +43,7 @@ public class LimparReservasExpiradasJob {
 
         try (Connection conn = Conexao.getConnectionMySQL();
              PreparedStatement ps = conn.prepareStatement(
-                     "DELETE FROM estoque_reserva WHERE res_data < NOW() - INTERVAL ? MINUTE")) {
+                     "UPDATE estoque_reserva SET res_status = 'EXPIRADO' WHERE res_data < NOW() - INTERVAL ? MINUTE AND res_status = 'ATIVO'")) {
 
             LOGGER.info("Conexão estabelecida, executando limpeza...");
             ps.setInt(1, TEMPO_EXPIRACAO_MINUTOS);
