@@ -66,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const clienteData = await response.json();
             const cliente = clienteData[0]?.cliente || clienteData[0];
 
+            console.log(carrinho);
             const pedidoJson = {
                 pedido: {
                     valorTotal: null,
@@ -83,14 +84,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     }
                 },
-                PedidoProdutos: carrinho.map(prod => ({
+                PedidoProdutos: carrinho.map((prod) => ({
                     produto: {
-                        id: prod.id,
+                        id: prod.idTenis,
                         marca: {
-                            id: prod.marca_id
+                            id: prod.marca
                         },
                         categoria: {
-                            id: prod.categoria_id
+                            id: prod.categoria
                         }
                     },
                     quantidade: prod.quantidade

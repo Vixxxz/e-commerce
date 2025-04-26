@@ -34,7 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 preco: parseFloat(preco),
                 tamanho: parseInt(tamanhoSelecionado),
                 imagem,
-                quantidade: 1
+                quantidade: 1,
+                categoria: produto.categoria.id
             });
 
             alert("Produto adicionado ao carrinho!");

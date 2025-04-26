@@ -111,26 +111,6 @@ public class ControleReservaEstoque extends HttpServlet {
         resp.setStatus(HttpServletResponse.SC_OK);
         out.print(json);
 
-//        try (Connection conn = Conexao.getConnectionMySQL();
-//             PreparedStatement ps = conn.prepareStatement(
-//                     "SELECT res_ten_id FROM estoque_reserva WHERE res_sessao = ? AND res_status = 'EXPIRADO'"
-//             )) {
-//
-//            ps.setString(1, sessaoId);
-//            ResultSet rs = ps.executeQuery();
-//
-//            while (rs.next()) {
-//                expirados.add(rs.getInt("res_ten_id"));
-//            }
-//
-//        } catch (SQLException | ClassNotFoundException e) {
-//            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            return;
-//        }
-//
-//        try (PrintWriter out = response.getWriter()) {
-//            out.print(new Gson().toJson(expirados));
-//        }
     }
 
     private Resultado<JsonObject> lerJsonComoObjeto(HttpServletRequest req) throws IOException {

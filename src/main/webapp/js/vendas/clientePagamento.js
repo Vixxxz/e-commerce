@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalCarrinho = calcularTotalCarrinho();
 
         produtosSpan.innerText = `R$ ${totalCarrinho.toFixed(2).replace(".", ",")}`;
-        totalSpan.innerText = `R$ ${pedido.valorTotal.toFixed(2).replace(".", ",")}`;
+        totalSpan.innerText = `R$ ${pedido.pedido.valorTotal.toFixed(2).replace(".", ",")}`;
     };
 
     async function carregarCuponsPromocional(codCupom) {
@@ -219,6 +219,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             sessionStorage.setItem("pedidoJson", JSON.stringify(pedido));
             console.log(JSON.stringify(pedido));
+
+
 
             // const resposta = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/controlePedido', {
             //     method: 'POST',
