@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const formCupom = document.getElementById("form-cupom");
 
     formCupom.addEventListener("submit", async (event) => {
-        event.preventDefault(); // Impede o refresh da página
+        event.preventDefault();
 
         const codCupom = document.getElementById("promocional").value.trim();
 
@@ -155,20 +155,20 @@ document.addEventListener("DOMContentLoaded", () => {
               <span class="texto-gradient">Bandeira: ${item.bandeira.nomeBandeira}</span>
               <span class="texto-gradient">Nome: ${item.nomeImpresso}</span>
               <span class="texto-gradient">Número: ${item.numero}</span>
-              <input type="number" class="valor-input" min="10" placeholder="Valor (mín. R$10)" />
+              <!--<input type="number" class="valor-input" min="10" placeholder="Valor (mín. R$10)" />-->
             </div>
           `;
 
-                const input = div.querySelector(".valor-input");
+                // const input = div.querySelector(".valor-input");
 
-                input.addEventListener("input", () => {
-                    const valor = parseFloat(input.value);
-                    if (valor < 10 && valor !== 0) {
-                        input.setCustomValidity("Valor mínimo é R$10 por cartão.");
-                    } else {
-                        input.setCustomValidity("");
-                    }
-                });
+                // input.addEventListener("input", () => {
+                //     const valor = parseFloat(input.value);
+                //     if (valor < 10 && valor !== 0) {
+                //         input.setCustomValidity("Valor mínimo é R$10 por cartão.");
+                //     } else {
+                //         input.setCustomValidity("");
+                //     }
+                // });
 
                 div.addEventListener("click", () => {
                     div.classList.toggle("selecionado");
@@ -220,25 +220,76 @@ document.addEventListener("DOMContentLoaded", () => {
             sessionStorage.setItem("pedidoJson", JSON.stringify(pedido));
             console.log(JSON.stringify(pedido));
 
+            const resposta = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/controlePedido', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: sessionStorage.getItem("pedidoJson")
+            });
 
+            console.log('pedido gerado, salvando...');
+            if (!resposta.ok) {
+                const mensagemErro = await resposta.text(); // Captura o texto completo
+                // Tente processar como JSON, se possível
+                try {
+                    const erroDetalhado = JSON.parse(mensagemErro);
+                    throw new Error(erroDetalhado.erro || "Erro ao finalizar pedido.");
+                } catch {
+                    // Se não for um JSON, lança o texto como erro
+                    throw new Error(mensagemErro);
+                }
+            }
 
-            // const resposta = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/controlePedido', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json'
-            //     },
-            //     body: sessionStorage.getItem("pedidoJson")
-            // });
-            //
-            // console.log('pedido gerado, salvando...');
-            // if (!resposta.ok) throw new Error("Erro ao finalizar pedido");
-            // console.log('pedido salvo com sucesso!');
+            const payload = {
+                reserva: carrinho.map(item => ({
+                    produto: { id: item.idTenis },
+                    marca: { id: item.marca },
+                    quantidade: item.quantidade
+                }))
+            };
+
+            const response = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/reservaEstoque', {
+                method: 'PUT',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.status !== 201) {
+                const data = await response.json();
+                const errorMsg = data.erro || data.message || 'Erro desconhecido ao concluir reserva';
+                alert(errorMsg);
+            }
+
+            console.log('pedido salvo com sucesso!');
+            alert('pedido salvo com sucesso!')
             // window.location.href = "../../vendas/cliente/clientePagamento.html";
 
         } catch (err) {
             console.error("Erro ao montar pedido:", err);
-            alert("Erro ao montar o pedido");
+
+            let errorMessage = "Erro desconhecido ao montar o pedido."; // Mensagem padrão
+
+            // Verifica se o erro foi gerado por uma resposta HTTP (fetch)
+            if (err.message.includes("{")) {
+                try {
+                    const parsedError = JSON.parse(err.message); // Tenta extrair o JSON
+                    errorMessage = parsedError.erro || "Erro desconhecido na resposta do servidor.";
+                } catch (parseError) {
+                    console.error("Erro ao processar JSON na mensagem de erro:", parseError);
+                }
+            } else if (err instanceof TypeError) {
+                // Tratamento para erros de tipo, como 'Cannot read properties of null'
+                errorMessage = "Erro interno na aplicação";
+            } else {
+                // Outros tipos de erro
+                errorMessage = err.message || errorMessage;
+            }
+
+            // Exibe a mensagem processada no alerta
+            alert("Erro ao montar o pedido: " + errorMessage);
         }
+
     };
 
     btnProsseguir.addEventListener("click", finalizarPedido);

@@ -6,6 +6,7 @@ import Strategy.*;
 import Util.Resultado;
 import Enums.Operacao;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,11 +14,14 @@ public class Fachada implements IFachada {
     public Fachada() {
     }
 
-    public Resultado<String> salvarPedidoProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos){
+    public Resultado<String> salvarPedidoProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos, ReservaEstoque reserva){
         StringBuilder sb = new StringBuilder();
         processarValidacoes(pedido, getValidacoes(pedido, Operacao.SALVAR), sb);
         for(PedidoProduto pedidoProduto : pedidoProdutos){
             processarValidacoes(pedidoProduto, getValidacoes(pedidoProduto, Operacao.SALVAR), sb);
+            reserva.setProduto(pedidoProduto.getProduto());
+            VerificaReservaAtiva verificaReservaAtiva = new VerificaReservaAtiva();
+            verificaReservaAtiva.processar(reserva, sb);
         }
         for(CartaoPedido cartaoPedido : cartaoPedidos){
             processarValidacoes(cartaoPedido, getValidacoes(cartaoPedido, Operacao.SALVAR), sb);
@@ -206,14 +210,31 @@ public class Fachada implements IFachada {
                 }
                 try {
                     ProdutoDAO produtoDAO = new ProdutoDAO();
-                    Resultado<EntidadeDominio> resultadoExcluirProduto = produtoDAO.alterar(produto);
-                    if (!resultadoExcluirProduto.isSucesso()) {
-                        return Resultado.erro(resultadoExcluirProduto.getErro());
+                    Resultado<EntidadeDominio> resultadoAlteraProduto = produtoDAO.alterar(produto);
+                    if (!resultadoAlteraProduto.isSucesso()) {
+                        return Resultado.erro(resultadoAlteraProduto.getErro());
                     }
                     return Resultado.sucesso("Produto " + produto.getSku() + " alterado com sucesso");
                 } catch (Exception e) {
-                    System.err.println("Erro ao excluir produto: " + e.getMessage());
-                    return Resultado.erro("Erro interno ao excluir produto.");
+                    System.err.println("Erro ao alterar produto: " + e.getMessage());
+                    return Resultado.erro("Erro interno ao alterar produto.");
+                }
+            }
+            case ReservaEstoque reserva ->{
+                processarValidacoes(reserva, getValidacoes(reserva, Operacao.ALTERAR), sb);
+                if(!sb.isEmpty()){
+                    return Resultado.erro(sb.toString());
+                }
+                try{
+                    ReservaDAO reservaDAO = new ReservaDAO();
+                    Resultado<EntidadeDominio> resultadoAlterarReserva = reservaDAO.concluiReserva(reserva);
+                    if(!resultadoAlterarReserva.isSucesso()){
+                        return Resultado.erro(resultadoAlterarReserva.getErro());
+                    }
+                    return Resultado.sucesso("Reserva alteradada com sucesso!");
+                } catch (Exception e) {
+                    System.err.println("Erro ao alterar reserva: " + e.getMessage());
+                    return Resultado.erro("Erro interno ao alterar reserva.");
                 }
             }
             case null, default -> throw new IllegalArgumentException("Tipo de entidade não suportado: " + entidade);

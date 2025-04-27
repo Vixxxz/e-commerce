@@ -1,6 +1,7 @@
 package Dao;
 
 import Dominio.*;
+import Enums.Ativo;
 import Util.Conexao;
 import Util.Resultado;
 
@@ -139,6 +140,48 @@ public class ReservaDAO implements IDAO {
         return Resultado.sucesso(reservaEstoque);
     }
 
+    public Resultado<EntidadeDominio> concluiReserva(EntidadeDominio entidade) {
+        try{
+            if (connection == null || connection.isClosed()) {
+                connection = Conexao.getConnectionMySQL();
+            }
+
+            connection.setAutoCommit(false);
+            ReservaEstoque reservaEstoque = (ReservaEstoque) entidade;
+            reservaEstoque.setStatus(Ativo.CONCLUIDO);
+
+            StringBuilder sql = new StringBuilder();
+            sql.append("UPDATE estoque_reserva ");
+            sql.append("SET res_status = ? ");
+            sql.append("WHERE res_ten_id = ? AND res_mar_id = ? AND res_sessao = ?");
+
+            try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
+                pst.setString(1, reservaEstoque.getStatus().name());
+                pst.setInt(2, reservaEstoque.getProduto().getId());
+                pst.setInt(3, reservaEstoque.getMarca().getId());
+                pst.setString(4, reservaEstoque.getSessao());
+
+                int rowsAffected = pst.executeUpdate();
+
+                if (rowsAffected == 0) {
+                    throw new SQLException("Nenhum registro foi atualizado. Verifique os critérios da atualização.");
+                }
+
+                connection.commit();
+            }
+            return Resultado.sucesso(reservaEstoque);
+        }catch (Exception e) {
+            System.err.println("Erro ao concluir as reservas: " + e.getMessage());
+            return Resultado.erro("Erro ao concluir as reservas: " + e.getMessage());
+        } finally {
+            try {
+                if (connection != null) connection.close();
+            } catch (SQLException closeEx) {
+                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
+            }
+        }
+    }
+
     @Override
     public Resultado<String> excluir(EntidadeDominio entidade) {
         return null;
@@ -185,6 +228,10 @@ public class ReservaDAO implements IDAO {
             if (reservaEstoque.getSessao() != null) {
                 sql.append("AND er.res_sessao =? ");
                 parametros.add(reservaEstoque.getSessao());
+            }
+            if(reservaEstoque.getStatus() != null){
+                sql.append("AND er.res_status =?");
+                parametros.add(reservaEstoque.getStatus().name());
             }
 
             try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
