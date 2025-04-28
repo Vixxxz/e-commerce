@@ -142,7 +142,7 @@ public class ControlePedido extends HttpServlet {
         }
 
         JsonObject jsonObject = ResultJsonObject.getValor();
-        if (!jsonObject.has("Cliente")) {
+        if (!jsonObject.has("Pedido")) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
             resposta.addProperty("erro", "{\"erro\": \"JSON inválido: Campos obrigatórios ausentes.\"}");
@@ -150,10 +150,10 @@ public class ControlePedido extends HttpServlet {
             return;
         }
 
-        Cliente cliente = gson.fromJson(jsonObject.get("Cliente"), Cliente.class);
+        Pedido pedido = gson.fromJson(jsonObject.get("Pedido"), Pedido.class);
 
         IFachada fachada = new Fachada();
-        Resultado<String> resultado = fachada.alterar(cliente);
+        Resultado<String> resultado = fachada.alterar(pedido);
 
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

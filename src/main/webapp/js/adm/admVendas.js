@@ -1,4 +1,11 @@
 const BASE_URL = "http://localhost:8080/ecommerce_tenis_war_exploded";
+const Status = Object.freeze([
+    "APROVADA",
+    "EM_PROCESSAMENTO",
+    "EM_TRANSITO",
+    "ENTREGUE"
+]);
+
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!document.getElementById('table-vendas')) {
@@ -57,7 +64,8 @@ function renderTabela(vendas) {
             <td>${venda.transportadora?.nome ?? 'Transportadora não informada'}</td>
             <td>${venda.clienteEndereco?.cliente?.cpf ?? ''}</td>
             <td>
-                <button class="btn btn-primary" onclick="verDetalhes(${venda.id})">Detalhes</button>
+                <button class="btn btn-warning" onclick="proximaEtapa(${venda.id}, '${venda.status}')">Próxima Etapa</button>
+                <button class="btn btn-danger" onclick="excluirPedido(${venda.id})">Excluir</button>
             </td>
         `;
 
@@ -65,19 +73,84 @@ function renderTabela(vendas) {
     });
 }
 
-function formatarData(data) {
-    console.log("Valor recebido:", data); // 🔍 Depuração
-
-    if (!data) return ''; // Se for nulo ou undefined, retorna vazio
+async function proximaEtapa(id, status) {
     try {
-        const dataObj = new Date(data); // Converte para objeto Date
-        console.log("Objeto Date gerado:", dataObj);
-        return dataObj.toLocaleDateString('pt-BR'); // Retorna no formato DD/MM/YYYY
+        if (!id || !status) {
+            throw new Error("Dados da venda inválidos ou incompletos");
+        }
+
+        const index = Status.indexOf(status);
+
+        if (index === -1) {
+            throw new Error(`Status atual "${status}" não encontrado na lista`);
+        }
+
+        if (index === Status.length - 1) {
+            throw new Error("Não há próximo status disponível - já está no status final");
+        }
+
+        const novoStatus = Status[index + 1];
+        const pedidoJson = {
+            pedido: {
+                id: id,
+                status: novoStatus
+            }
+        };
+
+        console.log(`Atualizando venda ${id} para status: ${novoStatus}`);
+
+        const resposta = await fetch(`${BASE_URL}/controlePedido`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(pedidoJson)
+        });
+
+        if (!resposta.ok) {
+            const errorData = await resposta.json().catch(() => null);
+            throw new Error(`Erro na requisição: ${resposta.status} - ${errorData?.message || 'Sem mensagem de erro'}`);
+        }
+
+        await realizarConsultaPedidos();
+
     } catch (error) {
-        console.log("Erro ao formatar data:", data, error);
-        return data; // Retorna a data original se houver erro
+        console.error("Erro ao avançar para próxima etapa:", error.message);
+        alert(`Erro: ${error.message}`);
     }
 }
+
+async function excluirPedido(id) {
+    try {
+        const confirmar = confirm("Tem certeza que deseja excluir este pedido?");
+        if (!confirmar) return;
+
+        const resposta = await fetch(`${BASE_URL}/controlePedido?id=${id}`, {
+            method: 'DELETE',
+        });
+
+        if (!resposta.ok) {
+            throw new Error(`Erro ao excluir: ${resposta.status}`);
+        }
+
+        await realizarConsultaPedidos();
+
+    } catch (error) {
+        console.error("Erro ao excluir pedido:", error.message);
+        alert(`Erro: ${error.message}`);
+    }
+}
+
+function formatarData(data) {
+    if (!data) return '';
+    try {
+        return new Date(data).toLocaleDateString('pt-BR');
+    } catch (error) {
+        console.log("Erro ao formatar data:", data, error);
+        return data;
+    }
+}
+
 
 function criarQueryParams(formData) {
     const params = new URLSearchParams();

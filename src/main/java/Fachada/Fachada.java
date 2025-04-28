@@ -237,6 +237,20 @@ public class Fachada implements IFachada {
                     return Resultado.erro("Erro interno ao alterar reserva.");
                 }
             }
+            case Pedido pedido ->{
+                try{
+                    PedidoDAO pedidoDAO = new PedidoDAO();
+                    processarValidacoes(pedido, getValidacoes(pedido, Operacao.ALTERAR), sb);
+                    Resultado<EntidadeDominio> resultadoAlterarPedido = pedidoDAO.alterar(pedido);
+                    if(!resultadoAlterarPedido.isSucesso()){
+                        return Resultado.erro(resultadoAlterarPedido.getErro());
+                    }
+                    return Resultado.sucesso("Pedido alterado com sucesso");
+                } catch (Exception e) {
+                    System.err.println("Erro ao alterar reserva: " + e.getMessage());
+                    return Resultado.erro("Erro interno ao alterar reserva.");
+                }
+            }
             case null, default -> throw new IllegalArgumentException("Tipo de entidade não suportado: " + entidade);
         }
     }
