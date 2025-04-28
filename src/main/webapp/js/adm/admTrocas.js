@@ -1,23 +1,22 @@
-const AdmVendas = (() => {
+const AdmTrocas = (() => {
     const BASE_URL = "http://localhost:8080/ecommerce_tenis_war_exploded";
     const Status = Object.freeze([
-        "APROVADA",
-        "EM_PROCESSAMENTO",
-        "EM_TRANSITO",
-        "ENTREGUE"
+        "EM_TROCA",
+        "TROCA_AUTORIZADA",
+        "TROCADO"
     ]);
 
     function init() {
-        if (!document.getElementById('table-vendas')) return;
-        realizarConsultaPedidos();
-        document.getElementById('filtroFormVenda').addEventListener('submit', (e) => {
+        if (!document.getElementById('table-trocas')) return;
+        realizarConsultaTrocas();
+        document.getElementById('filtroFormTroca').addEventListener('submit', (e) => {
             e.preventDefault();
-            realizarConsultaPedidos();
+            realizarConsultaTrocas();
         });
     }
 
-    async function realizarConsultaPedidos() {
-        const filtroForm = document.getElementById('filtroFormVenda');
+    async function realizarConsultaTrocas() {
+        const filtroForm = document.getElementById('filtroFormTroca');
         const queryParams = filtroForm ? criarQueryParams(new FormData(filtroForm)) : '';
         const url = `${BASE_URL}/controlePedido${queryParams ? `?${queryParams}` : ''}`;
 
@@ -36,15 +35,15 @@ const AdmVendas = (() => {
 
             vendas.length
                 ? renderTabela(vendas)
-                : mostrarErro('Nenhuma venda encontrada.');
+                : mostrarErro('Nenhuma troca encontrada.');
 
         } catch (error) {
-            mostrarErro('Erro ao buscar vendas.', error);
+            mostrarErro('Erro ao buscar trocas.', error);
         }
     }
 
     function renderTabela(vendas) {
-        const tbody = document.querySelector('#table-vendas tbody');
+        const tbody = document.querySelector('#table-trocas tbody');
         tbody.innerHTML = '';
 
         vendas.forEach(venda => {
@@ -58,8 +57,8 @@ const AdmVendas = (() => {
                 <td>${venda.transportadora?.nome ?? 'Transportadora não informada'}</td>
                 <td>${venda.clienteEndereco?.cliente?.cpf ?? ''}</td>
                 <td>
-                    <button class="btn btn-warning" onclick="AdmVendas.proximaEtapa(${venda.id}, '${venda.status}')">Próxima Etapa</button>
-                    <button class="btn btn-danger" onclick="AdmVendas.excluirPedido(${venda.id})">Excluir</button>
+                    <button class="btn btn-warning" onclick="AdmTrocas.proximaEtapa(${venda.id}, '${venda.status}')">Próxima Etapa</button>
+                    <button class="btn btn-danger" onclick="AdmTrocas.excluirPedido(${venda.id})">Excluir</button>
                 </td>
             `;
 
@@ -70,7 +69,7 @@ const AdmVendas = (() => {
     async function proximaEtapa(id, status) {
         try {
             if (!id || !status) {
-                throw new Error("Dados da venda inválidos ou incompletos");
+                throw new Error("Dados da troca inválidos ou incompletos");
             }
 
             const index = Status.indexOf(status);
@@ -104,7 +103,7 @@ const AdmVendas = (() => {
                 throw new Error(`Erro na requisição: ${resposta.status} - ${errorData?.message || 'Sem mensagem de erro'}`);
             }
 
-            await realizarConsultaPedidos();
+            await realizarConsultaTrocas();
 
         } catch (error) {
             console.error("Erro ao avançar para próxima etapa:", error.message);
@@ -114,7 +113,7 @@ const AdmVendas = (() => {
 
     async function excluirPedido(id) {
         try {
-            const confirmar = confirm("Tem certeza que deseja excluir este pedido?");
+            const confirmar = confirm("Tem certeza que deseja excluir esta troca?");
             if (!confirmar) return;
 
             const resposta = await fetch(`${BASE_URL}/controlePedido?id=${id}`, {
@@ -125,10 +124,10 @@ const AdmVendas = (() => {
                 throw new Error(`Erro ao excluir: ${resposta.status}`);
             }
 
-            await realizarConsultaPedidos();
+            await realizarConsultaTrocas();
 
         } catch (error) {
-            console.error("Erro ao excluir pedido:", error.message);
+            console.error("Erro ao excluir troca:", error.message);
             alert(`Erro: ${error.message}`);
         }
     }
@@ -150,7 +149,7 @@ const AdmVendas = (() => {
             if (value.trim()) params.append(key, value.trim());
         });
 
-        params.append('statusList', 'APROVADA, REPROVADA, EM_PROCESSAMENTO, EM_TRANSITO, ENTREGUE');
+        params.append('statusList', 'EM_TROCA, TROCA_AUTORIZADA, TROCADO');
 
         return params.toString();
     }
@@ -167,4 +166,4 @@ const AdmVendas = (() => {
     };
 })();
 
-document.addEventListener('DOMContentLoaded', AdmVendas.init);
+document.addEventListener('DOMContentLoaded', AdmTrocas.init);

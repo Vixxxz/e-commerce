@@ -5,8 +5,8 @@ const produtosBtn = document.getElementById("produtos-title");
 const dashboardBtn = document.getElementById("dashboard-title");
 
 const vendas = document.getElementById("pagina-vendas");
-const trocas = document.querySelector(".pagina-trocas");
-const produtos = document.querySelector(".pagina-produtos");
+const trocas = document.getElementById("pagina-trocas");
+const produtos = document.getElementById("pagina-produtos");
 const dashboard = document.getElementById("pagina-dashboard");
 
 

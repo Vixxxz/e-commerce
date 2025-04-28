@@ -17,31 +17,30 @@
         <h2 id="produtos-title" class="inactive">Produtos</h2>
         <h2 id="dashboard-title" class="inactive-tab">Dashboard</h2>
     </div>
-
-    <form id="filtroForm" method="get">
-        <fieldset>
-            <div class="form-row">
-                <div class="form-field">
-                    <a class="btn btn-warning" href="../vendasHome.html">Voltar</a>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-field">
-                    <label for="cpf">CPF:</label>
-                    <input type="text" id="cpf" name="cpf" placeholder="Digite o cpf">
-                </div>
-                <div class="form-field">
-                    <label for="id-pedido">ID Pedido:</label>
-                    <input type="text" id="id-pedido" name="id" placeholder="Digite o ID do Pedido">
-                </div>
-            </div>
-            <div class="form-row">
-                <button class="btn btn-warning" id="submit-filter" type="submit">Filtrar</button>
-            </div>
-        </fieldset>
-    </form>
     <div id="pagina-vendas">
+        <form id="filtroFormVenda" method="get">
+            <fieldset>
+                <div class="form-row">
+                    <div class="form-field">
+                        <a class="btn btn-warning" href="../vendasHome.html">Voltar</a>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="cpf-venda">CPF:</label>
+                        <input type="text" id="cpf-venda" name="cpf" placeholder="Digite o cpf">
+                    </div>
+                    <div class="form-field">
+                        <label for="id-pedido-venda">ID Pedido:</label>
+                        <input type="text" id="id-pedido-venda" name="id" placeholder="Digite o ID do Pedido">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <button class="btn btn-warning" id="submit-filter-venda" type="submit">Filtrar</button>
+                </div>
+            </fieldset>
+        </form>
         <table id="table-vendas" class="tabela table table-hover">
             <thead>
             <tr class="linha-coluna">
@@ -58,24 +57,47 @@
             </tbody>
         </table>
     </div>
-    <div class="pagina-trocas" style="display: none;">
-    <table id="table-trocas" class="tabela table table-hover">
-        <thead>
-        <tr class="linha-coluna">
-            <th class="cln-id">Id</th>
-            <th class="cln-nome">Valor Total</th>
-            <th class="cln-cpf">Data</th>
-            <th class="cln-dataN">Status</th>
-            <th class="cln-telefone">Frete</th>
-            <th class="cln-email">CPF</th>
-            <th class="cln-acoes">Ações</th>
-        </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+    <div class="pagina-trocas" style="display: none;" id="pagina-trocas">
+        <form id="filtroFormTroca" method="get">
+            <fieldset>
+                <div class="form-row">
+                    <div class="form-field">
+                        <a class="btn btn-warning" href="../vendasHome.html">Voltar</a>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="cpf-troca">CPF:</label>
+                        <input type="text" id="cpf-troca" name="cpf" placeholder="Digite o cpf">
+                    </div>
+                    <div class="form-field">
+                        <label for="id-pedido-troca">ID Pedido:</label>
+                        <input type="text" id="id-pedido-troca" name="id" placeholder="Digite o ID do Pedido">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <button class="btn btn-warning" id="submit-filter-troca" type="submit">Filtrar</button>
+                </div>
+            </fieldset>
+        </form>
+        <table id="table-trocas" class="tabela table table-hover">
+            <thead>
+            <tr class="linha-coluna">
+                <th class="cln-id">Id</th>
+                <th class="cln-nome">Valor Total</th>
+                <th class="cln-cpf">Data</th>
+                <th class="cln-dataN">Status</th>
+                <th class="cln-telefone">Frete</th>
+                <th class="cln-email">CPF</th>
+                <th class="cln-acoes">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
-    <div class="pagina-produtos" style="display: none;">
+    <div class="pagina-produtos" style="display: none;" id="pagina-produtos">
     <table id="table-produtos" class="tabela table table-hover">
         <thead>
         <tr class="linha-coluna">
@@ -100,5 +122,6 @@
 <script src="../../../js/ManipulaForm.js"></script>
 <script src="../../../js/ScriptAdmVendas.js"></script>
 <script src="../../../js/adm/admVendas.js"></script>
+<script src="../../../js/adm/admTrocas.js"></script>
 </body>
 </html>

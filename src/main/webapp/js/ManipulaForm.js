@@ -2,17 +2,20 @@ class ManipulaForm {
     constructor(form1Btn, form2Btn, form1, form2, form3Btn = null, form3 = null, form4Btn = null, form4 = null) {
         this.forms = [form1, form2, form3, form4].filter(f => f !== null);
         this.buttons = [form1Btn, form2Btn, form3Btn, form4Btn].filter(b => b !== null);
-        this.tables = {}; // Armazena instâncias do DataTables
+        this.tables = {};
+        this.callbacks = {}; // Armazena callbacks para cada aba
         this.init();
     }
 
+    onShowTab(tabId, callback) {
+        this.callbacks[tabId] = callback;
+    }
+
     init() {
-        // Mostrar o primeiro formulário ao carregar a página
         window.addEventListener('load', () => {
             this.showForm(this.forms[0], this.buttons[0]);
         });
 
-        // Adicionar eventos de clique para cada botão
         this.buttons.forEach((button, index) => {
             button.addEventListener('click', () => {
                 this.showForm(this.forms[index], this.buttons[index]);
@@ -21,23 +24,29 @@ class ManipulaForm {
     }
 
     showForm(showForm, activeBtn) {
-        // Esconder todas as abas e remover paginação
+        // Esconder todas as abas
         this.forms.forEach(form => {
             if (form !== showForm) {
-                this.destroyTable(form); // Destruir tabela ao sair da aba
+                this.destroyTable(form);
                 form.style.display = "none";
             }
         });
 
-        // Resetar botões
+        // Atualizar botões ativos
         this.buttons.forEach(btn => btn.classList.remove('active-tab'));
-
-        // Exibir a aba correta
-        showForm.style.display = "block";
         activeBtn.classList.add('active-tab');
 
-        // Reinicializar DataTables apenas se for necessário
+        // Mostrar a aba selecionada
+        showForm.style.display = "block";
+
+        // Inicializar tabela
         this.initTable(showForm);
+
+        // Executar callback específico da aba
+        const tabId = showForm.id;
+        if (this.callbacks[tabId]) {
+            this.callbacks[tabId]();
+        }
     }
 
     initTable(form) {
