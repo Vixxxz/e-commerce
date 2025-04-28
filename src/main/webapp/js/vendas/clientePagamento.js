@@ -263,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             console.log('pedido salvo com sucesso!');
             alert('pedido salvo com sucesso!')
-            // window.location.href = "../../vendas/cliente/clientePagamento.html";
+            window.location.href = "../../vendas/cliente/clientePagamento.html";
 
         } catch (err) {
             console.error("Erro ao montar pedido:", err);

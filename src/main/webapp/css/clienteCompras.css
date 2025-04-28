@@ -648,3 +648,85 @@ header h4{
     border-radius: 10px;
     font-weight: bold;
 }
+
+/* PARTE MEUS PEDIDOS */
+
+.pedidos-identicacao{
+    position: relative;
+    margin: 100px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 35px;
+    border: 5px solid;
+    border-image: var(--fundo);
+    border-image-slice: 1;
+    border-radius: 10px;
+    padding: 20px;
+    width: 500px;
+}
+
+.pedidos-identicacao h2{
+    font-size: 30px;
+    font-weight: bolder;
+}
+
+.pedidos-identicacao img{
+width: 70%;
+    margin-left: 30px;
+}
+
+.pedidos-identicacao label{
+    font-size: 20px;
+}
+
+.pedidos-identicacao input{
+    width: 300px;
+    height: 30px;
+    border: 1px solid gray;
+    border-radius: 10px;
+    text-indent: 10px;
+}
+
+.pedidos-identicacao button{
+    background: var(--amarelo);
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* meus pedidos */
+.pedido{
+    position: relative;
+    margin: 0 auto;
+    width: 100%;
+    height: auto;
+}
+
+.pedido table {
+    position: relative;
+    margin: 10px auto;
+    width: 60%;
+    height: 10px;
+    align-items: center;
+    text-align: center;
+    border: 2px solid var(--icone);
+}
+
+.pedidio table th,td{
+    text-align: center;
+}
+
+.btn-detalhes{
+    width: 80px;
+    height: 40px;
+    align-content: center;
+    background: var(--amarelo);
+    margin-left:35px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+}
