@@ -41,25 +41,45 @@ class ManipulaForm {
     }
 
     initTable(form) {
-        const table = form.querySelector("table"); // Encontra a tabela dentro do form
+        const table = form.querySelector("table");
         if (table) {
             const tableId = table.id;
             if (!$.fn.DataTable.isDataTable(`#${tableId}`)) {
-                // Somente inicializa se ainda não estiver inicializado
-                this.tables[tableId] = $(table).DataTable();
+                if (['table-vendas', 'table-trocas', 'table-produtos'].includes(tableId)) {
+                    // Aplica configuração especial só para tabelas específicas
+                    this.tables[tableId] = $(table).DataTable({
+                        pageLength: 5,
+                        searching: false,
+                        lengthMenu: [3, 5, 10, 25, 50],
+                        language: {
+                            lengthMenu: "Mostrar _MENU_ registros por página",
+                            zeroRecords: "Nenhum resultado encontrado",
+                            info: "Página _PAGE_ de _PAGES_",
+                            paginate: {
+                                first: "Primeira",
+                                last: "Última",
+                                next: "Próxima",
+                                previous: "Anterior"
+                            }
+                        }
+                    });
+                } else {
+                    // Para outras tabelas, configuração padrão
+                    this.tables[tableId] = $(table).DataTable();
+                }
             }
         }
     }
+
 
     destroyTable(form) {
         const table = form.querySelector("table");
         if (table) {
             const tableId = table.id;
             if ($.fn.DataTable.isDataTable(`#${tableId}`)) {
-                // Se a tabela já está inicializada, destruí-la corretamente
                 this.tables[tableId].destroy();
-                $(`#${tableId}`).empty(); // Remove os elementos de paginação e cabeçalho
-                delete this.tables[tableId]; // Remove a referência da instância
+                delete this.tables[tableId]; // Apenas remove a referência
+                // NÃO dar .empty(), deixa a tabela no DOM
             }
         }
     }
