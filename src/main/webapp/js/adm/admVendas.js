@@ -91,7 +91,7 @@ async function proximaEtapa(id, status) {
 
         const novoStatus = Status[index + 1];
         const pedidoJson = {
-            pedido: {
+            Pedido: {
                 id: id,
                 status: novoStatus
             }
