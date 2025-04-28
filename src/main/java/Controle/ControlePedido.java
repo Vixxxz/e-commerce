@@ -240,6 +240,10 @@ public class ControlePedido extends HttpServlet {
             pedido.setId(Integer.parseInt(req.getParameter("id")));
         }
 
+        if(req.getParameter("idCliente") != null){
+            cliente.setId(Integer.parseInt(req.getParameter("idCliente")));
+        }
+
         if(req.getParameter("cpf") != null){
             cliente.setCpf(req.getParameter("cpf"));
         }

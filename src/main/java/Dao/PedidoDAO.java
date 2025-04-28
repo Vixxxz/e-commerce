@@ -3,6 +3,7 @@ package Dao;
 import Dominio.*;
 import Enums.Genero;
 import Enums.Status;
+import Enums.TipoCupom;
 import Util.Conexao;
 import Util.Resultado;
 

@@ -62,49 +62,46 @@ public class ControleCupom extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-//        req.setCharacterEncoding("UTF-8");
-//        resp.setContentType("application/json");
-//        resp.setCharacterEncoding("UTF-8");
-//        PrintWriter out = resp.getWriter();
-//
-//        Gson gson = new Gson();
-//        Resultado<JsonObject> ResultJsonObject = lerJsonComoObjeto(req);
-//
-//        if (!ResultJsonObject.isSucesso()) {
-//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            JsonObject resposta = new JsonObject();
-//            resposta.addProperty("erro", ResultJsonObject.getErro());
-//            out.print(gson.toJson(resposta));
-//            return;
-//        }
-//
-//        JsonObject jsonObject = ResultJsonObject.getValor();
-//        if (!jsonObject.has("Cliente") || !jsonObject.has("ClienteEndereco")) {
-//            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//            JsonObject resposta = new JsonObject();
-//            resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes");
-//            out.print(gson.toJson(resposta));
-//            return;
-//        }
-//
-//        Cliente cliente = gson.fromJson(jsonObject.get("Cliente"), Cliente.class);
-//        Type clienteEnderecoListType = new TypeToken<List<ClienteEndereco>>() {
-//        }.getType();
-//        List<ClienteEndereco> clienteEnderecos = gson.fromJson(jsonObject.get("ClienteEndereco"), clienteEnderecoListType);
-//        Fachada fachada = new Fachada();
-//
-//        Resultado<String> resultado = fachada.salvarClienteEEndereco(cliente, clienteEnderecos);
-//
-//        if (!resultado.isSucesso()) {
-//            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//            JsonObject resposta = new JsonObject();
-//            resposta.addProperty("erro", resultado.getErro());
-//            out.print(gson.toJson(resposta));
-//            return;
-//        }
-//        String json = gson.toJson(resultado.getValor());
-//        resp.setStatus(HttpServletResponse.SC_OK);
-//        out.print(json);
+        req.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        PrintWriter out = resp.getWriter();
+
+        Gson gson = new Gson();
+        Resultado<JsonObject> ResultJsonObject = lerJsonComoObjeto(req);
+
+        if (!ResultJsonObject.isSucesso()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", ResultJsonObject.getErro());
+            out.print(gson.toJson(resposta));
+            return;
+        }
+
+        JsonObject jsonObject = ResultJsonObject.getValor();
+        if (!jsonObject.has("Cupom")) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes");
+            out.print(gson.toJson(resposta));
+            return;
+        }
+
+        Cupom cupom = gson.fromJson(jsonObject.get("Cupom"), Cupom.class);
+        Fachada fachada = new Fachada();
+
+        Resultado<String> resultado = fachada.salvar(cupom);
+
+        if (!resultado.isSucesso()) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", resultado.getErro());
+            out.print(gson.toJson(resposta));
+            return;
+        }
+        String json = gson.toJson(resultado.getValor());
+        resp.setStatus(HttpServletResponse.SC_OK);
+        out.print(json);
     }
 
     @Override
