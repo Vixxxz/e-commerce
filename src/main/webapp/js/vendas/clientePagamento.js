@@ -268,12 +268,12 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             console.error("Erro ao montar pedido:", err);
 
-            let errorMessage = "Erro desconhecido ao montar o pedido."; // Mensagem padrão
+            let errorMessage = "Erro desconhecido ao montar o pedido.";
 
             // Verifica se o erro foi gerado por uma resposta HTTP (fetch)
             if (err.message.includes("{")) {
                 try {
-                    const parsedError = JSON.parse(err.message); // Tenta extrair o JSON
+                    const parsedError = JSON.parse(err.message);
                     errorMessage = parsedError.erro || "Erro desconhecido na resposta do servidor.";
                 } catch (parseError) {
                     console.error("Erro ao processar JSON na mensagem de erro:", parseError);
@@ -282,11 +282,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Tratamento para erros de tipo, como 'Cannot read properties of null'
                 errorMessage = "Erro interno na aplicação";
             } else {
-                // Outros tipos de erro
                 errorMessage = err.message || errorMessage;
             }
 
-            // Exibe a mensagem processada no alerta
             alert("Erro ao montar o pedido: " + errorMessage);
         }
 

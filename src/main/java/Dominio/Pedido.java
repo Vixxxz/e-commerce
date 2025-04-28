@@ -2,9 +2,12 @@ package Dominio;
 
 import Enums.Status;
 
+import java.util.List;
+
 public class Pedido extends EntidadeDominio{
     private Double valorTotal;
     private Status status;
+    private List<Status> listStatus;
     private Transportadora transportadora;
     private ClienteEndereco clienteEndereco;
 
@@ -55,5 +58,13 @@ public class Pedido extends EntidadeDominio{
 
     public void setClienteEndereco(ClienteEndereco clienteEndereco) {
         this.clienteEndereco = clienteEndereco;
+    }
+
+    public List<Status> getListStatus() {
+        return listStatus;
+    }
+
+    public void setListStatus(List<Status> listStatus) {
+        this.listStatus = listStatus;
     }
 }

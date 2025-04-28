@@ -1,6 +1,7 @@
 package Controle;
 
 import Dominio.*;
+import Enums.Status;
 import Fachada.Fachada;
 import Fachada.IFachada;
 import Util.Resultado;
@@ -19,7 +20,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serial;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @WebServlet(name = "ControlePedido", urlPatterns = "/controlePedido")
 public class ControlePedido extends HttpServlet {
@@ -228,8 +231,35 @@ public class ControlePedido extends HttpServlet {
         return leitorJson.toString();
     }
 
-    //todo: arrumar a função
     private Resultado<Pedido> extrairPedidoFiltro(HttpServletRequest req) {
-        return Resultado.sucesso(null);
+        Pedido pedido = new Pedido();
+        ClienteEndereco clienteEndereco = new ClienteEndereco();
+        Cliente cliente = new Cliente();
+
+        if(req.getParameter("id") != null){
+            pedido.setId(Integer.parseInt(req.getParameter("id")));
+        }
+
+        if(req.getParameter("cpf") != null){
+            cliente.setCpf(req.getParameter("cpf"));
+        }
+
+        if(req.getParameter("status") != null){
+            pedido.setStatus(Status.valueOf(req.getParameter("status")));
+        }
+
+
+        if (req.getParameter("statusList") != null) {
+            List<Status> statusList = Arrays.stream(req.getParameter("statusList").split(","))
+                    .map(String::trim)
+                    .map(Status::valueOf)
+                    .collect(Collectors.toList());
+            pedido.setListStatus(statusList);
+        }
+
+        clienteEndereco.setCliente(cliente);
+        pedido.setClienteEndereco(clienteEndereco);
+
+        return Resultado.sucesso(pedido);
     }
 }

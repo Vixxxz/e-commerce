@@ -1,10 +1,14 @@
 package Dao;
 
 import Dominio.*;
+import Enums.Genero;
+import Enums.Status;
 import Util.Conexao;
 import Util.Resultado;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class PedidoDAO implements IDAO{
@@ -114,8 +118,146 @@ public class PedidoDAO implements IDAO{
         return null;
     }
 
+    // File: PedidoDAO.java
+
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
-        return null;
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = Conexao.getConnectionMySQL();
+            }
+
+            List<EntidadeDominio> pedidos = new ArrayList<>();
+            Pedido pedido = (Pedido) entidade;
+            List<Object> parametros = new ArrayList<>();
+
+            String sql = construirConsulta(pedido, parametros);
+
+            try (PreparedStatement pst = connection.prepareStatement(sql)) {
+                for (int i = 0; i < parametros.size(); i++) {
+                    pst.setObject(i + 1, parametros.get(i));
+                }
+
+                try (ResultSet rs = pst.executeQuery()) {
+                    while (rs.next()) {
+                        pedidos.add(mapeiaPedido(rs));
+                    }
+                }
+            }
+
+            return Resultado.sucesso(pedidos);
+
+        } catch (SQLException | ClassNotFoundException e) {
+            System.err.println("Erro ao consultar pedidos: " + e.getMessage());
+            return Resultado.erro("Erro ao consultar pedidos: " + e.getMessage());
+        }finally {
+            try {
+                if (connection != null && !connection.isClosed()) {
+                    connection.close();
+                }
+            } catch (SQLException closeEx) {
+                System.err.println("Erro ao fechar conexão: " + closeEx.getMessage());
+            }
+        }
     }
+
+    private String construirConsulta(Pedido pedido, List<Object> parametros) {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("SELECT * ");
+        sql.append("FROM crud_v3.pedido p ");
+        sql.append("INNER JOIN crud_v3.frete f ON p.ped_fre_id = f.fre_id ");
+        sql.append("INNER JOIN crud_v3.cliente c ON p.ped_cli_end_cli_id = c.cli_id ");
+        sql.append("INNER JOIN crud_v3.cliente_endereco ce ON p.ped_cli_end_id = ce.cli_end_id ");
+        sql.append("INNER JOIN crud_v3.endereco e ON p.ped_cli_end_end_id = e.end_id ");
+        sql.append("WHERE 1=1 ");
+
+        if (pedido.getId() != null) {
+            sql.append(" AND p.ped_id = ? ");
+            parametros.add(pedido.getId());
+        }
+        if (pedido.getValorTotal() != null) {
+            sql.append(" AND p.ped_valor_total = ? ");
+            parametros.add(pedido.getValorTotal());
+        }
+        if (pedido.getStatus() != null) {
+            sql.append(" AND p.ped_status = ? ");
+            parametros.add(pedido.getStatus().name());
+        }
+        if (pedido.getListStatus() != null && !pedido.getListStatus().isEmpty()) {
+            sql.append(" AND p.ped_status IN (");
+            sql.append(String.join(",", Collections.nCopies(pedido.getListStatus().size(), "?")));
+            sql.append(") ");
+
+            for (Status status : pedido.getListStatus()) {
+                parametros.add(status.name());
+            }
+        }
+        if (pedido.getTransportadora() != null) {
+            if (pedido.getTransportadora().getId() != null) {
+                sql.append(" AND f.fre_id = ? ");
+                parametros.add(pedido.getTransportadora().getId());
+            }
+            if (isStringValida(pedido.getTransportadora().getNome())) {
+                sql.append(" AND f.fre_nome = ? ");
+                parametros.add(pedido.getTransportadora().getNome());
+            }
+        }
+        if (pedido.getClienteEndereco() != null) {
+            ClienteEndereco ce = pedido.getClienteEndereco();
+            if (ce.getId() != null) {
+                sql.append(" AND ce.cli_end_id = ? ");
+                parametros.add(ce.getId());
+            }
+            if (ce.getCliente() != null) {
+                if (ce.getCliente().getId() != null) {
+                    sql.append(" AND c.cli_id = ? ");
+                    parametros.add(ce.getCliente().getId());
+                }
+                if (isStringValida(ce.getCliente().getCpf())) {
+                    sql.append(" AND c.cli_cpf = ? ");
+                    parametros.add(ce.getCliente().getCpf());
+                }
+            }
+            if (ce.getEndereco() != null) {
+                if (ce.getEndereco().getId() != null) {
+                    sql.append(" AND e.end_id = ? ");
+                    parametros.add(ce.getEndereco().getId());
+                }
+                if (isStringValida(ce.getEndereco().getCep())) {
+                    sql.append(" AND e.end_cep = ? ");
+                    parametros.add(ce.getEndereco().getCep());
+                }
+            }
+        }
+
+        return sql.toString();
+    }
+
+    private boolean isStringValida(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private Pedido mapeiaPedido(ResultSet rs) throws SQLException {
+        Pedido ped = new Pedido();
+        ped.setId(rs.getInt("ped_id"));
+        ped.setValorTotal(rs.getDouble("ped_valor_total"));
+        ped.setStatus(Status.valueOf(rs.getString("ped_status")));
+        ped.setDtCadastro(rs.getTimestamp("ped_dt_cadastro"));
+
+        Transportadora tra = new Transportadora();
+        tra.setNome(rs.getString("fre_transportadora"));
+
+        ClienteEndereco ce = new ClienteEndereco();
+        Cliente c = new Cliente();
+
+        c.setCpf(rs.getString("cli_cpf"));
+        ce.setCliente(c);
+
+        ped.setClienteEndereco(ce);
+        ped.setTransportadora(tra);
+
+        return ped;
+    }
+
 }
