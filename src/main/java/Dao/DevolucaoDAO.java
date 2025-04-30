@@ -2,6 +2,7 @@ package Dao;
 
 import Dominio.*;
 import Enums.Status;
+import Util.CupomGenerator;
 import Util.Resultado;
 
 import java.sql.Connection;
@@ -18,7 +19,8 @@ public class DevolucaoDAO implements IDAO{
     public DevolucaoDAO() {
     }
 
-    public Resultado<Devolucao>salvaDevolucaoCupom(Devolucao devolucao, Cupom cupom, List<DevolucaoProduto> devolucaoProdutos) throws SQLException, ClassNotFoundException {
+    //todo: realizar a geracao de cupons
+    public Resultado<Devolucao>salvaDevolucaoCupom(Devolucao devolucao, List<DevolucaoProduto> devolucaoProdutos) throws SQLException, ClassNotFoundException {
         try{
             PedidoDAO pedidoDAO = new PedidoDAO();
             Resultado<List<EntidadeDominio>> resultadoConsultaPedido = pedidoDAO.consultar(devolucao.getPedido());
@@ -41,11 +43,12 @@ public class DevolucaoDAO implements IDAO{
 
             for(DevolucaoProduto devolucaoProduto : devolucaoProdutos){
                 devolucaoProduto.setDevolucao(dev);
+                Cupom cupom = new Cupom();
+                cupom.setCodigo(CupomGenerator.gerarCodigoCupom(4));
+                cupom.setValor(devolucao.getValor());
+                cupom.setCliente(pedido.getClienteEndereco().getCliente());
                 Resultado<EntidadeDominio> resultadoSalvaDevolucaoProduto = devolucaoProdutoDAO.salvar(devolucaoProduto);
             }
-
-            CupomDAO cupomDAO = new CupomDAO(connection);
-            Resultado<EntidadeDominio> resultadoSalvaCupom = cupomDAO.salvar(cupom);
 
             pedidoDAO.setConnection(connection);
             Resultado<EntidadeDominio> resultadoAlteraPedido = pedidoDAO.alterar(pedido);

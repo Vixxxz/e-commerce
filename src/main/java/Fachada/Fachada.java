@@ -13,11 +13,10 @@ public class Fachada implements IFachada {
     public Fachada() {
     }
 
-    //todo: fazer o devolucaoDAO para terminar de gerar a devolucao, alterar o status do pedido e inserir a devolucaoProduto
-    public Resultado<String> geraDevolucao(Devolucao devolucao, Cupom cupom, List<DevolucaoProduto> devolucaoProdutos){
+
+    public Resultado<String> geraDevolucao(Devolucao devolucao, List<DevolucaoProduto> devolucaoProdutos){
         StringBuilder sb = new StringBuilder();
         processarValidacoes(devolucao, getValidacoes(devolucao, Operacao.SALVAR), sb);
-        processarValidacoes(cupom, getValidacoes(cupom, Operacao.SALVAR), sb);
         for(DevolucaoProduto dp : devolucaoProdutos){
             processarValidacoes(dp, getValidacoes(dp, Operacao.SALVAR), sb);
         }
@@ -26,7 +25,7 @@ public class Fachada implements IFachada {
         }
         try{
             DevolucaoDAO devolucaoDAO = new DevolucaoDAO();
-            Resultado<Devolucao> resultadoSalvaDevolucaoCupom = devolucaoDAO.salvaDevolucaoCupom(devolucao, cupom, devolucaoProdutos);
+            Resultado<Devolucao> resultadoSalvaDevolucaoCupom = devolucaoDAO.salvaDevolucaoCupom(devolucao, devolucaoProdutos);
             if(!resultadoSalvaDevolucaoCupom.isSucesso()){
                 return Resultado.erro(resultadoSalvaDevolucaoCupom.getErro());
             }
