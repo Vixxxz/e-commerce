@@ -37,6 +37,28 @@ public class Fachada implements IFachada {
         }
     }
 
+    public Resultado<String> salvarTroca(TrocaSolicitada trocaSolicitada, List<TrocaSolicitadaTenis> trocaSolicitadaTenis){
+        StringBuilder sb = new StringBuilder();
+        processarValidacoes(trocaSolicitada, getValidacoes(trocaSolicitada, Operacao.SALVAR), sb);
+        for(TrocaSolicitadaTenis tst : trocaSolicitadaTenis){
+            processarValidacoes(tst, getValidacoes(tst, Operacao.SALVAR), sb);
+        }
+        if(!sb.isEmpty()){
+            return Resultado.erro(sb.toString());
+        }
+        try{
+            TrocaSolicitadaDAO trocaSolicitadaDAO = new TrocaSolicitadaDAO();
+            Resultado<TrocaSolicitada> resultadoSalvaTrocaSolicitada = trocaSolicitadaDAO.salvaTrocaSolicitada(trocaSolicitada, trocaSolicitadaTenis);
+            if(!resultadoSalvaTrocaSolicitada.isSucesso()){
+                return Resultado.erro(resultadoSalvaTrocaSolicitada.getErro());
+            }
+            return Resultado.sucesso("Troca solicitada com sucesso!");
+        }catch (Exception e) {
+            System.err.println("Erro ao solicitar troca e seus produtos: " + e.getMessage());
+            return Resultado.erro("Erro interno ao solicitar troca e seus produtos.");
+        }
+    };
+
     public Resultado<String> salvarPedidoProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos, ReservaEstoque reserva){
         StringBuilder sb = new StringBuilder();
         processarValidacoes(pedido, getValidacoes(pedido, Operacao.SALVAR), sb);
@@ -488,6 +510,14 @@ public class Fachada implements IFachada {
             }
             case DevolucaoProduto ignore ->{
 
+            }
+            case Transportadora ignore ->{
+                switch (operacao){
+                    case SALVAR -> {
+                        validacoes.add(new ValidaDadosTrocaSolicitada());
+                        validacoes.add(new ValidaStatusTrocaPedido());
+                    }
+                }
             }
             case null, default -> {
                 System.err.println("Tipo de Entidade não suportado na hora de buscar as validacoes");

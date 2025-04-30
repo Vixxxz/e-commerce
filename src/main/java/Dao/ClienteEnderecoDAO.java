@@ -14,7 +14,7 @@ public class ClienteEnderecoDAO implements IDAO{
     }
     public ClienteEnderecoDAO() {}
 
-    public void salvaEnderecoCadastro(ClienteEndereco clienteEndereco) throws SQLException, ClassNotFoundException {
+    public void     salvaEnderecoCadastro(ClienteEndereco clienteEndereco) throws SQLException, ClassNotFoundException {
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO cliente_endereco(cli_end_cli_id, cli_end_end_id, cli_end_num, ");
         sql.append("cli_end_tp_residencia, cli_end_tp_end, cli_end_obs, cli_end_dt_cadastro) ");
