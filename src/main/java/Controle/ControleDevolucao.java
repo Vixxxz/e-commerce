@@ -48,7 +48,7 @@ public class ControleDevolucao extends HttpServlet {
         }
 
         JsonObject jsonObject = ResultJsonObject.getValor();
-        if (!jsonObject.has("devolucao") || !jsonObject.has("cupom") || !jsonObject.has("devolucaoProduto")) {
+        if (!jsonObject.has("devolucao") || !jsonObject.has("devolucaoProduto")) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
             resposta.addProperty("erro", "JSON inválido: Campos obrigatórios ausentes");
@@ -57,7 +57,6 @@ public class ControleDevolucao extends HttpServlet {
         }
 
         Devolucao devolucao = gson.fromJson(jsonObject.get("devolucao"), Devolucao.class);
-        Cupom cupom = gson.fromJson(jsonObject.get("cupom"), Cupom.class);
 
         Type devolucaoProdutoListType = new TypeToken<List<DevolucaoProduto>>() {
         }.getType();
@@ -65,7 +64,7 @@ public class ControleDevolucao extends HttpServlet {
 
         Fachada fachada = new Fachada();
 
-        Resultado<String> resultado = fachada.geraDevolucao(devolucao, cupom, devolucaoProdutos);
+        Resultado<String> resultado = fachada.geraDevolucao(devolucao, devolucaoProdutos);
 
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
