@@ -2,10 +2,11 @@ package Strategy;
 
 import Dominio.Cartao;
 import Dominio.EntidadeDominio;
+import Util.Resultado;
 
 public class ValidaDadosCartao implements IStrategy {
     @Override
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         Cartao cartao = (Cartao) entidade;
 
         if (isStringValida(cartao.getNumero())) {

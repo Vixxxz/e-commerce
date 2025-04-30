@@ -1,10 +1,11 @@
 package Strategy;
 
 import Dominio.*;
+import Util.Resultado;
 
 public class ValidaEndereco implements IStrategy{
     @Override
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         ClienteEndereco enderecoRelacionado = (ClienteEndereco) entidade;
 
         Endereco endereco = enderecoRelacionado.getEndereco();

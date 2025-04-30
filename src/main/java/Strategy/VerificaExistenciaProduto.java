@@ -9,7 +9,7 @@ import java.util.List;
 
 public class VerificaExistenciaProduto implements IStrategy{
     @Override
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         Produto pro = new Produto();
         pro.setId(entidade.getId());
         ProdutoDAO produtoDAO = new ProdutoDAO();

@@ -9,7 +9,7 @@ import java.util.List;
 
 public class VerificaDuplicataProduto implements IStrategy{
     @Override
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         Produto pro = (Produto)entidade;
         ProdutoDAO produtoDAO = new ProdutoDAO();
         Resultado<List<EntidadeDominio>> resultadoProdutos = produtoDAO.consultar(pro);

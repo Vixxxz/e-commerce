@@ -6,12 +6,35 @@ import Strategy.*;
 import Util.Resultado;
 import Enums.Operacao;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Fachada implements IFachada {
     public Fachada() {
+    }
+
+    //todo: fazer o devolucaoDAO para terminar de gerar a devolucao, alterar o status do pedido e inserir a devolucaoProduto
+    public Resultado<String> geraDevolucao(Devolucao devolucao, Cupom cupom, List<DevolucaoProduto> devolucaoProdutos){
+        StringBuilder sb = new StringBuilder();
+        processarValidacoes(devolucao, getValidacoes(devolucao, Operacao.SALVAR), sb);
+        processarValidacoes(cupom, getValidacoes(cupom, Operacao.SALVAR), sb);
+        for(DevolucaoProduto dp : devolucaoProdutos){
+            processarValidacoes(dp, getValidacoes(dp, Operacao.SALVAR), sb);
+        }
+        if(!sb.isEmpty()){
+            return Resultado.erro(sb.toString());
+        }
+        try{
+            DevolucaoDAO devolucaoDAO = new DevolucaoDAO();
+            Resultado<Devolucao> resultadoSalvaDevolucaoCupom = devolucaoDAO.salvaDevolucaoCupom(devolucao, cupom, devolucaoProdutos);
+            if(!resultadoSalvaDevolucaoCupom.isSucesso()){
+                return Resultado.erro(resultadoSalvaDevolucaoCupom.getErro());
+            }
+            return Resultado.sucesso("Devolução e Cupons gerados com sucesso!");
+        }catch (Exception e) {
+            System.err.println("Erro ao atualizar pedido, salvar devolucao e cupom: " + e.getMessage());
+            return Resultado.erro("Erro interno ao atualizar pedido, salvar devolucao e cupom.");
+        }
     }
 
     public Resultado<String> salvarPedidoProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos, ReservaEstoque reserva){
@@ -46,13 +69,14 @@ public class Fachada implements IFachada {
         StringBuilder sb = new StringBuilder();
         EncriptografaSenha criptografa = new EncriptografaSenha();
         processarValidacoes(cliente, getValidacoes(cliente, Operacao.SALVAR), sb);
-        cliente.setSenha(criptografa.processar(cliente, sb));
+        Resultado<String> resultadoEncripta = criptografa.processar(cliente, sb);
         for (ClienteEndereco enderecoRelacionado : clienteEndereco) {
             processarValidacoes(enderecoRelacionado, getValidacoes(enderecoRelacionado, Operacao.SALVAR), sb);
         }
         if (!sb.isEmpty()) {
             return Resultado.erro(sb.toString());
         }
+        cliente.setSenha(resultadoEncripta.getValor());
         try {
             ClienteDAO clienteDAO = new ClienteDAO();
             Resultado<Cliente> resultadoSalvarCliente = clienteDAO.salvarClienteEEndereco(cliente, clienteEndereco);
@@ -136,10 +160,11 @@ public class Fachada implements IFachada {
             case Cliente cliente -> {
                 EncriptografaSenha criptografa = new EncriptografaSenha();
                 processarValidacoes(cliente, getValidacoes(cliente, Operacao.ALTERAR), sb);
-                cliente.setSenha(criptografa.processar(cliente, sb));
+                Resultado<String> resultadoEncripta = criptografa.processar(cliente, sb);
                 if (!sb.isEmpty()) {
                     return Resultado.erro(sb.toString());
                 }
+                cliente.setSenha(resultadoEncripta.getValor());
                 try {
                     ClienteDAO clienteDAO = new ClienteDAO();
                     Resultado<EntidadeDominio> resultadoAlterarCliente = clienteDAO.alterar(cliente);
@@ -454,6 +479,15 @@ public class Fachada implements IFachada {
                         validacoes.add(new ValidaEstoque());
                     }
                 }
+            }
+            case Devolucao ignore ->{
+
+            }
+            case Cupom ignore ->{
+
+            }
+            case DevolucaoProduto ignore ->{
+
             }
             case null, default -> {
                 System.err.println("Tipo de Entidade não suportado na hora de buscar as validacoes");

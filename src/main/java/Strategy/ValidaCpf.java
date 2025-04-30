@@ -2,10 +2,11 @@ package Strategy;
 
 import Dominio.Cliente;
 import Dominio.EntidadeDominio;
+import Util.Resultado;
 
 public class ValidaCpf implements IStrategy{
     @Override
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         Cliente cliente = (Cliente) entidade;
         String cpf = cliente.getCpf();
         verificaCpf(cpf, sb);

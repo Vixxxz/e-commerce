@@ -11,7 +11,7 @@ import java.util.List;
 
 public class ValidaEstoque implements IStrategy{
     @Override
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         ReservaEstoque reservaEstoque = (ReservaEstoque) entidade;
         ReservaDAO reservaDAO = new ReservaDAO();
         ReservaEstoque filtro = new ReservaEstoque();

@@ -10,7 +10,7 @@ import java.util.List;
 public class VerificaAlteracaoCategoria implements IStrategy{
 
     @Override
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         CategoriaDAO categoriaDAO = new CategoriaDAO();
         Produto produto = (Produto) entidade;
 

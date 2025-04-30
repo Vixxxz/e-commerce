@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ValidaBandeiraExistente implements IStrategy{
     @Override
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         Cartao cartao = (Cartao) entidade;
         Bandeira bandeira = cartao.getBandeira();
         BandeiraDAO bandeiraDAO = new BandeiraDAO();

@@ -9,7 +9,7 @@ import java.util.List;
 
 public class ValidaCartaoPreferencial implements IStrategy{
     @Override
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         Cartao cartao = (Cartao) entidade;
         if(cartao.getPreferencial()){
             CartaoDAO cartaoDAO = new CartaoDAO();

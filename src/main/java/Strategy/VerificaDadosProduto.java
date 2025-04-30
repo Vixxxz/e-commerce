@@ -2,10 +2,11 @@ package Strategy;
 
 import Dominio.EntidadeDominio;
 import Dominio.Produto;
+import Util.Resultado;
 
 public class VerificaDadosProduto implements IStrategy{
     @Override
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         Produto produto = (Produto) entidade;
         if(isStringInvalida(produto.getSku())){
             sb.append("Sku é obrigatório");

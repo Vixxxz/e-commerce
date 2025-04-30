@@ -2,10 +2,11 @@ package Strategy;
 
 import Dominio.EntidadeDominio;
 import Dominio.ReservaEstoque;
+import Util.Resultado;
 
 public class ValidaDadosReserva implements IStrategy{
     @Override
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         ReservaEstoque reserva = (ReservaEstoque) entidade;
 
         if (reserva.getProduto() == null || reserva.getProduto().getId() == null) {

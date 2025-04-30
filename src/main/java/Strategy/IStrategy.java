@@ -1,7 +1,8 @@
 package Strategy;
 
 import Dominio.EntidadeDominio;
+import Util.Resultado;
 
 public interface IStrategy {
-    String processar(EntidadeDominio entidade, StringBuilder sb);
+    Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb);
 }

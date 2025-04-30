@@ -1,8 +1,9 @@
 const AdmTrocas = (() => {
     const BASE_URL = "http://localhost:8080/ecommerce_tenis_war_exploded";
     const Status = Object.freeze([
-        "EM_TROCA",
+        "TROCA_SOLICITADA",
         "TROCA_AUTORIZADA",
+        "TROCA_RECUSADA",
         "TROCADO"
     ]);
 
@@ -149,7 +150,7 @@ const AdmTrocas = (() => {
             if (value.trim()) params.append(key, value.trim());
         });
 
-        params.append('statusList', 'EM_TROCA, TROCA_AUTORIZADA, TROCADO');
+        params.append('statusList', 'TROCA_SOLICITADA, TROCA_AUTORIZADA, TROCA_RECUSADA, TROCADO');
 
         return params.toString();
     }

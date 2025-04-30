@@ -1,9 +1,7 @@
 package Dao;
 
 import Dominio.*;
-import Enums.Genero;
 import Enums.Status;
-import Enums.TipoCupom;
 import Util.Conexao;
 import Util.Resultado;
 
@@ -22,7 +20,6 @@ public class PedidoDAO implements IDAO{
     public PedidoDAO() {
     }
 
-    //todo: fazer a movimentacao do estoque
     public Resultado<Pedido> salvarPedidoEProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos) {
         try {
             Resultado<EntidadeDominio> resultadoSalvarPedido = salvar(pedido);
@@ -108,8 +105,6 @@ public class PedidoDAO implements IDAO{
             return Resultado.sucesso(pedido);
         }
     }
-
-    // File: PedidoDAO.java
 
     @Override
     public Resultado<EntidadeDominio> alterar(EntidadeDominio entidade) {
@@ -329,4 +324,11 @@ public class PedidoDAO implements IDAO{
         return ped;
     }
 
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
 }

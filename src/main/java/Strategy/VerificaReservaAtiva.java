@@ -10,7 +10,7 @@ import java.util.List;
 
 public class VerificaReservaAtiva implements IStrategy{
     @Override
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         ReservaDAO reservaDAO = new ReservaDAO();
         ReservaEstoque reserva = (ReservaEstoque) entidade;
         reserva.setStatus(Ativo.ATIVO);

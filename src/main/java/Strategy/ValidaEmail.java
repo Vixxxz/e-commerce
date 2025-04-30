@@ -2,12 +2,13 @@ package Strategy;
 
 import Dominio.Cliente;
 import Dominio.EntidadeDominio;
+import Util.Resultado;
 
 import java.util.regex.Pattern;
 
 public class ValidaEmail implements IStrategy{
 
-    public String processar(EntidadeDominio entidade, StringBuilder sb) {
+    public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         Cliente cliente = (Cliente) entidade;
         String email = cliente.getEmail();
         validaEmail(email, sb);
