@@ -105,11 +105,17 @@ public class ControlePedido extends HttpServlet {
         }.getType();
         List<CartaoPedido> cartaoPedidos = gson.fromJson(jsonObject.get("CartaoPedido"), cartaoPedidoListType);
 
+        List<Cupom>cupons = null;
+        if(jsonObject.has("cupons")){
+            Type cupomListType = new TypeToken<List<Cupom>>(){}.getType();
+            cupons = gson.fromJson(jsonObject.get("cupons"), cupomListType);
+        }
+
         ReservaEstoque reservaEstoque = new ReservaEstoque();
         reservaEstoque.setSessao(sessaoId);
 
         Fachada fachada = new Fachada();
-        Resultado<String> resultado = fachada.salvarPedidoProduto(pedido, pedidoProdutos, cartaoPedidos, reservaEstoque);
+        Resultado<String> resultado = fachada.salvarPedidoProduto(pedido, pedidoProdutos, cartaoPedidos, reservaEstoque, cupons);
 
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

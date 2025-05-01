@@ -36,7 +36,7 @@ public class Fachada implements IFachada {
         }
     }
 
-    public Resultado<String> salvarPedidoProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos, ReservaEstoque reserva){
+    public Resultado<String> salvarPedidoProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos, ReservaEstoque reserva, List<Cupom>cupons){
         StringBuilder sb = new StringBuilder();
         processarValidacoes(pedido, getValidacoes(pedido, Operacao.SALVAR), sb);
         for(PedidoProduto pedidoProduto : pedidoProdutos){
@@ -48,12 +48,17 @@ public class Fachada implements IFachada {
         for(CartaoPedido cartaoPedido : cartaoPedidos){
             processarValidacoes(cartaoPedido, getValidacoes(cartaoPedido, Operacao.SALVAR), sb);
         }
+        if(!cupons.isEmpty()){
+            for(Cupom cupom : cupons){
+                processarValidacoes(cupom, getValidacoes(cupom, Operacao.ALTERAR), sb);
+            }
+        }
         if(!sb.isEmpty()){
             return Resultado.erro(sb.toString());
         }
         try{
             PedidoDAO pedidoDAO = new PedidoDAO();
-            Resultado<Pedido> resultadoSalvarPedidoEProduto = pedidoDAO.salvarPedidoEProduto(pedido, pedidoProdutos, cartaoPedidos);
+            Resultado<Pedido> resultadoSalvarPedidoEProduto = pedidoDAO.salvarPedidoEProduto(pedido, pedidoProdutos, cartaoPedidos, cupons);
             if (!resultadoSalvarPedidoEProduto.isSucesso()) {
                 return Resultado.erro(resultadoSalvarPedidoEProduto.getErro());
             }
