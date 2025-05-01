@@ -22,25 +22,51 @@ public class EstoqueDAO implements IDAO{
     public Resultado<EntidadeDominio>atualizarEstoque(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
         Connection connectionAntiga = connection;
         connection = Conexao.getConnectionMySQL();
-        PedidoProduto pedidoProduto = (PedidoProduto) entidade;
-        Estoque est = new Estoque();
-        est.setProduto(pedidoProduto.getProduto());
-        Resultado<List<EntidadeDominio>>resultadoEstoque = consultar(est);
-        List<EntidadeDominio>estoques = resultadoEstoque.getValor();
-        if(estoques.isEmpty()){
-            return Resultado.erro("Não existe estoque para o produto selecionado: " + pedidoProduto.getProduto().getSku());
+        switch (entidade){
+            case PedidoProduto pedidoProduto ->{
+                Estoque est = new Estoque();
+                est.setProduto(pedidoProduto.getProduto());
+                Resultado<List<EntidadeDominio>>resultadoEstoque = consultar(est);
+                List<EntidadeDominio>estoques = resultadoEstoque.getValor();
+                if(estoques.isEmpty()){
+                    return Resultado.erro("Não existe estoque para o produto selecionado: " + pedidoProduto.getProduto().getSku());
+                }
+                connection = connectionAntiga;
+                Estoque ultimoEstoque = (Estoque) estoques.getFirst();
+                est.setQuantidade(ultimoEstoque.getQuantidade() - pedidoProduto.getQuantidade());
+                est.setMovimentacao(-pedidoProduto.getQuantidade());
+                est.setValorCusto(ultimoEstoque.getValorCusto());
+                est.setMarca(ultimoEstoque.getMarca());
+                Resultado<EntidadeDominio>resultadoSalvaEstoque = salvar(est);
+                if(!resultadoSalvaEstoque.isSucesso()){
+                    return Resultado.erro("Não foi possível atualizar o estoque.");
+                }
+                return Resultado.sucesso(est);
+            }
+            case DevolucaoProduto devolucaoProduto ->{
+                Estoque est = new Estoque();
+                est.setProduto(devolucaoProduto.getProduto());
+                Resultado<List<EntidadeDominio>>resultadoEstoque = consultar(est);
+                List<EntidadeDominio>estoques = resultadoEstoque.getValor();
+                if(estoques.isEmpty()){
+                    return Resultado.erro("Não existe estoque para o produto selecionado: " + devolucaoProduto.getProduto().getSku());
+                }
+                connection = connectionAntiga;
+                Estoque ultimoEstoque = (Estoque) estoques.getFirst();
+                est.setQuantidade(ultimoEstoque.getQuantidade() + devolucaoProduto.getQuantidade());
+                est.setMovimentacao(devolucaoProduto.getQuantidade());
+                est.setValorCusto(ultimoEstoque.getValorCusto());
+                est.setMarca(ultimoEstoque.getMarca());
+                Resultado<EntidadeDominio>resultadoSalvaEstoque = salvar(est);
+                if(!resultadoSalvaEstoque.isSucesso()){
+                    return Resultado.erro("Não foi possível atualizar o estoque.");
+                }
+                return Resultado.sucesso(est);
+            }
+            default -> {
+                return Resultado.erro("Nenhuma entidade valida");
+            }
         }
-        connection = connectionAntiga;
-        Estoque ultimoEstoque = (Estoque) estoques.getFirst();
-        est.setQuantidade(ultimoEstoque.getQuantidade() - pedidoProduto.getQuantidade());
-        est.setMovimentacao(-pedidoProduto.getQuantidade());
-        est.setValorCusto(ultimoEstoque.getValorCusto());
-        est.setMarca(ultimoEstoque.getMarca());
-        Resultado<EntidadeDominio>resultadoSalvaEstoque = salvar(est);
-        if(!resultadoSalvaEstoque.isSucesso()){
-            return Resultado.erro("Não foi possível atualizar o estoque.");
-        }
-        return Resultado.sucesso(est);
     }
 
     @Override

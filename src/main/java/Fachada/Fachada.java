@@ -463,13 +463,25 @@ public class Fachada implements IFachada {
                 }
             }
             case Pedido ignore ->{
-
+                switch (operacao){
+                    case SALVAR -> {
+                        validacoes.add(new ValidaDadosPedido());
+                    }
+                }
             }
             case PedidoProduto ignore ->{
-
+                switch (operacao){
+                    case SALVAR -> {
+                        validacoes.add(new ValidaDadosPedidoProduto());
+                    }
+                }
             }
             case CartaoPedido ignore ->{
-
+                switch (operacao){
+                    case SALVAR -> {
+                        validacoes.add(new ValidaDadosCartaoPedido());
+                    }
+                }
             }
             case ReservaEstoque ignore ->{
                 switch (operacao){
@@ -480,13 +492,26 @@ public class Fachada implements IFachada {
                 }
             }
             case Devolucao ignore ->{
-
+                switch (operacao){
+                    case SALVAR -> {
+                        validacoes.add(new ValidaDadosDevolucao());
+                        validacoes.add(new VerificaStatusPedidoParaDevolucao());
+                    }
+                }
             }
             case Cupom ignore ->{
-
+                switch (operacao){
+                    case SALVAR -> {
+                        validacoes.add(new ValidaDadosCupom());
+                    }
+                }
             }
             case DevolucaoProduto ignore ->{
-
+                switch (operacao){
+                    case SALVAR ->{
+                        validacoes.add(new ValidaDadosDevolucaoProduto());
+                    }
+                }
             }
             case null, default -> {
                 System.err.println("Tipo de Entidade não suportado na hora de buscar as validacoes");
