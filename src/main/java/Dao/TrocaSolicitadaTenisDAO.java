@@ -17,6 +17,10 @@ public class TrocaSolicitadaTenisDAO implements IDAO{
 
     public TrocaSolicitadaTenisDAO(){}
 
+    public static Resultado<EntidadeDominio> salvaTrocaProduto(TrocaSolicitadaTenis trocaProduto) {
+        return null;
+    }
+
     @Override
     public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
 
@@ -26,6 +30,21 @@ public class TrocaSolicitadaTenisDAO implements IDAO{
         connection.setAutoCommit(false);
 
 
+        return null;
+    }
+
+    @Override
+    public Resultado<EntidadeDominio> alterar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
+        return null;
+    }
+
+    @Override
+    public Resultado<String> excluir(EntidadeDominio entidade) {
+        return null;
+    }
+
+    @Override
+    public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
         return null;
     }
 }

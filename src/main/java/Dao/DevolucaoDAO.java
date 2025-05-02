@@ -20,7 +20,6 @@ public class DevolucaoDAO implements IDAO{
     public DevolucaoDAO() {
     }
 
-    //todo: realizar a geracao de cupons
     public Resultado<Devolucao>salvaDevolucaoCupom(Devolucao devolucao, List<DevolucaoProduto> produtos)  {
         try{
             PedidoDAO pedidoDAO = new PedidoDAO();

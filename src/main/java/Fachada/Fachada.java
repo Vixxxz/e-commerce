@@ -47,7 +47,7 @@ public class Fachada implements IFachada {
         }
         try{
             TrocaSolicitadaDAO trocaSolicitadaDAO = new TrocaSolicitadaDAO();
-            Resultado<TrocaSolicitada> resultadoSalvaTrocaSolicitada = trocaSolicitadaDAO.salvaTrocaSolicitada(trocaSolicitada, trocaSolicitadaTenis);
+            Resultado<TrocaSolicitada> resultadoSalvaTrocaSolicitada = trocaSolicitadaDAO.salvarTroca(trocaSolicitada, trocaSolicitadaTenis);
             if(!resultadoSalvaTrocaSolicitada.isSucesso()){
                 return Resultado.erro(resultadoSalvaTrocaSolicitada.getErro());
             }

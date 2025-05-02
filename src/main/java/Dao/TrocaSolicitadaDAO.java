@@ -17,7 +17,7 @@ public class TrocaSolicitadaDAO  implements IDAO{
     }
     public TrocaSolicitadaDAO(){}
 
-    public Resultado<EntidadeDominio> salvarTroca(TrocaSolicitada trocaSolicitada, TrocaSolicitadaTenis trocaSolicitadaTenis) throws SQLException, ClassNotFoundException {
+    public Resultado<TrocaSolicitada> salvarTroca(TrocaSolicitada trocaSolicitada, List<TrocaSolicitadaTenis> trocaSolicitadaTenis) throws SQLException, ClassNotFoundException {
         if (connection == null || connection.isClosed()) {
             connection = Conexao.getConnectionMySQL();
         }
@@ -29,7 +29,7 @@ public class TrocaSolicitadaDAO  implements IDAO{
             TrocaSolicitadaTenisDAO trocaSolicitadaTenisDAO = new TrocaSolicitadaTenisDAO(connection);
             for (TrocaSolicitadaTenis trocaProduto : trocaSolicitadaTenis) {
                 trocaProduto.setTroca(trocaSalva);
-                TrocaSolicitadaTenisDAO.salvaEnderecoCadastro(trocaProduto);
+                TrocaSolicitadaTenisDAO.salvaTrocaProduto(trocaProduto);
             }
 
             System.out.println("Troca Solicitada com sucesso!");
@@ -41,7 +41,7 @@ public class TrocaSolicitadaDAO  implements IDAO{
                     connection.rollback();
                 }
                 System.err.println("Rollback efetuado devido a erro: " + e.getMessage());
-                return Resultado.erro("Erro ao salvar Cliente e Endereço: " + e.getMessage());
+                return Resultado.erro("Erro ao salvar troca: " + e.getMessage());
             } catch (SQLException rollbackEx) {
                 System.err.println("Erro durante rollback: " + rollbackEx.getMessage());
                 return Resultado.erro("Erro durante rollback: " + rollbackEx.getMessage());
@@ -53,7 +53,6 @@ public class TrocaSolicitadaDAO  implements IDAO{
                 System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
             }
         }
-        return null;
     }
 
     @Override
@@ -88,5 +87,26 @@ public class TrocaSolicitadaDAO  implements IDAO{
 
     }
 
+    @Override
+    public Resultado<EntidadeDominio> alterar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
+        return null;
+    }
 
+    @Override
+    public Resultado<String> excluir(EntidadeDominio entidade) {
+        return null;
+    }
+
+    @Override
+    public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
+        return null;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
 }
