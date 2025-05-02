@@ -443,6 +443,14 @@ public class Fachada implements IFachada {
                 }
                 return Resultado.sucesso(resultadoPedido.getValor());
             }
+            case TrocaSolicitada trocaSolicitada ->{
+                TrocaSolicitadaDAO trocaSolicitadaDAO = new TrocaSolicitadaDAO();
+                Resultado<List<EntidadeDominio>> resultadoTrocaSolicitada = trocaSolicitadaDAO.consultar(trocaSolicitada);
+                if(!resultadoTrocaSolicitada.isSucesso()){
+                    return Resultado.erro(resultadoTrocaSolicitada.getErro());
+                }
+                return Resultado.sucesso(resultadoTrocaSolicitada.getValor());
+            }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
             }

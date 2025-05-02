@@ -15,7 +15,7 @@ import Util.Resultado;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 
-@WebServlet(name = "ControleTrocaSolicitada", urlPatterns = "/trocaSolicitada")
+@WebServlet(name = "ControleTrocaSolicitada", urlPatterns = "/controleTroca")
 public class ControleTrocaSolicitada extends HttpServlet{
     @Serial
     private static final long serialVersionUID = 1L;
@@ -81,17 +81,17 @@ public class ControleTrocaSolicitada extends HttpServlet{
 
         IFachada fachada = new Fachada();
         TrocaSolicitada trocaFiltro = trocaSolicitadaFiltro.getValor();
-        Resultado<List<EntidadeDominio>> resultadoConsultaReserva = fachada.consultar(trocaFiltro);
+        Resultado<List<EntidadeDominio>> resultadoConsultaTroca = fachada.consultar(trocaFiltro);
 
-        if (!resultadoConsultaReserva.isSucesso()) {
+        if (!resultadoConsultaTroca.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", resultadoConsultaReserva.getErro());
+            resposta.addProperty("erro", resultadoConsultaTroca.getErro());
             out.print(gson.toJson(resposta));
             return;
         }
 
-        String json = gson.toJson(resultadoConsultaReserva.getValor());
+        String json = gson.toJson(resultadoConsultaTroca.getValor());
         resp.setStatus(HttpServletResponse.SC_OK);
         out.print(json);
     }
@@ -126,18 +126,6 @@ public class ControleTrocaSolicitada extends HttpServlet{
 
         if(req.getParameter("statusPedido") != null){
             pedidoFiltro.setId(Integer.parseInt(req.getParameter("statusPedido")));
-        }
-
-        if(req.getParameter("cpf") != null){
-            pedidoFiltro.set
-        }
-
-        if(req.getParameter("id") != null){
-            trocaFiltro.setId(Integer.parseInt(req.getParameter("id")));
-        }
-
-        if(req.getParameter("quantidade") != null){
-            trocaFiltro.setQuantidade(Integer.parseInt(req.getParameter("quantidade")));
         }
 
         if(req.getParameter("status") != null){

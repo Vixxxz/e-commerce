@@ -5,23 +5,22 @@ import java.util.List;
 
 public class TrocaSolicitada extends EntidadeDominio {
     private Pedido pedido;
-    private Integer quantidade;
     private Status status;
+    private Cliente cliente;
+    private Double valorTotal;
     private List<Status> listStatus;
 
     public TrocaSolicitada() {
     }
 
-    public TrocaSolicitada(Pedido pedido, Integer quantidade ,Status status){
+    public TrocaSolicitada(Pedido pedido,Status status){
         this.pedido = pedido;
-        this.quantidade = quantidade;
         this.status = status;
     }
 
-    public TrocaSolicitada(Integer id, Pedido pedido, Integer quantidade, Status status){
+    public TrocaSolicitada(Integer id, Pedido pedido, Status status){
         super (id);
         this.pedido = pedido;
-        this.quantidade = quantidade;
         this.status = status;
     }
 
@@ -33,20 +32,28 @@ public class TrocaSolicitada extends EntidadeDominio {
         this.pedido = pedido;
     }
 
-    public Integer getQuantidade() {
-        return quantidade;
-    }
-
-    public void setQuantidade(Integer quantidade) {
-        this.quantidade = quantidade;
-    }
-
     public Status getStatus() {
         return status;
     }
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public double getValorTotal() {
+        return valorTotal;
+    }
+
+    public void setValorTotal(double valorTotal) {
+        this.valorTotal = valorTotal;
     }
 
     public List<Status> getListStatus() {

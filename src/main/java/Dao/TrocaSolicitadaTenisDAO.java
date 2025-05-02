@@ -17,8 +17,28 @@ public class TrocaSolicitadaTenisDAO implements IDAO{
 
     public TrocaSolicitadaTenisDAO(){}
 
-    public static Resultado<EntidadeDominio> salvaTrocaProduto(TrocaSolicitadaTenis trocaProduto) {
-        return null;
+    public void salvaTrocaProduto(TrocaSolicitadaTenis trocaProduto) throws SQLException, ClassNotFoundException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("INSERT INTO troca_solicitada_tenis(tst_tro_id, tst_ten_id, tst_quantidade, tst_data_solicitacao) ");
+        sql.append("VALUES (?,?,?,?)");
+
+        trocaProduto.complementarDtCadastro();
+        try (PreparedStatement pst = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
+            pst.setInt(1, trocaProduto.getTroca().getId());
+            pst.setInt(2, trocaProduto.getProduto().getId());
+            pst.setInt(3, trocaProduto.getQuantidade());
+            pst.setTimestamp(4, new Timestamp(trocaProduto.getDtCadastro().getTime()));
+
+            pst.executeUpdate();
+
+            try (ResultSet rs = pst.getGeneratedKeys()) {
+                if (!rs.next()) {
+                    throw new SQLException("Falha ao inserir o Troca Produto.");
+                }
+                int idTrocaProduto = rs.getInt(1);
+                trocaProduto.setId(idTrocaProduto);
+            }
+        }
     }
 
     @Override
