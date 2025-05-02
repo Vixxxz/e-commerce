@@ -6,10 +6,7 @@ import Enums.TipoCupom;
 import Util.Conexao;
 import Util.Resultado;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +22,41 @@ public class CupomDAO implements IDAO{
 
     @Override
     public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
-        return null;
+        if (connection == null || connection.isClosed()) {
+            connection = Conexao.getConnectionMySQL();
+        }
+        connection.setAutoCommit(false);
+
+        Cupom cupom = (Cupom) entidade;
+        StringBuilder sql = new StringBuilder();
+        sql.append("INSERT INTO cupom(cup_codigo, cup_valor, cup_tipo, cup_cli_id, cup_dt_cadastro, cup_ped_id) ");
+        sql.append("VALUES (?,?,?,?,?,?)");
+
+        cupom.complementarDtCadastro();
+
+        try (PreparedStatement pst = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
+            pst.setString(1, cupom.getCodigo());
+            pst.setDouble(2, cupom.getValor());
+            pst.setString(3, cupom.getTipo().name());
+            pst.setInt(4, cupom.getCliente().getId());
+            pst.setTimestamp(5, new Timestamp(cupom.getDtCadastro().getTime()));
+            if (cupom.getPedido() != null && cupom.getPedido().getId() != null) {
+                pst.setInt(6, cupom.getPedido().getId());
+            } else {
+                pst.setNull(6, Types.INTEGER);
+            }
+
+            pst.executeUpdate();
+
+            try (ResultSet rs = pst.getGeneratedKeys()) {
+                if (!rs.next()) {
+                    throw new SQLException("Falha ao gerar cupom.");
+                }
+                int idCupom = rs.getInt(1);
+                cupom.setId(idCupom);
+            }
+            return Resultado.sucesso(cupom);
+        }
     }
 
     @Override

@@ -2,11 +2,12 @@ package Dao;
 
 import Dominio.*;
 import Enums.Status;
+import Enums.TipoCupom;
+import Util.Conexao;
 import Util.CupomGenerator;
 import Util.Resultado;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 
 public class DevolucaoDAO implements IDAO{
@@ -20,40 +21,42 @@ public class DevolucaoDAO implements IDAO{
     }
 
     //todo: realizar a geracao de cupons
-    public Resultado<Devolucao>salvaDevolucaoCupom(Devolucao devolucao, List<DevolucaoProduto> devolucaoProdutos) throws SQLException, ClassNotFoundException {
+    public Resultado<Devolucao>salvaDevolucaoCupom(Devolucao devolucao, List<DevolucaoProduto> produtos)  {
         try{
             PedidoDAO pedidoDAO = new PedidoDAO();
-            Resultado<List<EntidadeDominio>> resultadoConsultaPedido = pedidoDAO.consultar(devolucao.getPedido());
-            List<EntidadeDominio> pedidos = resultadoConsultaPedido.getValor();
+            Pedido pedido = buscarPedidoValido(pedidoDAO, devolucao.getPedido());
+            if (pedido == null) return Resultado.erro("Pedido não existente");
 
-            if(pedidos.isEmpty()){
-                return Resultado.erro("Pedido não existente");
+            TrocaSolicitadaDAO trocaDAO = new TrocaSolicitadaDAO();
+            TrocaSolicitada troca = buscarTrocaValida(trocaDAO, pedido);
+            if (troca == null) return Resultado.erro("Nenhuma troca solicitada para esse pedido");
+
+            troca.setStatus(Status.TROCADO);
+            pedido.setStatus(Status.TROCADO);
+
+            Resultado<EntidadeDominio> resDevolucao = salvar(devolucao);
+            if (!resDevolucao.isSucesso()) return Resultado.erro("Erro ao salvar devolução");
+
+            Devolucao dev = (Devolucao) resDevolucao.getValor();
+
+            DevolucaoProdutoDAO devProdutoDAO = new DevolucaoProdutoDAO();
+            devProdutoDAO.setConnection(connection);
+            EstoqueDAO estoqueDAO = new EstoqueDAO(connection);
+
+            for (DevolucaoProduto produto : produtos) {
+                produto.setDevolucao(dev);
+                Cupom cupom = gerarCupom(devolucao.getValor(), pedido);
+                Resultado<EntidadeDominio> resProdCupom = devProdutoDAO.salvaDevolucaoProdutoCupom(produto, cupom);
+                Resultado<EntidadeDominio> resEstoque = estoqueDAO.atualizarEstoque(produto);
             }
 
-            Pedido pedido = (Pedido) pedidos.getFirst();
-
-            pedido.setStatus(Status.TROCA_AUTORIZADA);
-
-            Resultado<EntidadeDominio> resultadoSalvaDevolucao = salvar(devolucao);
-
-            Devolucao dev = (Devolucao) resultadoSalvaDevolucao.getValor();
-
-            DevolucaoProdutoDAO devolucaoProdutoDAO = new DevolucaoProdutoDAO();
-            devolucaoProdutoDAO.setConnection(connection);
-
-            for(DevolucaoProduto devolucaoProduto : devolucaoProdutos){
-                devolucaoProduto.setDevolucao(dev);
-                Cupom cupom = new Cupom();
-                cupom.setCodigo(CupomGenerator.gerarCodigoCupom(4));
-                cupom.setValor(devolucao.getValor());
-                cupom.setCliente(pedido.getClienteEndereco().getCliente());
-                Resultado<EntidadeDominio> resultadoSalvaDevolucaoProduto = devolucaoProdutoDAO.salvar(devolucaoProduto);
-            }
+            trocaDAO.setConnection(connection);
+            Resultado<EntidadeDominio> resTroca = trocaDAO.alterar(troca);
 
             pedidoDAO.setConnection(connection);
-            Resultado<EntidadeDominio> resultadoAlteraPedido = pedidoDAO.alterar(pedido);
+            Resultado<EntidadeDominio> resPedido = pedidoDAO.alterar(pedido);
 
-            return Resultado.sucesso((Devolucao) resultadoSalvaDevolucao.getValor());
+            return Resultado.sucesso(dev);
         } catch (SQLException | ClassNotFoundException e) {
             try {
                 if (!connection.isClosed() && connection.isValid(5) && connection != null) {
@@ -76,7 +79,33 @@ public class DevolucaoDAO implements IDAO{
 
     @Override
     public Resultado<EntidadeDominio> salvar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
-        return null;
+        if (connection == null || connection.isClosed()) {
+            connection = Conexao.getConnectionMySQL();
+        }
+        connection.setAutoCommit(false);
+
+        Devolucao devolucao = (Devolucao) entidade;
+        StringBuilder sql = new StringBuilder();
+        sql.append("INSERT INTO devolucao(dev_ped_id, dev_valor, dev_data_devolucao) ");
+        sql.append("VALUES (?,?,?)");
+
+        devolucao.complementarDtCadastro();
+
+        try (PreparedStatement pst = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
+            pst.setInt(1, devolucao.getPedido().getId());
+            pst.setDouble(2, devolucao.getValor());
+            pst.setTimestamp(3, new Timestamp(devolucao.getDtCadastro().getTime()));
+            pst.executeUpdate();
+
+            try (ResultSet rs = pst.getGeneratedKeys()) {
+                if (!rs.next()) {
+                    throw new SQLException("Falha ao inserir a devolucao.");
+                }
+                int idDevolucao = rs.getInt(1);
+                devolucao.setId(idDevolucao);
+            }
+            return Resultado.sucesso(devolucao);
+        }
     }
 
     @Override
@@ -92,6 +121,27 @@ public class DevolucaoDAO implements IDAO{
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
         return null;
+    }
+
+    private Pedido buscarPedidoValido(PedidoDAO dao, Pedido filtro) throws SQLException {
+        Resultado<List<EntidadeDominio>> res = dao.consultar(filtro);
+        return res.getValor().isEmpty() ? null : (Pedido) res.getValor().getFirst();
+    }
+
+    private TrocaSolicitada buscarTrocaValida(TrocaSolicitadaDAO dao, Pedido pedido) throws SQLException {
+        TrocaSolicitada filtro = new TrocaSolicitada();
+        filtro.setPedido(pedido);
+        Resultado<List<EntidadeDominio>> res = dao.consultar(filtro);
+        return res.getValor().isEmpty() ? null : (TrocaSolicitada) res.getValor().getFirst();
+    }
+
+    private Cupom gerarCupom(Double valor, Pedido pedido) {
+        Cupom cupom = new Cupom();
+        cupom.setCodigo(CupomGenerator.gerarCodigoCupom(4));
+        cupom.setValor(valor);
+        cupom.setCliente(pedido.getClienteEndereco().getCliente());
+        cupom.setTipo(TipoCupom.TROCA);
+        return cupom;
     }
 
     public Connection getConnection() {

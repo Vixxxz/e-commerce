@@ -20,8 +20,16 @@ public class PedidoDAO implements IDAO{
     public PedidoDAO() {
     }
 
-    public Resultado<Pedido> salvarPedidoEProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos) {
+    public Resultado<Pedido> salvarPedidoEProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos, List<Cupom>cupons) {
         try {
+            if(!cupons.isEmpty()){
+                double descontoTotal = cupons.stream()
+                        .filter(c -> c.getValor() != null)
+                        .mapToDouble(Cupom::getValor)
+                        .sum();
+
+                pedido.setValorTotal(Math.max(0, pedido.getValorTotal() - descontoTotal));
+            }
             Resultado<EntidadeDominio> resultadoSalvarPedido = salvar(pedido);
             Pedido pedidoSalvo = (Pedido) resultadoSalvarPedido.getValor();
             PedidoProdutoDAO pedidoProdutoDAO = new PedidoProdutoDAO(connection);
@@ -45,6 +53,16 @@ public class PedidoDAO implements IDAO{
                 Resultado<EntidadeDominio>resultadoAtualizaEstoque = estoqueDAO.atualizarEstoque(pedidoProduto);
                 if(!resultadoAtualizaEstoque.isSucesso()) {
                     return Resultado.erro("Erro ao atualizar estoque: " + resultadoAtualizaEstoque.getErro());
+                }
+            }
+            if(!cupons.isEmpty()){
+                CupomDAO cupomDAO = new CupomDAO(connection);
+                for(Cupom cupom : cupons){
+                    cupom.setPedido(pedidoSalvo);
+                    Resultado<EntidadeDominio>resultadoAtualizaCupom = cupomDAO.alterar(cupom);
+                    if(!resultadoAtualizaCupom.isSucesso()) {
+                        return Resultado.erro("Erro ao atualizar estoque: " + resultadoAtualizaCupom.getErro());
+                    }
                 }
             }
             System.out.println("Pedido salvo com sucesso!");
