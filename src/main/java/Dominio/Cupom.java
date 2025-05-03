@@ -1,5 +1,6 @@
 package Dominio;
 
+import Enums.Ativo;
 import Enums.TipoCupom;
 
 public class Cupom extends EntidadeDominio {
@@ -8,6 +9,7 @@ public class Cupom extends EntidadeDominio {
     private TipoCupom tipo;
     private Cliente cliente;
     private Pedido pedido;
+    private Ativo status;
 
     public Cupom() {
     }
@@ -110,5 +112,13 @@ public class Cupom extends EntidadeDominio {
 
     public void setCodigo(String codigo) {
         this.codigo = codigo;
+    }
+
+    public Ativo getStatus() {
+        return status;
+    }
+
+    public void setStatus(Ativo status) {
+        this.status = status;
     }
 }

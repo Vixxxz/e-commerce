@@ -10,7 +10,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CupomDAO implements IDAO{
+public class CupomDAO implements IDAO {
     private Connection connection;
 
     public CupomDAO(Connection connection) {
@@ -60,8 +60,60 @@ public class CupomDAO implements IDAO{
     }
 
     @Override
-    public Resultado<EntidadeDominio> alterar(EntidadeDominio entidade) {
-        return null;
+    public Resultado<EntidadeDominio> alterar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
+        Cupom cupom = (Cupom) entidade;
+
+        if (connection == null || connection.isClosed()) {
+            connection = Conexao.getConnectionMySQL();
+        }
+        connection.setAutoCommit(false);
+
+        StringBuilder sql = new StringBuilder();
+        List<Object> parametros = new ArrayList<>();
+
+        sql.append("UPDATE crud_v3.cupom SET ");
+
+        List<String> campos = new ArrayList<>();
+
+        if (cupom.getCodigo() != null) {
+            campos.add("cup_codigo = ? ");
+            parametros.add(cupom.getCodigo());
+        }
+        if (cupom.getValor() != null) {
+            campos.add("cup_valor = ? ");
+            parametros.add(cupom.getValor());
+        }
+        if (cupom.getDtCadastro() != null) {
+            campos.add("cup_dt_cadastro = ? ");
+            parametros.add(new Timestamp(cupom.getDtCadastro().getTime()));
+        }
+
+        if(cupom.getPedido() != null){
+            if(cupom.getPedido().getId() != null){
+                campos.add("cup_ped_id = ? ");
+                parametros.add(cupom.getPedido().getId());
+            }
+        }
+
+        if (campos.isEmpty()) {
+            return Resultado.erro("Nenhum campo para atualizar.");
+        }
+
+        sql.append(String.join(", ", campos));
+        sql.append(" WHERE cup_id = ? ");
+        parametros.add(cupom.getId());
+
+        try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < parametros.size(); i++) {
+                pst.setObject(i + 1, parametros.get(i));
+            }
+
+            int linhasAlteradas = pst.executeUpdate();
+            if (linhasAlteradas == 0) {
+                return Resultado.erro("Nenhuma linha da tabela cupom foi alterada.");
+            }
+        }
+        return Resultado.sucesso(cupom);
     }
 
     @Override
@@ -71,7 +123,7 @@ public class CupomDAO implements IDAO{
 
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
-        try{
+        try {
             if (connection == null || connection.isClosed()) {
                 connection = Conexao.getConnectionMySQL();
             }
@@ -100,20 +152,24 @@ public class CupomDAO implements IDAO{
             }
             if (cupom.getTipo() != null) {
                 sql.append("AND c.cup_tipo = ? ");
-                parametros.add(cupom.getTipo());
+                parametros.add(cupom.getTipo().name());
+            }
+            if(cupom.getStatus() != null){
+                sql.append("AND c.cup_status = ? ");
+                parametros.add(cupom.getStatus().name());
             }
             if (cupom.getCliente() != null) {
-                if(cupom.getCliente().getId() != null) {
+                if (cupom.getCliente().getId() != null) {
                     sql.append("AND c.cup_cli_id = ? ");
                     parametros.add(cupom.getCliente().getId());
                 }
-                if(cupom.getCliente().getCpf() != null) {
+                if (cupom.getCliente().getCpf() != null) {
                     sql.append("AND cli.cli_cpf = ? ");
                     parametros.add(cupom.getCliente().getCpf());
                 }
             }
             if (cupom.getPedido() != null) {
-                if(cupom.getPedido().getId() != null) {
+                if (cupom.getPedido().getId() != null) {
                     sql.append("AND c.cup_ped_id = ? ");
                     parametros.add(cupom.getPedido().getId());
                 }

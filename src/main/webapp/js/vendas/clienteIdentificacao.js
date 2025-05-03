@@ -96,7 +96,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
                     quantidade: prod.quantidade
                 })),
-                CartaoPedido: [] // vazio por enquanto
+                CartaoPedido: [],
+                cupons: []
             };
 
             sessionStorage.setItem("pedidoJson", JSON.stringify(pedidoJson));

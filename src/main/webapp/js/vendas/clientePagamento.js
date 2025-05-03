@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 0);
     };
 
+    //todo: descontar o valor do cupom escolhido no valor total
     const renderProdutosResumo = () => {
         produtosContainer.innerHTML = "";
 
@@ -58,27 +59,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function carregarCuponsPromocional(codCupom) {
         const container = document.querySelector(".cupom-input.col #resultado-cupom");
-        const url = `http://localhost:8080/ecommerce_tenis_war_exploded/controleCupom?codigo=${codCupom}`;
+        const url = `http://localhost:8080/ecommerce_tenis_war_exploded/controleCupom?codigo=${codCupom}&tipo=PROMOCIONAL`;
 
         try {
             const resposta = await fetch(url);
             const cupom = await resposta.json();
 
-            container.innerHTML = ""; // Limpa antes de adicionar novo conteúdo
+            container.innerHTML = "";
 
             if (!cupom || cupom.length === 0) {
                 container.innerHTML = "<p style='color: red;'>Cupom não encontrado.</p>";
                 return;
             }
 
-            cupom.forEach(item => {
+            cupom.forEach((item, index) => {
                 const div = document.createElement("div");
-                div.classList.add("cupom-detalhes");
+                div.classList.add("cupom-radio-container");
+
+                const checked = index === 0 ? "checked" : "";
+
+                const valor = item.valor;
+
                 div.innerHTML = `
-                <p><strong>Nome:</strong> ${item.nome}</p>
-                <p><strong>Desconto:</strong> ${item.tipoDesconto === "PORCENTAGEM" ? item.valor + "%" : "R$ " + item.valor}</p>
-                <p><strong>Validade:</strong> ${item.validade}</p>
+                <input type="radio" name="cupomPromocional" value="${item.id}" ${checked}>
+                <span class="circulo"></span>
+                <span>R$ ${valor}</span>
             `;
+                div.addEventListener("click", () => {
+                    div.classList.toggle("selecionado");
+                });
                 container.appendChild(div);
             });
 
@@ -94,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!idCliente) return;
 
         const container = document.querySelector(".cupom-radio.col");
-        const url = `http://localhost:8080/ecommerce_tenis_war_exploded/controleCupom?idCliente=${encodeURIComponent(idCliente)}`;
+        const url = `http://localhost:8080/ecommerce_tenis_war_exploded/controleCupom?idCliente=${idCliente}&tipo=TROCA&status=ATIVO`;
 
         try {
             const resposta = await fetch(url);
@@ -112,17 +121,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 const div = document.createElement("div");
                 div.classList.add("cupom-radio-container");
 
-                const isValido = item.valido === true;
-                const checked = index === 0 && isValido ? "checked" : "";
-                const disabled = isValido ? "" : "disabled";
+                const checked = index === 0 ? "checked" : "";
 
                 div.innerHTML = `
-                <input type="radio" name="cupom" value="${item.codigo}" ${checked} ${disabled}>
+                <input type="radio" name="cupomTroca" value="${item.id}" ${checked}>
                 <span class="circulo"></span>
-                <span>${item.codigo}</span>
                 <span>R$ ${item.valor}</span>
             `;
-
+                div.addEventListener("click", () => {
+                    div.classList.toggle("selecionado");
+                });
                 container.appendChild(div);
             });
 
@@ -199,6 +207,39 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    function obterCupomTrocaSelecionado() {
+        const selecionado = document.querySelector('input[name="cupomTroca"]:checked');
+        if (!selecionado) return null;
+
+        const codigo = selecionado.value;
+        const container = selecionado.closest(".cupom-radio-container");
+        const valorSpan = container?.querySelector("span:nth-of-type(2)");
+        const valorTexto = valorSpan?.textContent?.replace(/[^\d,.-]+/g, "").replace(",", ".");
+        const valor = valorTexto ? parseFloat(valorTexto) : null;
+
+        return {
+            codigo,
+            valor
+        };
+    }
+
+    function obterCupomPromocionalSelecionado() {
+        const selecionado = document.querySelector('input[name="cupomPromocional"]:checked');
+        if (!selecionado) return null;
+
+        const codigo = selecionado.value;
+        const container = selecionado.closest(".cupom-radio-container");
+        const valorSpan = container?.querySelector("span:nth-of-type(2)");
+        const valorTexto = valorSpan?.textContent?.replace(/[^\d,.-]+/g, "").replace(",", ".");
+        const valor = valorTexto ? parseFloat(valorTexto) : null;
+
+        return {
+            codigo,
+            valor
+        };
+    }
+
+
     //todo: verificar envio do copum junto ao pedido
     const finalizarPedido = async () => {
         try {
@@ -218,6 +259,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 valor: cartao.valor
             }));
+
+            const cupons = [];
+
+            const cupomSelecionado = obterCupomTrocaSelecionado();
+            if (cupomSelecionado) {
+                cupons.push({
+                    tipo: "TROCA",
+                    id: cupomSelecionado.codigo,
+                    valor: cupomSelecionado.valor
+                });
+            }
+
+            const cupomPromocional = obterCupomPromocionalSelecionado();
+            if (cupomPromocional) {
+                cupons.push({
+                    tipo: "PROMOCIONAL",
+                    id: cupomPromocional.codigo,
+                    valor: cupomPromocional.valor
+                });
+            }
+
+            pedido.cupons = cupons;
 
             sessionStorage.setItem("pedidoJson", JSON.stringify(pedido));
             console.log(JSON.stringify(pedido));
@@ -272,7 +335,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let errorMessage = "Erro desconhecido ao montar o pedido.";
 
-            // Verifica se o erro foi gerado por uma resposta HTTP (fetch)
             if (err.message.includes("{")) {
                 try {
                     const parsedError = JSON.parse(err.message);
@@ -281,7 +343,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     console.error("Erro ao processar JSON na mensagem de erro:", parseError);
                 }
             } else if (err instanceof TypeError) {
-                // Tratamento para erros de tipo, como 'Cannot read properties of null'
                 errorMessage = "Erro interno na aplicação";
             } else {
                 errorMessage = err.message || errorMessage;

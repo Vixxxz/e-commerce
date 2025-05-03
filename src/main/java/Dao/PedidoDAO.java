@@ -1,6 +1,7 @@
 package Dao;
 
 import Dominio.*;
+import Enums.Ativo;
 import Enums.Status;
 import Util.Conexao;
 import Util.Resultado;
@@ -59,6 +60,7 @@ public class PedidoDAO implements IDAO{
                 CupomDAO cupomDAO = new CupomDAO(connection);
                 for(Cupom cupom : cupons){
                     cupom.setPedido(pedidoSalvo);
+                    cupom.setStatus(Ativo.CONCLUIDO);
                     Resultado<EntidadeDominio>resultadoAtualizaCupom = cupomDAO.alterar(cupom);
                     if(!resultadoAtualizaCupom.isSucesso()) {
                         return Resultado.erro("Erro ao atualizar estoque: " + resultadoAtualizaCupom.getErro());

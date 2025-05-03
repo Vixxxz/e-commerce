@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+//todo: revisar a função, quando tenta comprar mais de 1 tenis do mesmo modelo de tamanho diferentes da erro pois envia o msm id para os produtos
 async function carregarDadosProduto(modelo) {
     try {
         const response = await fetchAPI(`${BASE_URL}/controleProduto?modelo=${modelo}`, "Erro ao buscar produto");
@@ -132,7 +133,6 @@ function preencherDados(produtos) {
             input.closest('label').classList.add('checked');
         });
     });
-
 }
 
 

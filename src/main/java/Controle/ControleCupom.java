@@ -1,6 +1,7 @@
 package Controle;
 
 import Dominio.*;
+import Enums.Ativo;
 import Enums.TipoCupom;
 import Fachada.Fachada;
 import Fachada.IFachada;
@@ -215,6 +216,7 @@ public class ControleCupom extends HttpServlet {
     private Resultado<Cupom> extrairCupomFiltro(HttpServletRequest req) {
         Cupom cupomFiltro = new Cupom();
         Cliente clienteFiltro = new Cliente();
+        Pedido pedidoFiltro = new Pedido();
 
         if (req.getParameter("id") != null) {
             cupomFiltro.setId(Integer.parseInt(req.getParameter("id")));
@@ -223,7 +225,15 @@ public class ControleCupom extends HttpServlet {
             cupomFiltro.setCodigo(req.getParameter("codigo"));
         }
         if (req.getParameter("tipo") != null) {
-            cupomFiltro.setTipo(TipoCupom.valueOf(req.getParameter("tipo")));
+            try {
+                String tipoStr = req.getParameter("tipo").toUpperCase();
+                cupomFiltro.setTipo(TipoCupom.valueOf(tipoStr));
+            } catch (IllegalArgumentException e) {
+                return Resultado.erro("Erro: Tipo inválido recebido - " + req.getParameter("tipo"));
+            }
+        }
+        if (req.getParameter("status") != null) {
+            cupomFiltro.setStatus(Ativo.valueOf(req.getParameter("status")));
         }
         if(req.getParameter("idCliente") != null){
             clienteFiltro.setId(Integer.parseInt(req.getParameter("idCliente")));
