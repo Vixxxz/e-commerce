@@ -1,5 +1,5 @@
 const BASE_URL = "http://localhost:8080/ecommerce_tenis_war_exploded";
-const produtoScreen = document.querySelector('#produto');
+const produtoScreen = document.querySelector('#pedido');
 
 function obterParametroUrl(parametro) {
     const urlParams = new URLSearchParams(window.location.search);

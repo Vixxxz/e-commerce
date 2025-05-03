@@ -13,8 +13,12 @@ public class ValidaDadosTrocaSolicitada implements IStrategy{
             sb.append("Pedido é obrigatório e deve ter um ID válido.\n");
         }
 
-        if(troca.getQuantidade() == null || troca.getQuantidade() <= 0){
-            sb.append("A quantidade deve conter no mínimo um número maior que zero.\n");
+        if(troca.getCliente() == null || troca.getCliente().getId() == null){
+            sb.append("Cliente é obrigatório e deve ter um ID válido.\n");
+        }
+
+        if(troca.getValorTotal() <= 0){
+            sb.append("O valor do Pedido deve ser maior que zero.\n");
         }
 
         return null;

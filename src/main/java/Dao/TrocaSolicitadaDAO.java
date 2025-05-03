@@ -1,11 +1,13 @@
 package Dao;
 
 import Dominio.*;
+import Enums.Status;
 import Util.Conexao;
 import Util.Resultado;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -29,7 +31,7 @@ public class TrocaSolicitadaDAO  implements IDAO{
             TrocaSolicitadaTenisDAO trocaSolicitadaTenisDAO = new TrocaSolicitadaTenisDAO(connection);
             for (TrocaSolicitadaTenis trocaProduto : trocaSolicitadaTenis) {
                 trocaProduto.setTroca(trocaSalva);
-                TrocaSolicitadaTenisDAO.salvaTrocaProduto(trocaProduto);
+                trocaSolicitadaTenisDAO.salvaTrocaProduto(trocaProduto);
             }
 
             System.out.println("Troca Solicitada com sucesso!");
@@ -64,13 +66,15 @@ public class TrocaSolicitadaDAO  implements IDAO{
 
         TrocaSolicitada trocaSolicitada = (TrocaSolicitada) entidade;
         StringBuilder sql = new StringBuilder();
-        sql.append("INSERT INTO crud_v3.troca_solicitada(tro_ped, tro_status, tro_dt_cadastro) VALUES (?, ?, ?)");
+        sql.append("INSERT INTO crud_v3.troca_solicitada(tro_ped_id, tro_status, tro_data_solicitacao, tro_cli_id, tro_valor_total) VALUES (?, ?, ?, ?, ?)");
 
         trocaSolicitada.complementarDtCadastro();
         try (PreparedStatement pst = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
             pst.setInt(1, trocaSolicitada.getPedido().getId());
             pst.setString(2, trocaSolicitada.getStatus().toString());
             pst.setTimestamp(3, new Timestamp(trocaSolicitada.getDtCadastro().getTime()));
+            pst.setInt(4, trocaSolicitada.getCliente().getId());
+            pst.setDouble(5, trocaSolicitada.getValorTotal());
             pst.executeUpdate();
 
             try (ResultSet rs = pst.getGeneratedKeys()) {
@@ -99,74 +103,91 @@ public class TrocaSolicitadaDAO  implements IDAO{
 
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
-        try {
-            if (connection == null || connection.isClosed()) {
-                connection = Conexao.getConnectionMySQL();
-            }
-
-            List<EntidadeDominio> trocas = new ArrayList<>();
-            TrocaSolicitada trocaSolicitada = (TrocaSolicitada) entidade;
-            List<Object> parametros = new ArrayList<>();
-
-            StringBuilder sql = new StringBuilder();
-            sql.append("SELECT * FROM crud_v3.troca_solicitada ts ");
-            sql.append("INNER JOIN crud_v3.cliente c on ts.tro_cli_id = c.cli_id ");
-            sql.append("WHERE 1=1 ");
-
-            if (trocaSolicitada.getId() != null) {
-                sql.append("AND ts.tro_id = ? ");
-                parametros.add(trocaSolicitada.getId());
-            }
-            if(trocaSolicitada.getPedido() != null){
-                if(trocaSolicitada.getPedido().getId() != null){
-                    sql.append("AND ts.tro_ped_id = ? ");
-                    parametros.add(trocaSolicitada.getPedido().getId());
-                }
-            }
-            if (trocaSolicitada.getStatus() != null) {
-                sql.append("AND ts.tro_status = ? ");
-                parametros.add(trocaSolicitada.getStatus());
-            }
-            if (trocaSolicitada.getCliente() != null) {
-                if(trocaSolicitada.getCliente().getId() != null){
-                    sql.append("AND ts.tro_cli_id = ? ");
-                    parametros.add(trocaSolicitada.getCliente().getId());
-                }
-            }
-
-            try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
-                for (int i = 0; i < parametros.size(); i++) {
-                    pst.setObject(i + 1, parametros.get(i));
+            try {
+                if (connection == null || connection.isClosed()) {
+                    connection = Conexao.getConnectionMySQL();
                 }
 
-                try (ResultSet rs = pst.executeQuery()) {
-                    while (rs.next()) {
-                        trocas.add(mapeiaTroca(rs));
+                List<EntidadeDominio> trocasSolicitadas = new ArrayList<>();
+                TrocaSolicitada trocaSolicitada = (TrocaSolicitada) entidade;
+                List<Object> parametros = new ArrayList<>();
+
+                String sql = construirConsulta(trocaSolicitada, parametros);
+
+                try (PreparedStatement pst = connection.prepareStatement(sql)) {
+                    for (int i = 0; i < parametros.size(); i++) {
+                        pst.setObject(i + 1, parametros.get(i));
+                    }
+
+                    try (ResultSet rs = pst.executeQuery()) {
+                        while (rs.next()) {
+                            trocasSolicitadas.add(mapeiaTroca(rs));
+                        }
                     }
                 }
-            }
-            return Resultado.sucesso(trocas);
-        } catch (Exception e) {
-            System.err.println("Erro ao consultar as transportadoras: " + e.getMessage());
-            return Resultado.erro("Erro ao consultar as transportadoras: " + e.getMessage());
-        } finally {
+
+                return Resultado.sucesso(trocasSolicitadas);
+
+        } catch (SQLException | ClassNotFoundException e) {
+            System.err.println("Erro ao consultar pedidos: " + e.getMessage());
+            return Resultado.erro("Erro ao consultar pedidos: " + e.getMessage());
+        }finally {
             try {
-                if (connection != null) connection.close();
+                if (connection != null && !connection.isClosed()) {
+                    connection.close();
+                }
             } catch (SQLException closeEx) {
-                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
+                System.err.println("Erro ao fechar conexão: " + closeEx.getMessage());
             }
         }
     }
 
-    //todo: mapear troca
+    private String construirConsulta(TrocaSolicitada trocaSolicitada, List<Object> parametros) {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("SELECT * ");
+        sql.append("FROM crud_v3.troca_solicitada t ");
+        sql.append("INNER JOIN crud_v3.pedido p ON t.tro_ped_id = p.ped_id ");
+        sql.append("INNER JOIN crud_v3.cliente c ON t.tro_cli_id = c.cli_id ");
+        sql.append("WHERE 1=1 ");
+
+        if (trocaSolicitada.getId() != null) {
+            sql.append(" AND t.tro_id = ? ");
+            parametros.add(trocaSolicitada.getId());
+        }
+        if (trocaSolicitada.getValorTotal() != 0) {
+            sql.append(" AND t.tro_valor_total = ? ");
+            parametros.add(trocaSolicitada.getValorTotal());
+        }
+        if (trocaSolicitada.getStatus() != null) {
+            sql.append(" AND t.tro_status = ? ");
+            parametros.add(trocaSolicitada.getStatus().name());
+        }
+        if (trocaSolicitada.getListStatus() != null && !trocaSolicitada.getListStatus().isEmpty()) {
+            sql.append(" AND p.ped_status IN (");
+            sql.append(String.join(",", Collections.nCopies(trocaSolicitada.getListStatus().size(), "?")));
+            sql.append(") ");
+
+            for (Status status : trocaSolicitada.getListStatus()) {
+                parametros.add(status.name());
+            }
+        }
+
+        return sql.toString();
+    }
+
     private TrocaSolicitada mapeiaTroca(ResultSet rs) throws SQLException {
-//        Transportadora tra = new Transportadora();
-//        tra.setId(rs.getInt("fre_id"));
-//        tra.setNome(rs.getString("fre_transportadora"));
-//        tra.setValor(Double.valueOf(rs.getString("fre_valor")));
-//
-//        return tra;
-        return null;
+        TrocaSolicitada tro = new TrocaSolicitada();
+        tro.setId(rs.getInt("tro_id"));
+        tro.setValorTotal(rs.getDouble("tro_valor_total"));
+        tro.setStatus(Status.valueOf(rs.getString("tro_status")));
+        tro.setDtCadastro(rs.getTimestamp("tro_dt_solicitacao"));
+
+        Pedido ped = new Pedido();
+        ped.setId(rs.getInt("tro_ped_id"));
+        tro.setPedido(ped);
+
+        return tro;
     }
 
     public Connection getConnection() {
