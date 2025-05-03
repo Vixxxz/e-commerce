@@ -166,14 +166,22 @@ public class CupomDAO implements IDAO{
         cli.setSenha(rs.getString("cli_senha"));
         cli.setDataNascimento(rs.getDate("cli_dt_nasc"));
 
-        Pedido ped = new Pedido();
-        ped.setId(rs.getInt("ped_id"));
-        ped.setValorTotal(rs.getDouble("ped_valor_total"));
-        ped.setStatus(Status.valueOf(rs.getString("ped_status")));
+        if (rs.getObject("ped_id") != null) {
+            Pedido ped = new Pedido();
+            ped.setId(rs.getInt("ped_id"));
+            ped.setValorTotal(rs.getDouble("ped_valor_total"));
 
+            String statusStr = rs.getString("ped_status");
+            if (statusStr != null) {
+                ped.setStatus(Status.valueOf(statusStr));
+            }
+
+            cup.setPedido(ped);
+        } else {
+            cup.setPedido(null);
+        }
 
         cup.setCliente(cli);
-        cup.setPedido(ped);
 
         return cup;
     }

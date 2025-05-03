@@ -9,7 +9,6 @@ public class TrocaSolicitada extends EntidadeDominio {
     private Cliente cliente;
     private Double valorTotal;
     private List<Status> listStatus;
-    private Cliente cliente;
 
     public TrocaSolicitada() {
     }
@@ -39,14 +38,6 @@ public class TrocaSolicitada extends EntidadeDominio {
 
     public void setStatus(Status status) {
         this.status = status;
-    }
-
-    public Cliente getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
     }
 
     public double getValorTotal() {

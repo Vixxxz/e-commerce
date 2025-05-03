@@ -13,14 +13,11 @@ public class ValidaDadosCartaoPedido implements IStrategy {
             return Resultado.erro(sb.toString());
         }
 
-        if (cartaoPedido.getPedido() == null) {
-            sb.append("Pedido não informado.");
-            return Resultado.erro(sb.toString());
-        }
-
-        if (cartaoPedido.getCartao() == null) {
-            sb.append("Cartão não informado.");
-            return Resultado.erro(sb.toString());
+        if (cartaoPedido.getCartao() != null) {
+            if(cartaoPedido.getCartao().getId() == null){
+                sb.append("Cartão não informado.");
+                return Resultado.erro(sb.toString());
+            }
         }
 
         return null;

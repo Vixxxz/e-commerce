@@ -88,6 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    //todo: verificar exibição dos cupons troca
     async function carregarCuponsTroca() {
         const idCliente = pedido?.pedido?.clienteEndereco?.cliente?.id;
         if (!idCliente) return;
@@ -118,7 +119,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 div.innerHTML = `
                 <input type="radio" name="cupom" value="${item.codigo}" ${checked} ${disabled}>
                 <span class="circulo"></span>
-                <span>${item.nome}</span>
+                <span>${item.codigo}</span>
+                <span>R$ ${item.valor}</span>
             `;
 
                 container.appendChild(div);
@@ -197,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
+    //todo: verificar envio do copum junto ao pedido
     const finalizarPedido = async () => {
         try {
             const cartaoId = document.querySelector(".cartao-container.selecionado")

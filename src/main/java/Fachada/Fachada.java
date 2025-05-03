@@ -14,81 +14,81 @@ public class Fachada implements IFachada {
     }
 
 
-    public Resultado<String> geraDevolucao(Devolucao devolucao, List<DevolucaoProduto> devolucaoProdutos){
+    public Resultado<String> geraDevolucao(Devolucao devolucao, List<DevolucaoProduto> devolucaoProdutos) {
         StringBuilder sb = new StringBuilder();
         processarValidacoes(devolucao, getValidacoes(devolucao, Operacao.SALVAR), sb);
-        for(DevolucaoProduto dp : devolucaoProdutos){
+        for (DevolucaoProduto dp : devolucaoProdutos) {
             processarValidacoes(dp, getValidacoes(dp, Operacao.SALVAR), sb);
         }
-        if(!sb.isEmpty()){
+        if (!sb.isEmpty()) {
             return Resultado.erro(sb.toString());
         }
-        try{
+        try {
             DevolucaoDAO devolucaoDAO = new DevolucaoDAO();
             Resultado<Devolucao> resultadoSalvaDevolucaoCupom = devolucaoDAO.salvaDevolucaoCupom(devolucao, devolucaoProdutos);
-            if(!resultadoSalvaDevolucaoCupom.isSucesso()){
+            if (!resultadoSalvaDevolucaoCupom.isSucesso()) {
                 return Resultado.erro(resultadoSalvaDevolucaoCupom.getErro());
             }
             return Resultado.sucesso("Devolução e Cupons gerados com sucesso!");
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Erro ao atualizar pedido, salvar devolucao e cupom: " + e.getMessage());
             return Resultado.erro("Erro interno ao atualizar pedido, salvar devolucao e cupom.");
         }
     }
 
-    public Resultado<String> salvarTroca(TrocaSolicitada trocaSolicitada, List<TrocaSolicitadaTenis> trocaSolicitadaTenis){
+    public Resultado<String> salvarTroca(TrocaSolicitada trocaSolicitada, List<TrocaSolicitadaTenis> trocaSolicitadaTenis) {
         StringBuilder sb = new StringBuilder();
         processarValidacoes(trocaSolicitada, getValidacoes(trocaSolicitada, Operacao.SALVAR), sb);
-        for(TrocaSolicitadaTenis tst : trocaSolicitadaTenis){
+        for (TrocaSolicitadaTenis tst : trocaSolicitadaTenis) {
             processarValidacoes(tst, getValidacoes(tst, Operacao.SALVAR), sb);
         }
-        if(!sb.isEmpty()){
+        if (!sb.isEmpty()) {
             return Resultado.erro(sb.toString());
         }
-        try{
+        try {
             TrocaSolicitadaDAO trocaSolicitadaDAO = new TrocaSolicitadaDAO();
             Resultado<TrocaSolicitada> resultadoSalvaTrocaSolicitada = trocaSolicitadaDAO.salvarTroca(trocaSolicitada, trocaSolicitadaTenis);
-            if(!resultadoSalvaTrocaSolicitada.isSucesso()){
+            if (!resultadoSalvaTrocaSolicitada.isSucesso()) {
                 return Resultado.erro(resultadoSalvaTrocaSolicitada.getErro());
             }
             return Resultado.sucesso("Troca solicitada com sucesso!");
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Erro ao solicitar troca e seus produtos: " + e.getMessage());
             return Resultado.erro("Erro interno ao solicitar troca e seus produtos.");
         }
-    };
+    }
 
-    public Resultado<String> salvarPedidoProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos, ReservaEstoque reserva, List<Cupom>cupons){
+    ;
+
+    public Resultado<String> salvarPedidoProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos, ReservaEstoque reserva, List<Cupom> cupons) {
         StringBuilder sb = new StringBuilder();
         processarValidacoes(pedido, getValidacoes(pedido, Operacao.SALVAR), sb);
-        for(PedidoProduto pedidoProduto : pedidoProdutos){
-            //TODO: verificar pedido pois esta indo como null
+        for (PedidoProduto pedidoProduto : pedidoProdutos) {
+            //TODO: verificar strategys pois esta validando alem do necessario
             processarValidacoes(pedidoProduto, getValidacoes(pedidoProduto, Operacao.SALVAR), sb);
             reserva.setProduto(pedidoProduto.getProduto());
             VerificaReservaAtiva verificaReservaAtiva = new VerificaReservaAtiva();
             verificaReservaAtiva.processar(reserva, sb);
         }
-        for(CartaoPedido cartaoPedido : cartaoPedidos){
+        for (CartaoPedido cartaoPedido : cartaoPedidos) {
             processarValidacoes(cartaoPedido, getValidacoes(cartaoPedido, Operacao.SALVAR), sb);
         }
-        if(cupons != null){
-            if(!cupons.isEmpty()){
-                for(Cupom cupom : cupons){
-                    processarValidacoes(cupom, getValidacoes(cupom, Operacao.ALTERAR), sb);
-                }
+        if (cupons != null && !cupons.isEmpty()) {
+            for (Cupom cupom : cupons) {
+                processarValidacoes(cupom, getValidacoes(cupom, Operacao.ALTERAR), sb);
             }
         }
-        if(!sb.isEmpty()){
+        if (!sb.isEmpty()) {
             return Resultado.erro(sb.toString());
         }
-        try{
+        try {
             PedidoDAO pedidoDAO = new PedidoDAO();
             Resultado<Pedido> resultadoSalvarPedidoEProduto = pedidoDAO.salvarPedidoEProduto(pedido, pedidoProdutos, cartaoPedidos, cupons);
             if (!resultadoSalvarPedidoEProduto.isSucesso()) {
                 return Resultado.erro(resultadoSalvarPedidoEProduto.getErro());
             }
             return Resultado.sucesso("Pedido e produtos salvos com sucesso!");
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Erro ao salvar pedido e pedido_produto: " + e.getMessage());
             return Resultado.erro("Erro interno ao salvar o pedido e seus produtos.");
         }
@@ -162,12 +162,12 @@ public class Fachada implements IFachada {
                 }
                 case ReservaEstoque reservaEstoque -> {
                     processarValidacoes(reservaEstoque, getValidacoes(reservaEstoque, Operacao.SALVAR), sb);
-                    if(!sb.isEmpty()){
+                    if (!sb.isEmpty()) {
                         return Resultado.erro(sb.toString());
                     }
                     ReservaDAO reservaDAO = new ReservaDAO();
                     Resultado<String> resultadoSalvaReserva = reservaDAO.CriaOuAtualizaReserva(reservaEstoque);
-                    if(!resultadoSalvaReserva.isSucesso()){
+                    if (!resultadoSalvaReserva.isSucesso()) {
                         return Resultado.erro(resultadoSalvaReserva.getErro());
                     }
                     return Resultado.sucesso(resultadoSalvaReserva.getValor());
@@ -274,15 +274,15 @@ public class Fachada implements IFachada {
                     return Resultado.erro("Erro interno ao alterar produto.");
                 }
             }
-            case ReservaEstoque reserva ->{
+            case ReservaEstoque reserva -> {
                 processarValidacoes(reserva, getValidacoes(reserva, Operacao.ALTERAR), sb);
-                if(!sb.isEmpty()){
+                if (!sb.isEmpty()) {
                     return Resultado.erro(sb.toString());
                 }
-                try{
+                try {
                     ReservaDAO reservaDAO = new ReservaDAO();
                     Resultado<EntidadeDominio> resultadoAlterarReserva = reservaDAO.concluiReserva(reserva);
-                    if(!resultadoAlterarReserva.isSucesso()){
+                    if (!resultadoAlterarReserva.isSucesso()) {
                         return Resultado.erro(resultadoAlterarReserva.getErro());
                     }
                     return Resultado.sucesso("Reserva alteradada com sucesso!");
@@ -291,12 +291,12 @@ public class Fachada implements IFachada {
                     return Resultado.erro("Erro interno ao alterar reserva.");
                 }
             }
-            case Pedido pedido ->{
-                try{
+            case Pedido pedido -> {
+                try {
                     PedidoDAO pedidoDAO = new PedidoDAO();
                     processarValidacoes(pedido, getValidacoes(pedido, Operacao.ALTERAR), sb);
                     Resultado<EntidadeDominio> resultadoAlterarPedido = pedidoDAO.alterar(pedido);
-                    if(!resultadoAlterarPedido.isSucesso()){
+                    if (!resultadoAlterarPedido.isSucesso()) {
                         return Resultado.erro(resultadoAlterarPedido.getErro());
                     }
                     return Resultado.sucesso("Pedido alterado com sucesso");
@@ -348,7 +348,7 @@ public class Fachada implements IFachada {
             case Produto produto -> {
                 ProdutoDAO produtoDAO = new ProdutoDAO();
                 processarValidacoes(produto, getValidacoes(produto, Operacao.EXCLUIR), sb);
-                if(!sb.isEmpty()){
+                if (!sb.isEmpty()) {
                     return Resultado.erro(sb.toString());
                 }
                 Resultado<String> resultadoProduto = produtoDAO.excluir(produto);
@@ -409,7 +409,7 @@ public class Fachada implements IFachada {
             case Transportadora transportadora -> {
                 TransportadoraDAO transportadoraDAO = new TransportadoraDAO();
                 Resultado<List<EntidadeDominio>> resultadoTransportadora = transportadoraDAO.consultar(transportadora);
-                if(!resultadoTransportadora.isSucesso()){
+                if (!resultadoTransportadora.isSucesso()) {
                     return Resultado.erro(resultadoTransportadora.getErro());
                 }
                 return Resultado.sucesso(resultadoTransportadora.getValor());
@@ -417,39 +417,39 @@ public class Fachada implements IFachada {
             case Cupom cupom -> {
                 CupomDAO cupomDAO = new CupomDAO();
                 Resultado<List<EntidadeDominio>> resultadoCupom = cupomDAO.consultar(cupom);
-                if(!resultadoCupom.isSucesso()){
+                if (!resultadoCupom.isSucesso()) {
                     return Resultado.erro(resultadoCupom.getErro());
                 }
                 return Resultado.sucesso(resultadoCupom.getValor());
             }
-            case Estoque estoque ->{
+            case Estoque estoque -> {
                 EstoqueDAO estoqueDAO = new EstoqueDAO();
                 Resultado<List<EntidadeDominio>> resultadoEstoque = estoqueDAO.consultar(estoque);
-                if(!resultadoEstoque.isSucesso()){
+                if (!resultadoEstoque.isSucesso()) {
                     return Resultado.erro(resultadoEstoque.getErro());
                 }
                 return Resultado.sucesso(resultadoEstoque.getValor());
             }
-            case ReservaEstoque reserva ->{
+            case ReservaEstoque reserva -> {
                 ReservaDAO reservaDAO = new ReservaDAO();
                 Resultado<List<EntidadeDominio>> resultadoReserva = reservaDAO.consultar(reserva);
-                if(!resultadoReserva.isSucesso()){
+                if (!resultadoReserva.isSucesso()) {
                     return Resultado.erro(resultadoReserva.getErro());
                 }
                 return Resultado.sucesso(resultadoReserva.getValor());
             }
-            case Pedido pedido ->{
+            case Pedido pedido -> {
                 PedidoDAO pedidoDAO = new PedidoDAO();
                 Resultado<List<EntidadeDominio>> resultadoPedido = pedidoDAO.consultar(pedido);
-                if(!resultadoPedido.isSucesso()){
+                if (!resultadoPedido.isSucesso()) {
                     return Resultado.erro(resultadoPedido.getErro());
                 }
                 return Resultado.sucesso(resultadoPedido.getValor());
             }
-            case TrocaSolicitada trocaSolicitada ->{
+            case TrocaSolicitada trocaSolicitada -> {
                 TrocaSolicitadaDAO trocaSolicitadaDAO = new TrocaSolicitadaDAO();
                 Resultado<List<EntidadeDominio>> resultadoTrocaSolicitada = trocaSolicitadaDAO.consultar(trocaSolicitada);
-                if(!resultadoTrocaSolicitada.isSucesso()){
+                if (!resultadoTrocaSolicitada.isSucesso()) {
                     return Resultado.erro(resultadoTrocaSolicitada.getErro());
                 }
                 return Resultado.sucesso(resultadoTrocaSolicitada.getValor());
@@ -500,59 +500,59 @@ public class Fachada implements IFachada {
                     }
                 }
             }
-            case Pedido ignore ->{
-                switch (operacao){
+            case Pedido ignore -> {
+                switch (operacao) {
                     case SALVAR -> {
                         validacoes.add(new ValidaDadosPedido());
                     }
                 }
             }
-            case PedidoProduto ignore ->{
-                switch (operacao){
+            case PedidoProduto ignore -> {
+                switch (operacao) {
                     case SALVAR -> {
                         validacoes.add(new ValidaDadosPedidoProduto());
                     }
                 }
             }
-            case CartaoPedido ignore ->{
-                switch (operacao){
+            case CartaoPedido ignore -> {
+                switch (operacao) {
                     case SALVAR -> {
                         validacoes.add(new ValidaDadosCartaoPedido());
                     }
                 }
             }
-            case ReservaEstoque ignore ->{
-                switch (operacao){
+            case ReservaEstoque ignore -> {
+                switch (operacao) {
                     case SALVAR -> {
                         validacoes.add(new ValidaDadosReserva());
                         validacoes.add(new ValidaEstoque());
                     }
                 }
             }
-            case Devolucao ignore ->{
-                switch (operacao){
+            case Devolucao ignore -> {
+                switch (operacao) {
                     case SALVAR -> {
                         validacoes.add(new ValidaDadosDevolucao());
                         validacoes.add(new VerificaStatusPedidoParaDevolucao());
                     }
                 }
             }
-            case Cupom ignore ->{
-                switch (operacao){
+            case Cupom ignore -> {
+                switch (operacao) {
                     case SALVAR -> {
                         validacoes.add(new ValidaDadosCupom());
                     }
                 }
             }
-            case DevolucaoProduto ignore ->{
-                switch (operacao){
-                    case SALVAR ->{
+            case DevolucaoProduto ignore -> {
+                switch (operacao) {
+                    case SALVAR -> {
                         validacoes.add(new ValidaDadosDevolucaoProduto());
                     }
                 }
             }
-            case TrocaSolicitada ignore ->{
-                switch (operacao){
+            case TrocaSolicitada ignore -> {
+                switch (operacao) {
                     case SALVAR -> {
                         validacoes.add(new ValidaDadosTrocaSolicitada());
                         validacoes.add(new ValidaStatusTrocaPedido());

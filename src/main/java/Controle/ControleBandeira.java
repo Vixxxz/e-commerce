@@ -2,11 +2,11 @@ package Controle;
 
 import Dominio.*;
 import Fachada.Fachada;
-import Fachada.IFachada;
 import Util.Resultado;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.sun.source.tree.IfTree;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,7 +33,7 @@ public class ControleBandeira extends HttpServlet {
 
         Resultado<Bandeira> resultadoBandeiraFiltro = extrairBandeiraFiltro(req);
 
-        IFachada fachada = new Fachada();
+        Fachada fachada = new Fachada();
         Bandeira bandeiraFiltro = resultadoBandeiraFiltro.getValor();
         Resultado<List<EntidadeDominio>> resultadoConsultaBandeira = fachada.consultar(bandeiraFiltro);
 
@@ -123,7 +123,7 @@ public class ControleBandeira extends HttpServlet {
         }
 
         Bandeira bandeira = gson.fromJson(jsonObject.get("Bandeira"), Bandeira.class);
-        IFachada fachada = new Fachada();
+        Fachada fachada = new Fachada();
         Resultado<String> resultado = fachada.alterar(bandeira);
 
         if(!resultado.isSucesso()) {
@@ -147,7 +147,7 @@ public class ControleBandeira extends HttpServlet {
         PrintWriter out = resp.getWriter();
         Gson gson = new Gson();
 
-        IFachada fachada = new Fachada();
+        Fachada fachada = new Fachada();
         Bandeira bandeira = new Bandeira();
         String idParam = req.getParameter("id");
 

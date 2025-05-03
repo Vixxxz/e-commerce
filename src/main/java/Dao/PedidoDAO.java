@@ -22,7 +22,7 @@ public class PedidoDAO implements IDAO{
 
     public Resultado<Pedido> salvarPedidoEProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos, List<Cupom>cupons) {
         try {
-            if(!cupons.isEmpty()){
+            if(cupons != null && !cupons.isEmpty()){
                 double descontoTotal = cupons.stream()
                         .filter(c -> c.getValor() != null)
                         .mapToDouble(Cupom::getValor)
@@ -55,7 +55,7 @@ public class PedidoDAO implements IDAO{
                     return Resultado.erro("Erro ao atualizar estoque: " + resultadoAtualizaEstoque.getErro());
                 }
             }
-            if(!cupons.isEmpty()){
+            if(cupons != null && !cupons.isEmpty()){
                 CupomDAO cupomDAO = new CupomDAO(connection);
                 for(Cupom cupom : cupons){
                     cupom.setPedido(pedidoSalvo);

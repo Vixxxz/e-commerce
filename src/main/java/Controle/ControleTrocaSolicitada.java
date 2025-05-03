@@ -79,7 +79,7 @@ public class ControleTrocaSolicitada extends HttpServlet{
 
         Resultado<TrocaSolicitada> trocaSolicitadaFiltro = extrairTrocaFiltro(req);
 
-        IFachada fachada = new Fachada();
+        Fachada fachada = new Fachada();
         TrocaSolicitada trocaFiltro = trocaSolicitadaFiltro.getValor();
         Resultado<List<EntidadeDominio>> resultadoConsultaTroca = fachada.consultar(trocaFiltro);
 
