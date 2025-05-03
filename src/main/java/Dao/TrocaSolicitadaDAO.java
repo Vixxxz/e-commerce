@@ -99,6 +99,73 @@ public class TrocaSolicitadaDAO  implements IDAO{
 
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = Conexao.getConnectionMySQL();
+            }
+
+            List<EntidadeDominio> trocas = new ArrayList<>();
+            TrocaSolicitada trocaSolicitada = (TrocaSolicitada) entidade;
+            List<Object> parametros = new ArrayList<>();
+
+            StringBuilder sql = new StringBuilder();
+            sql.append("SELECT * FROM crud_v3.troca_solicitada ts ");
+            sql.append("INNER JOIN crud_v3.cliente c on ts.tro_cli_id = c.cli_id ");
+            sql.append("WHERE 1=1 ");
+
+            if (trocaSolicitada.getId() != null) {
+                sql.append("AND ts.tro_id = ? ");
+                parametros.add(trocaSolicitada.getId());
+            }
+            if(trocaSolicitada.getPedido() != null){
+                if(trocaSolicitada.getPedido().getId() != null){
+                    sql.append("AND ts.tro_ped_id = ? ");
+                    parametros.add(trocaSolicitada.getPedido().getId());
+                }
+            }
+            if (trocaSolicitada.getStatus() != null) {
+                sql.append("AND ts.tro_status = ? ");
+                parametros.add(trocaSolicitada.getStatus());
+            }
+            if (trocaSolicitada.getCliente() != null) {
+                if(trocaSolicitada.getCliente().getId() != null){
+                    sql.append("AND ts.tro_cli_id = ? ");
+                    parametros.add(trocaSolicitada.getCliente().getId());
+                }
+            }
+
+            try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
+                for (int i = 0; i < parametros.size(); i++) {
+                    pst.setObject(i + 1, parametros.get(i));
+                }
+
+                try (ResultSet rs = pst.executeQuery()) {
+                    while (rs.next()) {
+                        trocas.add(mapeiaTroca(rs));
+                    }
+                }
+            }
+            return Resultado.sucesso(trocas);
+        } catch (Exception e) {
+            System.err.println("Erro ao consultar as transportadoras: " + e.getMessage());
+            return Resultado.erro("Erro ao consultar as transportadoras: " + e.getMessage());
+        } finally {
+            try {
+                if (connection != null) connection.close();
+            } catch (SQLException closeEx) {
+                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
+            }
+        }
+    }
+
+    //todo: mapear troca
+    private TrocaSolicitada mapeiaTroca(ResultSet rs) throws SQLException {
+//        Transportadora tra = new Transportadora();
+//        tra.setId(rs.getInt("fre_id"));
+//        tra.setNome(rs.getString("fre_transportadora"));
+//        tra.setValor(Double.valueOf(rs.getString("fre_valor")));
+//
+//        return tra;
         return null;
     }
 

@@ -119,6 +119,7 @@ public class ControleTrocaSolicitada extends HttpServlet{
     private Resultado<TrocaSolicitada> extrairTrocaFiltro(HttpServletRequest req) {
         Pedido pedidoFiltro = new Pedido();
         TrocaSolicitada trocaFiltro = new TrocaSolicitada();
+        Cliente clienteFiltro = new Cliente();
 
         if(req.getParameter("idPedido") != null){
             pedidoFiltro.setId(Integer.parseInt(req.getParameter("idPedido")));
@@ -129,7 +130,7 @@ public class ControleTrocaSolicitada extends HttpServlet{
         }
 
         if(req.getParameter("cpf") != null){
-            pedidoFiltro.set
+            clienteFiltro.setCpf(req.getParameter("cpf"));
         }
 
         if(req.getParameter("id") != null){
@@ -151,6 +152,9 @@ public class ControleTrocaSolicitada extends HttpServlet{
                     .collect(Collectors.toList());
             pedidoFiltro.setListStatus(statusList);
         }
+
+        trocaFiltro.setPedido(pedidoFiltro);
+        trocaFiltro.setCliente(clienteFiltro);
 
         return Resultado.sucesso(trocaFiltro);
     }

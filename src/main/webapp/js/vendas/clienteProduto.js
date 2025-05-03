@@ -76,6 +76,11 @@ function adicionarProdutoAoCarrinho(produto) {
 }
 
 function preencherDados(produtos) {
+    if (!produtoScreen) {
+        console.error("Elemento com ID 'produto-screen' não encontrado no DOM");
+        return;
+    }
+
     produtoScreen.innerHTML = "";
     if (produtos.length === 0) {
         produtoScreen.innerHTML = "<p>Nenhum tênis encontrado.</p>";

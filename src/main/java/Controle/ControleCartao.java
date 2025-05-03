@@ -33,6 +33,14 @@ public class ControleCartao extends HttpServlet {
 
         Resultado<Cartao> resultadoCartaoFiltro = extrairCartaoFiltro(req);
 
+        if (!resultadoCartaoFiltro.isSucesso()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", "{" + resultadoCartaoFiltro.getErro() + "}");
+            out.print(gson.toJson(resposta));
+            return;
+        }
+
         IFachada fachada = new Fachada();
         Cartao cartaoFiltro = resultadoCartaoFiltro.getValor();
         Resultado<List<EntidadeDominio>> resultadoConsultaartao = fachada.consultar(cartaoFiltro);

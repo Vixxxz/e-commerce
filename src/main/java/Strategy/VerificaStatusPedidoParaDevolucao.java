@@ -1,10 +1,11 @@
 package Strategy;
 
-import Dao.DevolucaoDAO;
 import Dao.PedidoDAO;
+import Dao.TrocaSolicitadaDAO;
 import Dominio.Devolucao;
 import Dominio.EntidadeDominio;
 import Dominio.Pedido;
+import Dominio.TrocaSolicitada;
 import Enums.Status;
 import Util.Resultado;
 
