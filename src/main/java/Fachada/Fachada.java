@@ -62,6 +62,7 @@ public class Fachada implements IFachada {
         StringBuilder sb = new StringBuilder();
         processarValidacoes(pedido, getValidacoes(pedido, Operacao.SALVAR), sb);
         for(PedidoProduto pedidoProduto : pedidoProdutos){
+            //TODO: verificar pedido pois esta indo como null
             processarValidacoes(pedidoProduto, getValidacoes(pedidoProduto, Operacao.SALVAR), sb);
             reserva.setProduto(pedidoProduto.getProduto());
             VerificaReservaAtiva verificaReservaAtiva = new VerificaReservaAtiva();
@@ -70,9 +71,11 @@ public class Fachada implements IFachada {
         for(CartaoPedido cartaoPedido : cartaoPedidos){
             processarValidacoes(cartaoPedido, getValidacoes(cartaoPedido, Operacao.SALVAR), sb);
         }
-        if(!cupons.isEmpty()){
-            for(Cupom cupom : cupons){
-                processarValidacoes(cupom, getValidacoes(cupom, Operacao.ALTERAR), sb);
+        if(cupons != null){
+            if(!cupons.isEmpty()){
+                for(Cupom cupom : cupons){
+                    processarValidacoes(cupom, getValidacoes(cupom, Operacao.ALTERAR), sb);
+                }
             }
         }
         if(!sb.isEmpty()){

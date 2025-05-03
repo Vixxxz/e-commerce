@@ -730,3 +730,143 @@ width: 70%;
     border-radius: 10px;
     font-weight: bold;
 }
+
+/* DETALHES PEDIDO */
+
+.detalhes-pedido{
+    width: 896px;
+    height: auto;
+    padding: 5px;
+    flex-shrink: 0;
+    position: relative;
+    margin: 10px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    border: 5px solid;
+    fill: #F9F7F7;
+    stroke-width: 2px;
+    stroke: var(--fundo, #1B56A8);
+}
+
+.produto-pedido{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.info-detalhes-pedido{
+    width: 100%;
+    height: 165px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 35px;
+    padding: 20px;
+}
+
+.info-detalhes-pedido img{
+    width: 195.384px;
+    height: 192.041px;
+    flex-shrink: 0;
+}
+
+.info-detalhes-pedido p{
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.info-detalhes-pedido span{
+    color: gray;
+    font-weight: normal
+
+}
+
+.info-detalhes-valor{
+    position: absolute;
+    right: 60px;
+}
+
+.barra-progresso {
+    width: 675px;
+    height: 4px;
+    background: var(--fundo);
+    margin-bottom: -23px;
+    z-index: 1;
+}
+
+.status-pedido{
+    margin-top: 30px;
+}
+
+.status{
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    color: #999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.step-label {
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    white-space: pre-line;
+    word-break: break-word;
+    line-height: 15.3px;
+    transition: all 0.3s ease;
+}
+
+.step.active .step-icon {
+    background: var(--fundo);
+    color: white;
+}
+
+.step.active .step-label {
+    color: #333;
+    font-weight: bold;
+}
+
+.solicitar-troca{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 35px;
+}
+
+.detalhes-pedido button{
+    width: auto;
+    height: 40px;
+    padding: 0 15px;
+    align-content: center;
+    background: var(--amarelo);
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+}
