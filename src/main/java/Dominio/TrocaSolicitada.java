@@ -40,7 +40,7 @@ public class TrocaSolicitada extends EntidadeDominio {
         this.status = status;
     }
 
-    public double getValorTotal() {
+    public Double getValorTotal() {
         return valorTotal;
     }
 

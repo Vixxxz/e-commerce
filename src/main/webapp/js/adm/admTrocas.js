@@ -19,7 +19,7 @@ const AdmTrocas = (() => {
     async function realizarConsultaTrocas() {
         const filtroForm = document.getElementById('filtroFormTroca');
         const queryParams = filtroForm ? criarQueryParams(new FormData(filtroForm)) : '';
-        const url = `${BASE_URL}/controlePedido${queryParams ? `?${queryParams}` : ''}`;
+        const url = `${BASE_URL}/controleTroca${queryParams ? `?${queryParams}` : ''}`;
 
         try {
             const resposta = await fetch(url, {
@@ -32,10 +32,10 @@ const AdmTrocas = (() => {
             }
 
             const respostaJson = await resposta.json();
-            const vendas = Array.isArray(respostaJson) ? respostaJson : [respostaJson];
+            const trocas = Array.isArray(respostaJson) ? respostaJson : [respostaJson];
 
-            vendas.length
-                ? renderTabela(vendas)
+            trocas.length
+                ? renderTabela(trocas)
                 : mostrarErro('Nenhuma troca encontrada.');
 
         } catch (error) {
@@ -43,23 +43,22 @@ const AdmTrocas = (() => {
         }
     }
 
-    function renderTabela(vendas) {
+    function renderTabela(trocas) {
         const tbody = document.querySelector('#table-trocas tbody');
         tbody.innerHTML = '';
 
-        vendas.forEach(venda => {
+        trocas.forEach(troca => {
             const tr = document.createElement('tr');
 
             tr.innerHTML = `
-                <td>${venda.id ?? ''}</td>
-                <td>${venda.valorTotal?.toFixed(2) ?? '0.00'}</td>
-                <td>${venda.dtCadastro ? formatarData(new Date(venda.dtCadastro)) : ''}</td>
-                <td>${venda.status ?? ''}</td>
-                <td>${venda.transportadora?.nome ?? 'Transportadora não informada'}</td>
-                <td>${venda.clienteEndereco?.cliente?.cpf ?? ''}</td>
+                <td>${troca.id ?? ''}</td>
+                <td>${troca.valorTotal?.toFixed(2) ?? '0.00'}</td>
+                <td>${troca.dtCadastro ? formatarData(new Date(troca.dtCadastro)) : ''}</td>
+                <td>${troca.status ?? ''}</td>
+                <td>${troca.cliente?.cpf ?? ''}</td>
                 <td>
-                    <button class="btn btn-warning" onclick="AdmTrocas.proximaEtapa(${venda.id}, '${venda.status}')">Próxima Etapa</button>
-                    <button class="btn btn-danger" onclick="AdmTrocas.excluirPedido(${venda.id})">Excluir</button>
+                    <button class="btn btn-warning" onclick="AdmTrocas.proximaEtapa(${troca.id}, '${troca.status}')">Próxima Etapa</button>
+                    <button class="btn btn-danger" onclick="AdmTrocas.excluirPedido(${troca.id})">Excluir</button>
                 </td>
             `;
 
@@ -84,19 +83,19 @@ const AdmTrocas = (() => {
             }
 
             const novoStatus = Status[index + 1];
-            const pedidoJson = {
-                Pedido: {
+            const trocaJson = {
+                troca: {
                     id: id,
                     status: novoStatus
                 }
             };
 
-            const resposta = await fetch(`${BASE_URL}/controlePedido`, {
+            const resposta = await fetch(`${BASE_URL}/controleTroca`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(pedidoJson)
+                body: JSON.stringify(trocaJson)
             });
 
             if (!resposta.ok) {
@@ -117,7 +116,7 @@ const AdmTrocas = (() => {
             const confirmar = confirm("Tem certeza que deseja excluir esta troca?");
             if (!confirmar) return;
 
-            const resposta = await fetch(`${BASE_URL}/controlePedido?id=${id}`, {
+            const resposta = await fetch(`${BASE_URL}/controleTroca?id=${id}`, {
                 method: 'DELETE',
             });
 
