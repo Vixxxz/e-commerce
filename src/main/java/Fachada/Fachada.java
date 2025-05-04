@@ -454,6 +454,14 @@ public class Fachada implements IFachada {
                 }
                 return Resultado.sucesso(resultadoTrocaSolicitada.getValor());
             }
+            case PedidoProduto pedidoProduto ->{
+                PedidoProdutoDAO pedidoProdutoDAO = new PedidoProdutoDAO();
+                Resultado<List<EntidadeDominio>> resultadoPedidoProduto = pedidoProdutoDAO.consultar(pedidoProduto);
+                if(!resultadoPedidoProduto.isSucesso()){
+                    return Resultado.erro(resultadoPedidoProduto.getErro());
+                }
+                return Resultado.sucesso(resultadoPedidoProduto.getValor());
+            }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
             }
