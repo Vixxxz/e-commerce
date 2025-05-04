@@ -155,7 +155,7 @@ public class TrocaSolicitadaDAO  implements IDAO{
             sql.append(" AND t.tro_id = ? ");
             parametros.add(trocaSolicitada.getId());
         }
-        if (trocaSolicitada.getValorTotal() != 0) {
+        if (trocaSolicitada.getValorTotal() != null) {
             sql.append(" AND t.tro_valor_total = ? ");
             parametros.add(trocaSolicitada.getValorTotal());
         }
@@ -186,6 +186,11 @@ public class TrocaSolicitadaDAO  implements IDAO{
         Pedido ped = new Pedido();
         ped.setId(rs.getInt("tro_ped_id"));
         tro.setPedido(ped);
+
+        Cliente cli = new Cliente();
+        cli.setId(rs.getInt("cli_id"));
+        cli.setCpf(rs.getString("cli_cpf"));
+        tro.setCliente(cli);
 
         return tro;
     }
