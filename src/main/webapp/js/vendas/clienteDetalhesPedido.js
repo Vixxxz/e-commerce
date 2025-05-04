@@ -7,11 +7,11 @@ function obterParametroUrl(parametro) {
     return urlParams.get(parametro);
 }
 
-const cpf = obterParametroUrl("cpf");
+const id = obterParametroUrl("id");
 
 async function carregarDadosPedidos(){
-    const container = document.querySelector('.pedido');
-    const url = `http://localhost:8080/ecommerce_tenis_war_exploded/controlePedido?cpf=${cpf}`;
+    const container = document.querySelector('.detalhes-pedido');
+    const url = `http://localhost:8080/ecommerce_tenis_war_exploded/controlePedido?id=${id}`;
 
     try{
         const response = await fetch(url);
@@ -45,7 +45,7 @@ async function carregarDadosPedidos(){
                 </tbody>
             `;
 
-           addEventListener("click", (event) => {
+            addEventListener("click", (event) => {
                 window.location.href = `clienteDetalhesPedido.html?id=${item.id}`;
             })
 
