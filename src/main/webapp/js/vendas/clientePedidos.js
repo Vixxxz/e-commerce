@@ -40,14 +40,10 @@ async function carregarDadosPedidos(){
                       <td>${item.id}</td>
                       <td>${dataPedido}</td>
                       <td>R$ ${item.valorTotal}</td>
-                      <td><button class="btn-detalhes" >Ver</button></td>
+                      <td><a href = "clienteDetalhesPedido.html?id=${item.id}"><button class="btn-detalhes">Ver</button></a></td>
                     </tr>
                 </tbody>
             `;
-
-           addEventListener("click", (event) => {
-                window.location.href = `clienteDetalhesPedido.html?id=${item.id}`;
-            })
 
             container.appendChild(table);
         })

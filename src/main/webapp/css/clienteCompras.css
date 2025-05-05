@@ -792,7 +792,7 @@ width: 70%;
 }
 
 .barra-progresso {
-    width: 675px;
+    width: 100%;
     height: 4px;
     background: var(--fundo);
     margin-bottom: -23px;

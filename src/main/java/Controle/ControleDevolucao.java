@@ -1,9 +1,7 @@
 package Controle;
 
-import Dominio.Cupom;
 import Dominio.Devolucao;
 import Dominio.DevolucaoProduto;
-import Dominio.PedidoProduto;
 import Fachada.Fachada;
 import Util.Resultado;
 import com.google.gson.Gson;

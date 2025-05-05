@@ -27,17 +27,12 @@ const AdmTrocas = (() => {
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            if (!resposta.ok) {
-                throw new Error(`Erro HTTP: ${resposta.status}`);
-            }
+            if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
 
             const respostaJson = await resposta.json();
             const trocas = Array.isArray(respostaJson) ? respostaJson : [respostaJson];
 
-            trocas.length
-                ? renderTabela(trocas)
-                : mostrarErro('Nenhuma troca encontrada.');
-
+            trocas.length ? renderTabela(trocas) : mostrarErro('Nenhuma troca encontrada.');
         } catch (error) {
             mostrarErro('Erro ao buscar trocas.', error);
         }
@@ -49,7 +44,6 @@ const AdmTrocas = (() => {
 
         trocas.forEach(troca => {
             const tr = document.createElement('tr');
-
             tr.innerHTML = `
                 <td>${troca.id ?? ''}</td>
                 <td>${troca.valorTotal?.toFixed(2) ?? '0.00'}</td>
@@ -57,50 +51,84 @@ const AdmTrocas = (() => {
                 <td>${troca.status ?? ''}</td>
                 <td>${troca.cliente?.cpf ?? ''}</td>
                 <td>
-                    <button class="btn btn-warning" onclick="AdmTrocas.proximaEtapa(${troca.id}, '${troca.status}')">Próxima Etapa</button>
+                    <button class="btn btn-warning" onclick="AdmTrocas.proximaEtapa(${troca.id}, '${troca.status}', this)">Próxima Etapa</button>
                     <button class="btn btn-danger" onclick="AdmTrocas.excluirPedido(${troca.id})">Excluir</button>
                 </td>
             `;
-
             tbody.appendChild(tr);
         });
     }
 
-    async function proximaEtapa(id, status) {
+    async function proximaEtapa(id, status, button) {
         try {
-            if (!id || !status) {
-                throw new Error("Dados da troca inválidos ou incompletos");
-            }
+            if (!id || !status) throw new Error("Dados da troca inválidos ou incompletos");
 
             const index = Status.indexOf(status);
+            if (index === -1) throw new Error(`Status atual "${status}" não encontrado na lista`);
+            if (index === Status.length - 1) throw new Error("Não há próximo status disponível - já está no status final");
 
-            if (index === -1) {
-                throw new Error(`Status atual "${status}" não encontrado na lista`);
-            }
-
-            if (index === Status.length - 1) {
-                throw new Error("Não há próximo status disponível - já está no status final");
-            }
+            button.disabled = true;
+            button.textContent = 'Processando...';
 
             const novoStatus = Status[index + 1];
-            const trocaJson = {
-                troca: {
-                    id: id,
-                    status: novoStatus
+            const trocaDetalhesResp = await fetch(`${BASE_URL}/controleTrocaProduto?idTroca=${id}`);
+            if (!trocaDetalhesResp.ok) throw new Error("Erro ao buscar detalhes da troca");
+
+            const trocaDetalhes = await trocaDetalhesResp.json();
+
+            if (status === 'TROCA_AUTORIZADA') {
+                const valorTotal = trocaDetalhes.reduce((acc, item) => acc + (item.produto.preco * item.quantidade), 0);
+                const pedidoId = trocaDetalhes[0]?.troca?.pedido?.id;
+
+                const devolucaoJson = {
+                    devolucao: {
+                        pedido: { id: pedidoId },
+                        valor: valorTotal
+                    },
+                    devolucaoProduto: trocaDetalhes.map(p => ({
+                        devolucao: { id: null },
+                        produto: {
+                            id: p.produto.id,
+                            nome: p.produto.nome,
+                            preco: p.produto.preco
+                        },
+                        quantidade: p.quantidade
+                    }))
+                };
+
+                const resposta = await fetch(`${BASE_URL}/devolucao`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(devolucaoJson)
+                });
+
+                if (!resposta.ok) {
+                    const errorData = await resposta.json().catch(() => null);
+                    throw new Error(`Erro na requisição: ${resposta.status} - ${errorData?.message || 'Sem mensagem de erro'}`);
                 }
-            };
 
-            const resposta = await fetch(`${BASE_URL}/controleTroca`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(trocaJson)
-            });
+                alert('Devolução registrada com sucesso.');
 
-            if (!resposta.ok) {
-                const errorData = await resposta.json().catch(() => null);
-                throw new Error(`Erro na requisição: ${resposta.status} - ${errorData?.message || 'Sem mensagem de erro'}`);
+            } else {
+                const updateJson = {
+                    troca: {
+                        id: id,
+                        status: novoStatus
+                    }
+                };
+
+                const resposta = await fetch(`${BASE_URL}/controleTroca`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateJson)
+                });
+
+                if (!resposta.ok) {
+                    const errorData = await resposta.json().catch(() => null);
+                    throw new Error(`Erro na requisição: ${resposta.status} - ${errorData?.message || 'Sem mensagem de erro'}`);
+                }
+
+                alert('Status atualizado com sucesso.');
             }
 
             await realizarConsultaTrocas();
@@ -108,6 +136,11 @@ const AdmTrocas = (() => {
         } catch (error) {
             console.error("Erro ao avançar para próxima etapa:", error.message);
             alert(`Erro: ${error.message}`);
+        } finally {
+            if (button) {
+                button.disabled = false;
+                button.textContent = 'Próxima Etapa';
+            }
         }
     }
 
@@ -120,12 +153,9 @@ const AdmTrocas = (() => {
                 method: 'DELETE',
             });
 
-            if (!resposta.ok) {
-                throw new Error(`Erro ao excluir: ${resposta.status}`);
-            }
+            if (!resposta.ok) throw new Error(`Erro ao excluir: ${resposta.status}`);
 
             await realizarConsultaTrocas();
-
         } catch (error) {
             console.error("Erro ao excluir troca:", error.message);
             alert(`Erro: ${error.message}`);
@@ -150,7 +180,6 @@ const AdmTrocas = (() => {
         });
 
         params.append('statusList', 'TROCA_SOLICITADA, TROCA_AUTORIZADA, TROCA_RECUSADA, TROCADO');
-
         return params.toString();
     }
 

@@ -1,7 +1,6 @@
 package Controle;
 
 import Dominio.*;
-import Enums.Status;
 import Fachada.Fachada;
 import Fachada.IFachada;
 import Util.Resultado;
@@ -15,9 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serial;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @WebServlet(name = "ControlePedidoProduto", urlPatterns = "/controlePedidoProduto")
 public class ControlePedidoProduto extends HttpServlet {

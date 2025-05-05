@@ -11,13 +11,15 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class TrocaSolicitadaDAO  implements IDAO{
+public class TrocaSolicitadaDAO implements IDAO {
     private Connection connection;
 
     public TrocaSolicitadaDAO(Connection connection) {
         this.connection = connection;
     }
-    public TrocaSolicitadaDAO(){}
+
+    public TrocaSolicitadaDAO() {
+    }
 
     public Resultado<TrocaSolicitada> salvarTroca(TrocaSolicitada trocaSolicitada, List<TrocaSolicitadaTenis> trocaSolicitadaTenis) throws SQLException, ClassNotFoundException {
         if (connection == null || connection.isClosed()) {
@@ -25,7 +27,7 @@ public class TrocaSolicitadaDAO  implements IDAO{
         }
         connection.setAutoCommit(false);
 
-        try{
+        try {
             Resultado<EntidadeDominio> resultadoSalvarTroca = salvar(trocaSolicitada);
             TrocaSolicitada trocaSalva = (TrocaSolicitada) resultadoSalvarTroca.getValor();
             TrocaSolicitadaTenisDAO trocaSolicitadaTenisDAO = new TrocaSolicitadaTenisDAO(connection);
@@ -33,16 +35,26 @@ public class TrocaSolicitadaDAO  implements IDAO{
                 trocaProduto.setTroca(trocaSalva);
                 trocaSolicitadaTenisDAO.salvaTrocaProduto(trocaProduto);
             }
+            PedidoDAO pedidoDAO = new PedidoDAO(connection);
+            Pedido pedido = new Pedido();
+            pedido.setId(trocaSalva.getPedido().getId());
+            pedido.setStatus(trocaSalva.getStatus());
+            Resultado<EntidadeDominio> resultadoAlteraPedido = pedidoDAO.alterar(pedido);
+
+            if (!resultadoAlteraPedido.isSucesso()) {
+                return Resultado.erro(resultadoAlteraPedido.getErro());
+            }
 
             System.out.println("Troca Solicitada com sucesso!");
-            connection.commit();
             return Resultado.sucesso(trocaSalva);
-        }catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             try {
-                if (connection != null) {
+                if (connection != null && !connection.isClosed() && connection.isValid(5)) {
                     connection.rollback();
+                    System.err.println("Rollback efetuado devido a erro: " + e.getMessage());
+                } else {
+                    System.err.println("Rollback NÃO efetuado devido a erro: " + e.getMessage());
                 }
-                System.err.println("Rollback efetuado devido a erro: " + e.getMessage());
                 return Resultado.erro("Erro ao salvar troca: " + e.getMessage());
             } catch (SQLException rollbackEx) {
                 System.err.println("Erro durante rollback: " + rollbackEx.getMessage());
@@ -50,7 +62,7 @@ public class TrocaSolicitadaDAO  implements IDAO{
             }
         } finally {
             try {
-                if (connection != null) connection.close();
+                if (connection != null && !connection.isClosed() && connection.isValid(5)) connection.close();
             } catch (SQLException closeEx) {
                 System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
             }
@@ -71,7 +83,7 @@ public class TrocaSolicitadaDAO  implements IDAO{
         trocaSolicitada.complementarDtCadastro();
         try (PreparedStatement pst = connection.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
             pst.setInt(1, trocaSolicitada.getPedido().getId());
-            pst.setString(2, trocaSolicitada.getStatus().toString());
+            pst.setString(2, trocaSolicitada.getStatus().name());
             pst.setTimestamp(3, new Timestamp(trocaSolicitada.getDtCadastro().getTime()));
             pst.setInt(4, trocaSolicitada.getCliente().getId());
             pst.setDouble(5, trocaSolicitada.getValorTotal());
@@ -93,7 +105,60 @@ public class TrocaSolicitadaDAO  implements IDAO{
 
     @Override
     public Resultado<EntidadeDominio> alterar(EntidadeDominio entidade) throws SQLException, ClassNotFoundException {
-        return null;
+        if (connection == null || connection.isClosed()) {
+            connection = Conexao.getConnectionMySQL();
+        }
+        connection.setAutoCommit(false);
+
+        TrocaSolicitada trocaSolicitada = (TrocaSolicitada) entidade;
+
+        StringBuilder sql = new StringBuilder();
+        List<Object> parametros = new ArrayList<>();
+
+        sql.append("UPDATE crud_v3.troca_solicitada SET ");
+
+        List<String> campos = new ArrayList<>();
+
+        if(trocaSolicitada.getPedido() != null){
+            Pedido pedido = trocaSolicitada.getPedido();
+            if (pedido.getId() != null) {
+                campos.add("tro_ped_id = ?");
+                parametros.add(pedido.getId());
+            }
+        }
+        if(trocaSolicitada.getStatus() != null){
+            campos.add("tro_status = ?");
+            parametros.add(trocaSolicitada.getStatus().name());
+        }
+        if(trocaSolicitada.getCliente() != null){
+            if(trocaSolicitada.getCliente().getId() != null){
+                campos.add("tro_cli_id = ?");
+                parametros.add(trocaSolicitada.getCliente().getId());
+            }
+        }
+        if(trocaSolicitada.getValorTotal() != null){
+            campos.add("tro_valor_total = ?");
+            parametros.add(trocaSolicitada.getValorTotal());
+        }
+        if (campos.isEmpty()) {
+            return Resultado.erro("Nenhum campo para atualizar.");
+        }
+
+        sql.append(String.join(", ", campos));
+        sql.append(" WHERE tro_id = ?");
+        parametros.add(trocaSolicitada.getId());
+
+        try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < parametros.size(); i++) {
+                pst.setObject(i + 1, parametros.get(i));
+            }
+
+            int linhasAlteradas = pst.executeUpdate();
+            if (linhasAlteradas == 0) {
+                return Resultado.erro("Nenhuma linha da tabela pedido foi alterada.");
+            }
+        }
+        return Resultado.sucesso(trocaSolicitada);
     }
 
     @Override
@@ -103,35 +168,35 @@ public class TrocaSolicitadaDAO  implements IDAO{
 
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
-            try {
-                if (connection == null || connection.isClosed()) {
-                    connection = Conexao.getConnectionMySQL();
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = Conexao.getConnectionMySQL();
+            }
+
+            List<EntidadeDominio> trocasSolicitadas = new ArrayList<>();
+            TrocaSolicitada trocaSolicitada = (TrocaSolicitada) entidade;
+            List<Object> parametros = new ArrayList<>();
+
+            String sql = construirConsulta(trocaSolicitada, parametros);
+
+            try (PreparedStatement pst = connection.prepareStatement(sql)) {
+                for (int i = 0; i < parametros.size(); i++) {
+                    pst.setObject(i + 1, parametros.get(i));
                 }
 
-                List<EntidadeDominio> trocasSolicitadas = new ArrayList<>();
-                TrocaSolicitada trocaSolicitada = (TrocaSolicitada) entidade;
-                List<Object> parametros = new ArrayList<>();
-
-                String sql = construirConsulta(trocaSolicitada, parametros);
-
-                try (PreparedStatement pst = connection.prepareStatement(sql)) {
-                    for (int i = 0; i < parametros.size(); i++) {
-                        pst.setObject(i + 1, parametros.get(i));
-                    }
-
-                    try (ResultSet rs = pst.executeQuery()) {
-                        while (rs.next()) {
-                            trocasSolicitadas.add(mapeiaTroca(rs));
-                        }
+                try (ResultSet rs = pst.executeQuery()) {
+                    while (rs.next()) {
+                        trocasSolicitadas.add(mapeiaTroca(rs));
                     }
                 }
+            }
 
-                return Resultado.sucesso(trocasSolicitadas);
+            return Resultado.sucesso(trocasSolicitadas);
 
         } catch (SQLException | ClassNotFoundException e) {
-            System.err.println("Erro ao consultar pedidos: " + e.getMessage());
-            return Resultado.erro("Erro ao consultar pedidos: " + e.getMessage());
-        }finally {
+            System.err.println("Erro ao consultar as trocas: " + e.getMessage());
+            return Resultado.erro("Erro ao consultar as trocas: " + e.getMessage());
+        } finally {
             try {
                 if (connection != null && !connection.isClosed()) {
                     connection.close();
@@ -181,7 +246,7 @@ public class TrocaSolicitadaDAO  implements IDAO{
         tro.setId(rs.getInt("tro_id"));
         tro.setValorTotal(rs.getDouble("tro_valor_total"));
         tro.setStatus(Status.valueOf(rs.getString("tro_status")));
-        tro.setDtCadastro(rs.getTimestamp("tro_dt_solicitacao"));
+        tro.setDtCadastro(rs.getTimestamp("tro_data_solicitacao"));
 
         Pedido ped = new Pedido();
         ped.setId(rs.getInt("tro_ped_id"));

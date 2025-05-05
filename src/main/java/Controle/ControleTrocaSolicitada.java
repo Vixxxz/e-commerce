@@ -96,6 +96,49 @@ public class ControleTrocaSolicitada extends HttpServlet{
         out.print(json);
     }
 
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        PrintWriter out = resp.getWriter();
+
+        Gson gson = new Gson();
+        Resultado<JsonObject> ResultJsonObject = lerJsonComoObjeto(req);
+
+        if (!ResultJsonObject.isSucesso()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", ResultJsonObject.getErro());
+            out.print(gson.toJson(resposta));
+            return;
+        }
+
+        JsonObject jsonObject = ResultJsonObject.getValor();
+        if (!jsonObject.has("troca")) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", "{\"erro\": \"JSON inválido: Campos obrigatórios ausentes.\"}");
+            out.print(gson.toJson(resposta));
+            return;
+        }
+
+        TrocaSolicitada trocaSolicitada = gson.fromJson(jsonObject.get("troca"), TrocaSolicitada.class);
+
+        IFachada fachada = new Fachada();
+        Resultado<String> resultado = fachada.alterar(trocaSolicitada);
+
+        if (!resultado.isSucesso()) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", "{\"erro\": \"" + resultado.getErro() + "\"}");
+            out.print(gson.toJson(resposta));
+            return;
+        }
+        String json = gson.toJson(resultado.getValor());
+        resp.setStatus(HttpServletResponse.SC_OK);
+        out.print(json);
+    }
 
     private Resultado<JsonObject> lerJsonComoObjeto(HttpServletRequest req) throws IOException {
         String json = lerJsonComoString(req);

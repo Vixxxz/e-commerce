@@ -38,6 +38,7 @@ public class CupomDAO implements IDAO {
             pst.setString(1, cupom.getCodigo());
             pst.setDouble(2, cupom.getValor());
             pst.setString(3, cupom.getTipo().name());
+            //todo: estourando erro quando tenta dar get no cliente
             pst.setInt(4, cupom.getCliente().getId());
             pst.setTimestamp(5, new Timestamp(cupom.getDtCadastro().getTime()));
             if (cupom.getPedido() != null && cupom.getPedido().getId() != null) {

@@ -36,7 +36,7 @@ public class DevolucaoProdutoDAO implements IDAO{
 
         DevolucaoProduto devolucaoProduto = (DevolucaoProduto) entidade;
         StringBuilder sql = new StringBuilder();
-        sql.append("INSERT INTO devolucao_tenis(dev_ten_dev_id, dev_ten_ten_id, dev_ten_quantidade, dev_ten_data_adicao) ");
+        sql.append("INSERT INTO devolucao_tenis(dev_ten_dev_id, dev_ten_ten_id, dev_ten_quantidade, dev_ten_dt_adicao) ");
         sql.append("VALUES (?,?,?,?)");
 
         devolucaoProduto.complementarDtCadastro();

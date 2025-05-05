@@ -227,6 +227,14 @@ public class PedidoProdutoDAO implements IDAO{
         ped.setStatus(Status.valueOf(rs.getString("ped_status")));
         ped.setDtCadastro(rs.getTimestamp("ped_dt_cadastro"));
 
+        Cliente cli = new Cliente();
+        cli.setId(rs.getInt("ped_cli_end_cli_id"));
+
+        ClienteEndereco ce = new ClienteEndereco();
+        ce.setCliente(cli);
+
+        ped.setClienteEndereco(ce);
+
         Produto pro = new Produto();
         pro.setId(rs.getInt("ten_id"));
         pro.setSku(rs.getString("ten_sku"));

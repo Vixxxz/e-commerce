@@ -3,9 +3,12 @@ package Fachada;
 import Dao.*;
 import Dominio.*;
 import Strategy.*;
+import Util.Conexao;
 import Util.Resultado;
 import Enums.Operacao;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -305,6 +308,55 @@ public class Fachada implements IFachada {
                     return Resultado.erro("Erro interno ao alterar reserva.");
                 }
             }
+            case TrocaSolicitada troca ->{    
+                Connection connection = null;
+                try{
+                    TrocaSolicitadaDAO trocaSolicitadaDAO = new TrocaSolicitadaDAO();
+                    TrocaSolicitada trocaFiltro = new TrocaSolicitada();
+                    trocaFiltro.setId(troca.getId());
+                    Resultado<List<EntidadeDominio>> resultadoConsultaTroca = trocaSolicitadaDAO.consultar(trocaFiltro);
+                    List<EntidadeDominio> trocas = resultadoConsultaTroca.getValor();
+                    TrocaSolicitada trocaAntiga = (TrocaSolicitada) trocas.getFirst();
+
+                    connection = Conexao.getConnectionMySQL();
+                    trocaSolicitadaDAO.setConnection(connection);
+                    processarValidacoes(troca, getValidacoes(troca, Operacao.ALTERAR), sb);
+                    Resultado<EntidadeDominio> resultadoAlterarTroca = trocaSolicitadaDAO.alterar(troca);
+                    if(!resultadoAlterarTroca.isSucesso()){
+                        return Resultado.erro(resultadoAlterarTroca.getErro());
+                    }
+                    troca = (TrocaSolicitada) resultadoAlterarTroca.getValor();
+                    PedidoDAO pedidoDAO = new PedidoDAO(connection);
+                    Pedido pedido = new Pedido();
+                    pedido.setId(trocaAntiga.getPedido().getId());
+                    pedido.setStatus(troca.getStatus());
+                    Resultado<EntidadeDominio> resultadoAlteraPedido = pedidoDAO.alterar(pedido);
+                    if(!resultadoAlteraPedido.isSucesso()){
+                        return Resultado.erro(resultadoAlteraPedido.getErro());
+                    }
+                    return Resultado.sucesso("Troca atualizada com sucesso");
+                }catch (SQLException | ClassNotFoundException e) {
+                    try {
+                        if (connection != null && !connection.isClosed() && connection.isValid(5)) {
+                            connection.rollback();
+                            System.err.println("Rollback efetuado devido a erro: " + e.getMessage());
+                        }else{
+                            System.err.println("Rollback NÃO efetuado devido a erro: " + e.getMessage());
+                        }
+                        return Resultado.erro("Erro ao alterar troca: " + e.getMessage());
+                    } catch (SQLException rollbackEx) {
+                        System.err.println("Erro durante rollback: " + rollbackEx.getMessage());
+                        return Resultado.erro("Erro durante rollback: " + rollbackEx.getMessage());
+                    }
+                } finally {
+                    try {
+                        if (connection != null && !connection.isClosed() && connection.isValid(5) ) connection.close();
+                    } catch (SQLException closeEx) {
+                        System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
+                    }
+                }
+
+            }
             case null, default -> throw new IllegalArgumentException("Tipo de entidade não suportado: " + entidade);
         }
     }
@@ -461,6 +513,14 @@ public class Fachada implements IFachada {
                     return Resultado.erro(resultadoPedidoProduto.getErro());
                 }
                 return Resultado.sucesso(resultadoPedidoProduto.getValor());
+            }
+            case TrocaSolicitadaTenis trocaSolicitadaTenis ->{
+                TrocaSolicitadaTenisDAO trocaSolicitadaTenisDAO = new TrocaSolicitadaTenisDAO();
+                Resultado<List<EntidadeDominio>> resultadoTrocaTenis = trocaSolicitadaTenisDAO.consultar(trocaSolicitadaTenis);
+                if(!resultadoTrocaTenis.isSucesso()){
+                    return Resultado.erro(resultadoTrocaTenis.getErro());
+                }
+                return Resultado.sucesso(resultadoTrocaTenis.getValor());
             }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
