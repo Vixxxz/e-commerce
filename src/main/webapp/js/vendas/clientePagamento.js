@@ -86,8 +86,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span>R$ ${valor}</span>
             `;
                 div.addEventListener("click", () => {
-                    div.classList.toggle("selecionado");
+                    document.querySelectorAll('input[name="cupomPromocional"]').forEach(radio => {
+                        radio.checked = false;
+                        radio.closest(".cupom-radio-container")?.classList.remove("selecionado");
+                    });
+
+                    const input = div.querySelector('input[type="radio"]');
+                    input.checked = true;
+                    div.classList.add("selecionado");
                 });
+
                 container.appendChild(div);
             });
 
@@ -97,7 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    //todo: verificar exibição dos cupons troca
     async function carregarCuponsTroca() {
         const idCliente = pedido?.pedido?.clienteEndereco?.cliente?.id;
         if (!idCliente) return;
@@ -121,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const div = document.createElement("div");
                 div.classList.add("cupom-radio-container");
 
-                const checked = index === 0 ? "checked" : "";
+                const checked = "";
 
                 div.innerHTML = `
                 <input type="radio" name="cupomTroca" value="${item.id}" ${checked}>
@@ -129,8 +136,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 <span>R$ ${item.valor}</span>
             `;
                 div.addEventListener("click", () => {
-                    div.classList.toggle("selecionado");
+                    document.querySelectorAll('input[name="cupomTroca"]').forEach(radio => {
+                        radio.checked = false;
+                        radio.closest(".cupom-radio-container")?.classList.remove("selecionado");
+                    });
+
+                    const input = div.querySelector('input[type="radio"]');
+                    input.checked = true;
+                    div.classList.add("selecionado");
                 });
+
                 container.appendChild(div);
             });
 
