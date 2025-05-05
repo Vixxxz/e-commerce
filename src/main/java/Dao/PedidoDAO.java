@@ -3,7 +3,9 @@ package Dao;
 import Dominio.*;
 import Enums.Ativo;
 import Enums.Status;
+import Enums.TipoCupom;
 import Util.Conexao;
+import Util.CupomGenerator;
 import Util.Resultado;
 
 import java.sql.*;
@@ -21,55 +23,78 @@ public class PedidoDAO implements IDAO{
     public PedidoDAO() {
     }
 
-    public Resultado<Pedido> salvarPedidoEProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos, List<Cupom>cupons) {
+    public Resultado<Pedido> salvarPedidoEProduto(Pedido pedido, List<PedidoProduto> pedidoProdutos, List<CartaoPedido> cartaoPedidos, List<Cupom> cupons) {
+        Cupom cupomTroco = null;
         try {
-            if(cupons != null && !cupons.isEmpty()){
-                double descontoTotal = cupons.stream()
+            double descontoTotal = 0.0;
+            if (cupons != null && !cupons.isEmpty()) {
+                descontoTotal = cupons.stream()
                         .filter(c -> c.getValor() != null)
                         .mapToDouble(Cupom::getValor)
                         .sum();
 
-                pedido.setValorTotal(Math.max(0, pedido.getValorTotal() - descontoTotal));
+                if (descontoTotal > pedido.getValorTotal()) {
+                    double excedente = descontoTotal - pedido.getValorTotal();
+                    cupomTroco = gerarCupom(excedente, pedido);
+                    pedido.setValorTotal(0.0);
+                } else {
+                    pedido.setValorTotal(pedido.getValorTotal() - descontoTotal);
+                }
             }
+
             Resultado<EntidadeDominio> resultadoSalvarPedido = salvar(pedido);
             Pedido pedidoSalvo = (Pedido) resultadoSalvarPedido.getValor();
+
             PedidoProdutoDAO pedidoProdutoDAO = new PedidoProdutoDAO(connection);
             for (PedidoProduto pedidoProduto : pedidoProdutos) {
                 pedidoProduto.setPedido(pedidoSalvo);
                 Resultado<EntidadeDominio> resultadoPedidoProduto = pedidoProdutoDAO.salvar(pedidoProduto);
-                if(!resultadoPedidoProduto.isSucesso()){
+                if (!resultadoPedidoProduto.isSucesso()) {
                     return Resultado.erro("Erro ao salvar pedido de produto: " + resultadoPedidoProduto.getErro());
                 }
             }
+
             CartaoPedidoDAO cartaoPedidoDAO = new CartaoPedidoDAO(connection);
-            for(CartaoPedido cartaoPedido : cartaoPedidos) {
+            for (CartaoPedido cartaoPedido : cartaoPedidos) {
                 cartaoPedido.setPedido(pedidoSalvo);
                 Resultado<EntidadeDominio> resultadoCartaoPedido = cartaoPedidoDAO.salvar(cartaoPedido);
-                if(!resultadoCartaoPedido.isSucesso()) {
+                if (!resultadoCartaoPedido.isSucesso()) {
                     return Resultado.erro("Erro ao salvar cartão de pedido: " + resultadoCartaoPedido.getErro());
                 }
             }
+
             EstoqueDAO estoqueDAO = new EstoqueDAO(connection);
             for (PedidoProduto pedidoProduto : pedidoProdutos) {
-                Resultado<EntidadeDominio>resultadoAtualizaEstoque = estoqueDAO.atualizarEstoque(pedidoProduto);
-                if(!resultadoAtualizaEstoque.isSucesso()) {
+                Resultado<EntidadeDominio> resultadoAtualizaEstoque = estoqueDAO.atualizarEstoque(pedidoProduto);
+                if (!resultadoAtualizaEstoque.isSucesso()) {
                     return Resultado.erro("Erro ao atualizar estoque: " + resultadoAtualizaEstoque.getErro());
                 }
             }
-            if(cupons != null && !cupons.isEmpty()){
+
+            if (cupons != null && !cupons.isEmpty()) {
                 CupomDAO cupomDAO = new CupomDAO(connection);
-                for(Cupom cupom : cupons){
+                for (Cupom cupom : cupons) {
                     cupom.setPedido(pedidoSalvo);
                     cupom.setStatus(Ativo.CONCLUIDO);
-                    Resultado<EntidadeDominio>resultadoAtualizaCupom = cupomDAO.alterar(cupom);
-                    if(!resultadoAtualizaCupom.isSucesso()) {
-                        return Resultado.erro("Erro ao atualizar estoque: " + resultadoAtualizaCupom.getErro());
+                    Resultado<EntidadeDominio> resultadoAtualizaCupom = cupomDAO.alterar(cupom);
+                    if (!resultadoAtualizaCupom.isSucesso()) {
+                        return Resultado.erro("Erro ao atualizar cupom: " + resultadoAtualizaCupom.getErro());
                     }
                 }
             }
+
+            if (cupomTroco != null) {
+                CupomDAO cupomDAO = new CupomDAO(connection);
+                Resultado<EntidadeDominio> resultadoCupomTroco = cupomDAO.salvar(cupomTroco);
+                if (!resultadoCupomTroco.isSucesso()) {
+                    return Resultado.erro("Erro ao salvar cupom de troco: " + resultadoCupomTroco.getErro());
+                }
+            }
+
             System.out.println("Pedido salvo com sucesso!");
             connection.commit();
             return Resultado.sucesso(pedidoSalvo);
+
         } catch (SQLException | ClassNotFoundException e) {
             try {
                 if (connection != null) {
@@ -343,6 +368,15 @@ public class PedidoDAO implements IDAO{
         ped.setTransportadora(tra);
 
         return ped;
+    }
+
+    private Cupom gerarCupom(Double valor, Pedido pedido) {
+        Cupom cupom = new Cupom();
+        cupom.setCodigo(CupomGenerator.gerarCodigoCupom(4));
+        cupom.setValor(valor);
+        cupom.setCliente(pedido.getClienteEndereco().getCliente());
+        cupom.setTipo(TipoCupom.TROCA);
+        return cupom;
     }
 
     public Connection getConnection() {

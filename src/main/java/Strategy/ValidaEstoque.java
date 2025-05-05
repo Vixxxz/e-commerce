@@ -5,17 +5,20 @@ import Dao.ReservaDAO;
 import Dominio.EntidadeDominio;
 import Dominio.Estoque;
 import Dominio.ReservaEstoque;
+import Enums.Ativo;
 import Util.Resultado;
 
 import java.util.List;
 
 public class ValidaEstoque implements IStrategy{
+
     @Override
     public Resultado<String> processar(EntidadeDominio entidade, StringBuilder sb) {
         ReservaEstoque reservaEstoque = (ReservaEstoque) entidade;
         ReservaDAO reservaDAO = new ReservaDAO();
         ReservaEstoque filtro = new ReservaEstoque();
         filtro.setProduto(reservaEstoque.getProduto());
+        filtro.setStatus(Ativo.ATIVO);
 
         Resultado<List<EntidadeDominio>> resultadoReserva = reservaDAO.consultar(filtro);
         if(!resultadoReserva.isSucesso()){

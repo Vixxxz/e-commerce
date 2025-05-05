@@ -276,6 +276,7 @@ public class ReservaDAO implements IDAO {
         res.setQuantidade(rs.getInt("res_qtd"));
         res.setDtCadastro(rs.getTimestamp("res_data"));
         res.setSessao(rs.getString("res_sessao"));
+        res.setStatus(Ativo.valueOf(rs.getString("res_status")));
 
         Marca mar = new Marca();
         mar.setId(rs.getInt("res_mar_id"));
