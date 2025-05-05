@@ -2,6 +2,7 @@ package Dao;
 
 import Dominio.*;
 import Enums.Status;
+import Enums.TipoCupom;
 import Util.Conexao;
 import Util.Resultado;
 
@@ -28,6 +29,16 @@ public class TrocaSolicitadaDAO implements IDAO {
         connection.setAutoCommit(false);
 
         try {
+            CupomDAO cupomDAO = new CupomDAO();
+            Cupom cupomFiltro = new Cupom();
+            cupomFiltro.setPedido(trocaSolicitada.getPedido());
+            Resultado<List<EntidadeDominio>> resultadoCupom = cupomDAO.consultar(cupomFiltro);
+            List<EntidadeDominio>cupons = resultadoCupom.getValor();
+
+            double valorPago = calcularValorPagoEfetivo(trocaSolicitadaTenis, cupons);
+
+            trocaSolicitada.setValorTotal(valorPago);
+
             Resultado<EntidadeDominio> resultadoSalvarTroca = salvar(trocaSolicitada);
             TrocaSolicitada trocaSalva = (TrocaSolicitada) resultadoSalvarTroca.getValor();
             TrocaSolicitadaTenisDAO trocaSolicitadaTenisDAO = new TrocaSolicitadaTenisDAO(connection);
@@ -264,6 +275,37 @@ public class TrocaSolicitadaDAO implements IDAO {
         tro.setCliente(cli);
 
         return tro;
+    }
+
+    private Double calcularValorPagoEfetivo(List<TrocaSolicitadaTenis> trocaSolicitadaTenis, List<EntidadeDominio> cupons) {
+        // Calcula o total de cupons de troca disponíveis
+        double totalCupomTroca = cupons.stream()
+                .filter(c -> c instanceof Cupom)
+                .map(c -> (Cupom) c)
+                .filter(c -> TipoCupom.TROCA.equals(c.getTipo()))
+                .mapToDouble(Cupom::getValor)
+                .sum();
+
+        // Calcula o total de itens sendo trocados
+        int totalItens = trocaSolicitadaTenis.stream()
+                .mapToInt(TrocaSolicitadaTenis::getQuantidade)
+                .sum();
+
+        if (totalItens == 0) return 0.0;
+
+        // Calcula o desconto unitário proporcional
+        double descontoUnitario = totalCupomTroca / totalItens;
+
+        // Calcula o valor total pago aplicando o desconto unitário a cada item
+        double valorTotal = trocaSolicitadaTenis.stream()
+                .mapToDouble(t -> {
+                    double valorItem = t.getProduto().getPreco() * t.getQuantidade();
+                    double descontoItem = descontoUnitario * t.getQuantidade();
+                    return valorItem - descontoItem;
+                })
+                .sum();
+
+        return Math.max(valorTotal, 0.0);
     }
 
     public Connection getConnection() {

@@ -26,6 +26,12 @@ public class DevolucaoDAO implements IDAO{
             Pedido pedido = buscarPedidoValido(pedidoDAO, devolucao.getPedido());
             if (pedido == null) return Resultado.erro("Pedido não existente");
 
+            CupomDAO cupomDAO = new CupomDAO();
+            Cupom cupFiltro = new Cupom();
+            cupFiltro.setPedido(pedido);
+            Resultado<List<EntidadeDominio>> resultadoCupom = cupomDAO.consultar(cupFiltro);
+            List<EntidadeDominio> cupons = resultadoCupom.getValor();
+
             TrocaSolicitadaDAO trocaDAO = new TrocaSolicitadaDAO();
             TrocaSolicitada troca = buscarTrocaValida(trocaDAO, pedido);
             if (troca == null) return Resultado.erro("Nenhuma troca solicitada para esse pedido");
@@ -44,7 +50,7 @@ public class DevolucaoDAO implements IDAO{
 
             for (DevolucaoProduto produto : produtos) {
                 produto.setDevolucao(dev);
-                Cupom cupom = gerarCupom(produto.getProduto().getPreco(), pedido);
+                Cupom cupom = gerarCupom(calcularValorPagoEfetivo(produto, produtos, cupons), pedido);
                 Resultado<EntidadeDominio> resProdCupom = devProdutoDAO.salvaDevolucaoProdutoCupom(produto, cupom);
                 Resultado<EntidadeDominio> resEstoque = estoqueDAO.atualizarEstoque(produto);
             }
@@ -141,6 +147,25 @@ public class DevolucaoDAO implements IDAO{
         cupom.setCliente(pedido.getClienteEndereco().getCliente());
         cupom.setTipo(TipoCupom.TROCA);
         return cupom;
+    }
+
+    private Double calcularValorPagoEfetivo(DevolucaoProduto devolucaoProduto, List<DevolucaoProduto> todosProdutos, List<EntidadeDominio> cupons) {
+        double totalCupomTroca = cupons.stream()
+                .filter(c -> c instanceof Cupom)
+                .map(c -> (Cupom) c)
+                .filter(c -> TipoCupom.TROCA.equals(c.getTipo()))
+                .mapToDouble(Cupom::getValor)
+                .sum();
+
+        int totalItens = todosProdutos.stream()
+                .mapToInt(DevolucaoProduto::getQuantidade)
+                .sum();
+
+        if (totalItens == 0) return devolucaoProduto.getProduto().getPreco();
+
+        double descontoUnitario = totalCupomTroca / totalItens;
+        double valorPagoEfetivo = devolucaoProduto.getProduto().getPreco() - descontoUnitario;
+        return Math.max(valorPagoEfetivo, 0.0);
     }
 
     public Connection getConnection() {
