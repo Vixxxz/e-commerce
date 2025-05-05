@@ -237,6 +237,12 @@ public class TrocaSolicitadaDAO implements IDAO {
                 parametros.add(status.name());
             }
         }
+        if(trocaSolicitada.getPedido() != null){
+            if(trocaSolicitada.getPedido().getId() != null){
+                sql.append(" AND p.ped_id = ? ");
+                parametros.add(trocaSolicitada.getPedido().getId());
+            }
+        }
 
         return sql.toString();
     }

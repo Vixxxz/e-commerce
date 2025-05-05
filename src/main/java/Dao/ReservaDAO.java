@@ -8,6 +8,7 @@ import Util.Resultado;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ReservaDAO implements IDAO {
     private Connection connection;
@@ -32,17 +33,25 @@ public class ReservaDAO implements IDAO {
             filtro.setProduto(reservaEstoque.getProduto());
 
             Resultado<List<EntidadeDominio>> resultadoFiltro = consultar(filtro);
-            List<EntidadeDominio> filtros = resultadoFiltro.getValor();
+            List<EntidadeDominio> reservasExistentes = resultadoFiltro.getValor();
 
-            if (filtros.isEmpty()) {
-                Resultado<EntidadeDominio> resultadoSalvaReserva = salvar(reservaEstoque);
-                if (!resultadoSalvaReserva.isSucesso()) {
-                    return Resultado.erro(resultadoSalvaReserva.getErro());
-                }
-            } else {
+            Optional<ReservaEstoque> reservaAtiva = reservasExistentes.stream()
+                    .map(e -> (ReservaEstoque) e)
+                    .filter(r -> r.getStatus() == Ativo.ATIVO)
+                    .findFirst();
+
+            if (reservaAtiva.isPresent()) {
+                // Atualiza a reserva ativa
+                reservaEstoque.setId(reservaAtiva.get().getId()); // garante que está atualizando
                 Resultado<EntidadeDominio> resultadoAtualizaReserva = alterar(reservaEstoque);
                 if (!resultadoAtualizaReserva.isSucesso()) {
                     return Resultado.erro(resultadoAtualizaReserva.getErro());
+                }
+            } else {
+                // Cria nova reserva
+                Resultado<EntidadeDominio> resultadoSalvaReserva = salvar(reservaEstoque);
+                if (!resultadoSalvaReserva.isSucesso()) {
+                    return Resultado.erro(resultadoSalvaReserva.getErro());
                 }
             }
             connection.commit();

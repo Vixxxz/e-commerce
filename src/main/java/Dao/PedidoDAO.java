@@ -336,6 +336,7 @@ public class PedidoDAO implements IDAO{
         Cliente c = new Cliente();
 
         c.setCpf(rs.getString("cli_cpf"));
+        c.setId(rs.getInt("cli_id"));
         ce.setCliente(c);
 
         ped.setClienteEndereco(ce);

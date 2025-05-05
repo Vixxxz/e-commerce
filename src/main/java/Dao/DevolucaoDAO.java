@@ -44,7 +44,7 @@ public class DevolucaoDAO implements IDAO{
 
             for (DevolucaoProduto produto : produtos) {
                 produto.setDevolucao(dev);
-                Cupom cupom = gerarCupom(devolucao.getValor(), pedido);
+                Cupom cupom = gerarCupom(produto.getProduto().getPreco(), pedido);
                 Resultado<EntidadeDominio> resProdCupom = devProdutoDAO.salvaDevolucaoProdutoCupom(produto, cupom);
                 Resultado<EntidadeDominio> resEstoque = estoqueDAO.atualizarEstoque(produto);
             }

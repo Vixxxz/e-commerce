@@ -88,6 +88,10 @@ public class CupomDAO implements IDAO {
             campos.add("cup_dt_cadastro = ? ");
             parametros.add(new Timestamp(cupom.getDtCadastro().getTime()));
         }
+        if(cupom.getStatus() != null){
+            campos.add("cup_status = ?");
+            parametros.add(cupom.getStatus().name());
+        }
 
         if(cupom.getPedido() != null){
             if(cupom.getPedido().getId() != null){
