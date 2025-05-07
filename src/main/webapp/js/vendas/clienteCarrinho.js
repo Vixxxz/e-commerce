@@ -123,9 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Ocorreu um erro inesperado durante a reserva do estoque.");
         }
     });
-
-
-    //todo: esta removendo produtos que nem tem reserva
+    
     const verificarReservas = async () => {
         console.log('Iniciando verificação de reservas...');
         console.log('sessionId:', sessionId);
