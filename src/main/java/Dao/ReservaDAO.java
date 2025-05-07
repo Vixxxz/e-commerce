@@ -208,6 +208,7 @@ public class ReservaDAO implements IDAO {
             List<Object> parametros = new ArrayList<>();
 
             StringBuilder sql = new StringBuilder("SELECT * FROM crud_v3.estoque_reserva er ");
+            sql.append("INNER JOIN crud_v3.tenis t ON er.res_ten_id = t.ten_id ");
             sql.append("WHERE 1 = 1 ");
 
             if (reservaEstoque.getId() != null) {
@@ -270,6 +271,7 @@ public class ReservaDAO implements IDAO {
     private ReservaEstoque mapeiaReserva(ResultSet rs) throws SQLException {
         Produto pro = new Produto();
         pro.setId(rs.getInt("res_ten_id"));
+        pro.setSku(rs.getString("ten_sku"));
 
         ReservaEstoque res = new ReservaEstoque();
         res.setId(rs.getInt("res_id"));

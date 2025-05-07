@@ -1,4 +1,4 @@
-.homeVendas{
+.homeVendas {
     display: flex;
     width: 800px;
     padding: 54px 148px;
@@ -8,8 +8,12 @@
     flex-wrap: wrap;
 }
 
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease-out;
+}
 
-.homeVendas h1{
+.homeVendas h1 {
     display: flex;
     width: 539px;
     height: 58px;

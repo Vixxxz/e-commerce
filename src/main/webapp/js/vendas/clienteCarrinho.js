@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("carrinho-itens");
     const subtotalEl = document.getElementById("subtotal");
     const totalEl = document.getElementById("total");
+    const sessionId = sessionStorage.getItem("sessionId");
 
     let subtotal = 0;
 
@@ -52,6 +53,17 @@ document.addEventListener("DOMContentLoaded", () => {
         renderCarrinho();
     };
 
+    const removerItemSilencioso = (index) => {
+        carrinho.splice(index, 1);
+        sessionStorage.setItem("carrinho", JSON.stringify(carrinho));
+    };
+
+    const removerMultiplosItens = (indices) => {
+        // Remove de trás para frente para não alterar os índices
+        indices.sort((a, b) => b - a).forEach(i => removerItemSilencioso(i));
+        renderCarrinho();
+    };
+
     container.addEventListener("input", (e) => {
         if (e.target.matches("input[type='number']")) {
             const index = parseInt(e.target.dataset.index);
@@ -92,6 +104,13 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             if (response.status === 201) {
+                const sessionId = await response.json();  // Recebe a string diretamente
+
+                if (sessionId) {
+                    sessionStorage.setItem("sessionId", sessionId);
+                    console.log('[Reserva] sessionId armazenado:', sessionId);
+                }
+
                 window.location.href = "../../vendas/cliente/clienteIdentificacao.html";
             } else {
                 const data = await response.json();
@@ -104,5 +123,77 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Ocorreu um erro inesperado durante a reserva do estoque.");
         }
     });
+
+
+    //todo: esta removendo produtos que nem tem reserva
+    const verificarReservas = async () => {
+        console.log('Iniciando verificação de reservas...');
+        console.log('sessionId:', sessionId);
+        console.log('carrinho:', carrinho);
+
+        if (!sessionId || !carrinho.length) {
+            console.log('Retornando - sessionId ou carrinho vazio');
+            return;
+        }
+
+        try {
+            console.log('Fazendo requisição para verificar status das reservas...');
+            const url = `http://localhost:8080/ecommerce_tenis_war_exploded/reservaEstoque`;
+            console.log('URL:', url);
+
+            const res = await fetch(url);
+            console.log('Resposta recebida, status:', res.status);
+            if (!res.ok) {
+                console.log('Retornando - resposta não OK');
+                return;
+            }
+
+            const reservas = await res.json();
+            console.log('Reservas recebidas:', reservas);
+
+            // Coleta os IDs de produtos com reserva e os que têm reserva ativa
+            const idsComReserva = reservas.map(r => r.produto.id);
+            const idsComReservaAtiva = reservas
+                .filter(r => r.status === "ATIVO")
+                .map(r => r.produto.id);
+
+            console.log('IDs com reserva:', idsComReserva);
+            console.log('IDs com reserva ativa:', idsComReservaAtiva);
+
+            const indicesParaRemover = [];
+            const skusRemovidos = [];
+
+            carrinho.forEach((item, index) => {
+                console.log(`Verificando item ${index}:`, item);
+
+                // Se o produto tem reserva, mas não está ativa, removemos
+                if (idsComReserva.includes(item.idTenis) && !idsComReservaAtiva.includes(item.idTenis)) {
+                    console.log(`Item ${item.sku} tem reserva expirada - marcado para remoção`);
+                    indicesParaRemover.push(index);
+                    skusRemovidos.push(item.sku);
+                } else {
+                    console.log(`Item ${item.sku} está OK - mantido no carrinho`);
+                }
+            });
+
+            console.log('Índices para remover:', indicesParaRemover);
+            console.log('SKUs removidos:', skusRemovidos);
+
+            if (indicesParaRemover.length > 0) {
+                console.log('Removendo itens do carrinho...');
+                removerMultiplosItens(indicesParaRemover);
+                alert(`Os seguintes produtos foram removidos do carrinho por terem a reserva expirada:\n\n${skusRemovidos.join("\n")}`);
+            } else {
+                console.log('Nenhum item para remover - todas as reservas estão ativas');
+            }
+        } catch (err) {
+            console.error("Erro ao verificar reservas:", err);
+        } finally {
+            console.log('Verificação de reservas concluída');
+        }
+    };
+
+    void verificarReservas();
+    setInterval(verificarReservas, 30000);
     renderCarrinho();
 });

@@ -77,7 +77,7 @@ public class ControleReservaEstoque extends HttpServlet {
             }
         }
 
-        String json = gson.toJson("Reserva feita com sucesso!");
+        String json = gson.toJson(sessaoId);
         resp.setStatus(HttpServletResponse.SC_CREATED);
         out.print(json);
     }
@@ -202,6 +202,10 @@ public class ControleReservaEstoque extends HttpServlet {
 
         if(req.getParameter("idProduto") != null){
             produtoFiltro.setId(Integer.parseInt(req.getParameter("idProduto")));
+        }
+
+        if(req.getParameter("sessionId") != null){
+            reservaFiltro.setSessao(req.getParameter("sessionId"));
         }
 
         if(req.getParameter("idMarca") != null){
