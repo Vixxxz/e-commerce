@@ -1,6 +1,7 @@
 const AdmTrocas = (() => {
     const BASE_URL = "http://localhost:8080/ecommerce_tenis_war_exploded";
     const Status = Object.freeze([
+        "TROCA_RECUSADA",
         "TROCA_SOLICITADA",
         "TROCA_AUTORIZADA",
         "TROCA_RECUSADA",
@@ -66,6 +67,9 @@ const AdmTrocas = (() => {
             const index = Status.indexOf(status);
             if (index === -1) throw new Error(`Status atual "${status}" não encontrado na lista`);
             if (index === Status.length - 1) throw new Error("Não há próximo status disponível - já está no status final");
+            if(index === 0){
+                throw new Error("A troca está cancelada");
+            }
 
             button.disabled = true;
             button.textContent = 'Processando...';

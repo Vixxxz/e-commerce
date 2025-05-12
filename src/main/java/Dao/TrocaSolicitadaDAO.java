@@ -174,7 +174,66 @@ public class TrocaSolicitadaDAO implements IDAO {
 
     @Override
     public Resultado<String> excluir(EntidadeDominio entidade) {
-        return null;
+        try{
+            if (connection == null || connection.isClosed()) {
+                connection = Conexao.getConnectionMySQL();
+            }
+            connection.setAutoCommit(false);
+
+            TrocaSolicitada trocaSolicitada = (TrocaSolicitada) entidade;
+            trocaSolicitada.setStatus(Status.TROCA_RECUSADA);
+
+            StringBuilder sql = new StringBuilder();
+            List<Object> parametros = new ArrayList<>();
+
+            sql.append("UPDATE crud_v3.troca_solicitada SET ");
+
+            List<String> campos = new ArrayList<>();
+
+            if(trocaSolicitada.getStatus() != null){
+                campos.add("tro_status = ?");
+                parametros.add(trocaSolicitada.getStatus().name());
+            }
+
+            if (campos.isEmpty()) {
+                return Resultado.erro("Nenhum campo para atualizar.");
+            }
+
+            sql.append(String.join(", ", campos));
+            sql.append(" WHERE tro_id = ?");
+            parametros.add(trocaSolicitada.getId());
+
+            try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
+                for (int i = 0; i < parametros.size(); i++) {
+                    pst.setObject(i + 1, parametros.get(i));
+                }
+
+                int linhasAlteradas = pst.executeUpdate();
+                if (linhasAlteradas == 0) {
+                    return Resultado.erro("Nenhum registro alterado");
+                }
+            }
+            connection.commit();
+            return Resultado.sucesso("Troca cancelada com sucesso");
+        } catch (Exception e) {
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+                System.err.println("Erro ao cancelar a troca: " + entidade.getId() + " Erro: " + e.getMessage());
+                return Resultado.erro("Erro ao cancelar a troca: " + entidade.getId() + " Erro: " + e.getMessage());
+            } catch (SQLException rollbackEx) {
+                System.err.println("Erro durante rollback: " + rollbackEx.getMessage());
+                return Resultado.erro("Erro durante rollback: " + rollbackEx.getMessage());
+            }
+        } finally {
+            try {
+                if (connection != null) connection.close();
+            } catch (SQLException closeEx) {
+                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
+            }
+        }
+
     }
 
     @Override

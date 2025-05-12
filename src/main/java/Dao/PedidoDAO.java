@@ -225,7 +225,67 @@ public class PedidoDAO implements IDAO{
 
     @Override
     public Resultado<String> excluir(EntidadeDominio entidade) {
-        return null;
+        try {
+            Pedido pedido = (Pedido) entidade;
+            pedido.setStatus(Status.REPROVADA);
+
+            if (connection == null || connection.isClosed()) {
+                connection = Conexao.getConnectionMySQL();
+            }
+            connection.setAutoCommit(false);
+
+            StringBuilder sql = new StringBuilder();
+            List<Object> parametros = new ArrayList<>();
+
+            sql.append("UPDATE crud_v3.pedido SET ");
+
+            List<String> campos = new ArrayList<>();
+
+            if (pedido.getStatus() != null) {
+                campos.add("ped_status = ?");
+                parametros.add(pedido.getStatus().name());
+            }
+
+            if (campos.isEmpty()) {
+                return Resultado.erro("Nenhum campo para atualizar.");
+            }
+
+            sql.append(String.join(", ", campos));
+            sql.append(" WHERE ped_id = ?");
+            parametros.add(pedido.getId());
+
+            try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
+                for (int i = 0; i < parametros.size(); i++) {
+                    pst.setObject(i + 1, parametros.get(i));
+                }
+
+                int linhasAlteradas = pst.executeUpdate();
+                if (linhasAlteradas == 0) {
+                    return Resultado.erro("Nenhuma linha da tabela pedido foi alterada.");
+                }
+            }
+
+            connection.commit();
+            return Resultado.sucesso("Pedido cancelado com sucesso");
+
+        } catch (Exception e) {
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+                System.err.println("Erro ao cancelar o pedido: " + entidade.getId() + " Erro: " + e.getMessage());
+                return Resultado.erro("Erro ao cancelar o pedido: " + entidade.getId() + " Erro: " + e.getMessage());
+            } catch (SQLException rollbackEx) {
+                System.err.println("Erro durante rollback: " + rollbackEx.getMessage());
+                return Resultado.erro("Erro durante rollback: " + rollbackEx.getMessage());
+            }
+        } finally {
+            try {
+                if (connection != null) connection.close();
+            } catch (SQLException closeEx) {
+                System.err.println("Erro ao fechar recursos: " + closeEx.getMessage());
+            }
+        }
     }
 
 

@@ -8,6 +8,8 @@ import Util.CupomGenerator;
 import Util.Resultado;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DevolucaoDAO implements IDAO{
@@ -125,7 +127,82 @@ public class DevolucaoDAO implements IDAO{
 
     @Override
     public Resultado<List<EntidadeDominio>> consultar(EntidadeDominio entidade) {
-        return null;
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = Conexao.getConnectionMySQL();
+            }
+
+            List<EntidadeDominio> devolucoesSolicitadas = new ArrayList<>();
+            Devolucao devolucao = (Devolucao) entidade;
+            List<Object> parametros = new ArrayList<>();
+
+            String sql = construirConsulta(devolucao, parametros);
+
+            try (PreparedStatement pst = connection.prepareStatement(sql)) {
+                for (int i = 0; i < parametros.size(); i++) {
+                    pst.setObject(i + 1, parametros.get(i));
+                }
+
+                try (ResultSet rs = pst.executeQuery()) {
+                    while (rs.next()) {
+                        devolucoesSolicitadas.add(mapeiaDevolucao(rs));
+                    }
+                }
+            }
+
+            return Resultado.sucesso(devolucoesSolicitadas);
+
+        } catch (SQLException | ClassNotFoundException e) {
+            System.err.println("Erro ao consultar as devolucoes: " + e.getMessage());
+            return Resultado.erro("Erro ao consultar as devolucoes: " + e.getMessage());
+        } finally {
+            try {
+                if (connection != null && !connection.isClosed()) {
+                    connection.close();
+                }
+            } catch (SQLException closeEx) {
+                System.err.println("Erro ao fechar conexão: " + closeEx.getMessage());
+            }
+        }
+    }
+
+    private String construirConsulta(Devolucao devolucao, List<Object> parametros) {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("SELECT * ");
+        sql.append("FROM crud_v3.devolucao d ");
+        sql.append("INNER JOIN crud_v3.pedido p ON d.dev_ped_id = p.ped_id ");
+        sql.append("WHERE 1=1 ");
+
+        if (devolucao.getId() != null) {
+            sql.append(" AND d.dev_id = ? ");
+            parametros.add(devolucao.getId());
+        }
+        if (devolucao.getValor() != null) {
+            sql.append(" AND d.dev_valor = ? ");
+            parametros.add(devolucao.getValor());
+        }
+        if(devolucao.getPedido() != null){
+            if(devolucao.getPedido().getId() != null){
+                sql.append(" AND p.ped_id = ? ");
+                parametros.add(devolucao.getPedido().getId());
+            }
+        }
+
+        return sql.toString();
+    }
+
+    private Devolucao mapeiaDevolucao(ResultSet rs) throws SQLException {
+        Devolucao dev = new Devolucao();
+        dev.setId(rs.getInt("dev_id"));
+        dev.setValor(rs.getDouble("dev_valor"));
+
+
+        Pedido ped = new Pedido();
+        ped.setId(rs.getInt("ped_id"));
+        dev.setPedido(ped);
+
+        return dev;
     }
 
     private Pedido buscarPedidoValido(PedidoDAO dao, Pedido filtro) throws SQLException {

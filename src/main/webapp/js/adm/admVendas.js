@@ -1,6 +1,7 @@
 const AdmVendas = (() => {
     const BASE_URL = "http://localhost:8080/ecommerce_tenis_war_exploded";
     const Status = Object.freeze([
+        "REPROVADA",
         "APROVADA",
         "EM_PROCESSAMENTO",
         "EM_TRANSITO",
@@ -81,6 +82,10 @@ const AdmVendas = (() => {
 
             if (index === Status.length - 1) {
                 throw new Error("Não há próximo status disponível - já está no status final");
+            }
+
+            if(index === 0){
+                throw new Error("O pedido está cancelado");
             }
 
             const novoStatus = Status[index + 1];

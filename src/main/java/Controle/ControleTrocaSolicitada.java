@@ -140,6 +140,51 @@ public class ControleTrocaSolicitada extends HttpServlet{
         out.print(json);
     }
 
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        PrintWriter out = resp.getWriter();
+        Gson gson = new Gson();
+
+        IFachada fachada = new Fachada();
+        TrocaSolicitada trocaFiltro = new TrocaSolicitada();
+        String idParam = req.getParameter("id");
+
+        if (idParam == null || idParam.isEmpty()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", "ID da troca é obrigatório para exclusão.");
+            out.print(gson.toJson(resposta));
+            return;
+        }
+
+        try {
+            trocaFiltro.setId(Integer.parseInt(idParam));
+        } catch (NumberFormatException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", "ID da troca inválido.");
+            out.print(gson.toJson(resposta));
+            return;
+        }
+
+        Resultado<String> resultado = fachada.excluir(trocaFiltro);
+
+        if (!resultado.isSucesso()) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            JsonObject resposta = new JsonObject();
+            resposta.addProperty("erro", resultado.getErro());
+            out.print(gson.toJson(resposta));
+            return;
+        }
+
+        String json = gson.toJson(resultado.getValor());
+        resp.setStatus(HttpServletResponse.SC_OK);
+        out.print(json);
+    }
+
     private Resultado<JsonObject> lerJsonComoObjeto(HttpServletRequest req) throws IOException {
         String json = lerJsonComoString(req);
         if (json.isBlank()) {
