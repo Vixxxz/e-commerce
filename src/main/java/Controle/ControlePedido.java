@@ -182,28 +182,28 @@ public class ControlePedido extends HttpServlet {
         Gson gson = new Gson();
 
         IFachada fachada = new Fachada();
-        Cliente clienteFiltro = new Cliente();
+        Pedido pedidoFiltro = new Pedido();
         String idParam = req.getParameter("id");
 
         if (idParam == null || idParam.isEmpty()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "ID do cliente é obrigatório para exclusão.");
+            resposta.addProperty("erro", "ID do pedido é obrigatório para exclusão.");
             out.print(gson.toJson(resposta));
             return;
         }
 
         try {
-            clienteFiltro.setId(Integer.parseInt(idParam));
+            pedidoFiltro.setId(Integer.parseInt(idParam));
         } catch (NumberFormatException e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             JsonObject resposta = new JsonObject();
-            resposta.addProperty("erro", "ID do cliente inválido.");
+            resposta.addProperty("erro", "ID do pedido inválido.");
             out.print(gson.toJson(resposta));
             return;
         }
 
-        Resultado<String> resultado = fachada.excluir(clienteFiltro);
+        Resultado<String> resultado = fachada.excluir(pedidoFiltro);
 
         if (!resultado.isSucesso()) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Ocorreu um erro inesperado durante a reserva do estoque.");
         }
     });
-    
+
     const verificarReservas = async () => {
         console.log('Iniciando verificação de reservas...');
         console.log('sessionId:', sessionId);

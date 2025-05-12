@@ -409,6 +409,18 @@ public class Fachada implements IFachada {
                 }
                 return Resultado.sucesso(resultadoProduto.getValor());
             }
+            case Pedido pedido ->{
+                PedidoDAO pedidoDAO = new PedidoDAO();
+                processarValidacoes(pedido, getValidacoes(pedido, Operacao.EXCLUIR), sb);
+                if(!sb.isEmpty()){
+                    return Resultado.erro(sb.toString());
+                }
+                Resultado<String> resultadoPedido = pedidoDAO.excluir(pedido);
+                if(!resultadoPedido.isSucesso()){
+                    return Resultado.erro(resultadoPedido.getErro());
+                }
+                return Resultado.sucesso(resultadoPedido.getValor());
+            }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
             }
@@ -572,6 +584,9 @@ public class Fachada implements IFachada {
                 switch (operacao) {
                     case SALVAR -> {
                         validacoes.add(new ValidaDadosPedido());
+                    }
+                    case EXCLUIR -> {
+                        validacoes.add(new VerificaExistenciaTroca());
                     }
                 }
             }
