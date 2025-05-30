@@ -40,6 +40,12 @@ header h2{
     margin: 0 60px;
 }
 
+header img#chat-bot{
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+}
+
 header input[type="text"]{
     display: flex;
     width: 640px;
