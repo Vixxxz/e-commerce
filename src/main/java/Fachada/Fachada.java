@@ -16,6 +16,12 @@ public class Fachada implements IFachada {
     public Fachada() {
     }
 
+    public Resultado<String> processar (RequisicaoIA reqIA){
+        //todo: melhorar verificação dos campos cpf e mensagem
+        StringBuilder sb = new StringBuilder();
+        RecomendacaoIA recomendacaoIA = new RecomendacaoIA();
+        return recomendacaoIA.processar(reqIA, sb);
+    }
 
     public Resultado<String> geraDevolucao(Devolucao devolucao, List<DevolucaoProduto> devolucaoProdutos) {
         StringBuilder sb = new StringBuilder();

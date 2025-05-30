@@ -109,8 +109,11 @@ public class PedidoProdutoDAO implements IDAO{
 
         sql.append("SELECT * ");
         sql.append("FROM crud_v3.pedido_tenis pt ");
-        sql.append("INNER JOIN crud_v3.pedido p ON pt.ped_ten_ped_id = p.ped_id ");
-        sql.append("INNER JOIN crud_v3.tenis t ON pt.ped_ten_ten_id = t.ten_id ");
+        sql.append("INNER JOIN crud_v3.pedido p     ON pt.ped_ten_ped_id = p.ped_id ");
+        sql.append("INNER JOIN crud_v3.tenis t      ON pt.ped_ten_ten_id = t.ten_id ");
+        sql.append("INNER JOIN crud_v3.frete f      ON p.ped_fre_id = f.fre_id ");
+        sql.append("INNER JOIN crud_v3.marca m      ON t.ten_mar_id = m.mar_id ");
+        sql.append("INNER JOIN crud_v3.categoria c  ON t.ten_cat_id = c.cat_id ");
         sql.append("WHERE 1=1 ");
 
         if(pedidoProduto.getId() != null){
@@ -152,7 +155,7 @@ public class PedidoProdutoDAO implements IDAO{
                     parametros.add(pedido.getTransportadora().getId());
                 }
                 if (isStringValida(pedido.getTransportadora().getNome())) {
-                    sql.append(" AND f.fre_nome = ? ");
+                    sql.append(" AND f.fre_transportadora = ? ");
                     parametros.add(pedido.getTransportadora().getNome());
                 }
             }
@@ -246,6 +249,15 @@ public class PedidoProdutoDAO implements IDAO{
         pro.setGenero(Genero.valueOf(rs.getString("ten_genero")));
         pro.setDescricao(rs.getString("ten_desc"));
         pro.setCaminhoFoto(rs.getString("ten_foto"));
+
+        Marca marca  = new Marca();
+        marca.setNome(rs.getString("mar_nome"));
+
+        Categoria categoria = new Categoria();
+        categoria.setNome(rs.getString("cat_nome"));
+
+        pro.setCategoria(categoria);
+        pro.setMarca(marca);
 
         pp.setProduto(pro);
         pp.setPedido(ped);
