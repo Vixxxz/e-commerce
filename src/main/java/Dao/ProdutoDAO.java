@@ -156,9 +156,18 @@ public class ProdutoDAO implements IDAO{
                 sql.append(" AND t.ten_cor =? ");
                 parametros.add(produto.getCor());
             }
-            if(isStringValida(produto.getNome())){
-                sql.append(" AND LOWER(t.ten_nome) LIKE? ");
-                parametros.add("%" + produto.getNome().toLowerCase() + "%");
+            // LÓGICA NOVA E CORRIGIDA
+            if (isStringValida(produto.getNome())) {
+                // Quebra a string de palavras-chave em palavras individuais
+                String[] palavrasChave = produto.getNome().toLowerCase().split("\\s+");
+
+                // Para cada palavra-chave, adiciona uma condição LIKE
+                for (String palavra : palavrasChave) {
+                    if (!palavra.isEmpty()) { // Garante que não processemos espaços vazios
+                        sql.append(" AND LOWER(t.ten_nome) LIKE ? ");
+                        parametros.add("%" + palavra + "%");
+                    }
+                }
             }
             if(isStringValida(produto.getModelo())){
                 sql.append(" AND t.ten_modelo =? ");

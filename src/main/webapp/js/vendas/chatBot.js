@@ -56,13 +56,13 @@ function enviarMensagem(){
 }
 
 function exibirHistorico(message, response){
-    div = document.getElementById("historic")
+    let div = document.getElementById("historic")
 
     //Mensagem Usuario
-    var userMsg = document.createElement('div')
+    let userMsg = document.createElement('div');
     userMsg.className = 'box-user-message'
 
-    var myMessage = document.createElement('p')
+    let myMessage = document.createElement('p');
     myMessage.className = 'user-message'
     myMessage.innerHTML = message
 
@@ -71,16 +71,16 @@ function exibirHistorico(message, response){
 
 
     //Mensagem Bot
-    var botMsg = document.createElement('div')
+    let botMsg = document.createElement('div')
     botMsg.className = 'box-bot-message'
 
-    var botMessage = document.createElement('p')
+    let botMessage = document.createElement('p')
     botMessage.className = 'bot-message'
-    botMessage.innerHTML = reponse
+    botMessage.innerHTML = response
 
     botMsg.appendChild(botMessage)
     div.appendChild(botMsg)
 
     //Levar scroll para o final
-    historic.scrollTop = historic.scrollHeight;
+    div.scrollTop = div.scrollHeight;
 }
