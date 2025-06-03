@@ -1,3 +1,15 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('message-input');
+
+    input.addEventListener('keypress', function(event) {
+        // Verifica se a tecla pressionada foi Enter (código 13 ou 'Enter')
+        if (event.key === 'Enter' || event.keyCode === 13) {
+            event.preventDefault();
+            enviarMensagem();
+        }
+    });
+});
+
 // --- URL Utilities ---
 function obterParametroUrl(parametro) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -9,19 +21,27 @@ const cpf = obterParametroUrl("cpf");
 
 function enviarMensagem(){
     var msg = document.getElementById('message-input')
-    if(!msg.value){
+    if(!msg.value.trim()){
         msg.style.border = '2px solid red'
+        setTimeout(()=>{
+            msg.style.border = ''
+        }, 3000);
         return
     }
-    msg.style.border = 'none'
 
     var status = document.getElementById('status')
     var btn = document.getElementById('btn-submit')
+    var pergunta;
 
+    status.style.display = 'block'
     status.innerHTML = 'Enviando...'
     btn.disabled = true
-    btn.cursor = 'not-allowed'
+    btn.style.cursor = 'not-allowed'
+    pergunta = msg.value
+    msg.value = ''
     msg.disabled = true
+    const originalContent = btn.innerHTML
+    btn.innerHTML = '<div class="loader"></div>'
 
     fetch("http://localhost:8080/ecommerce_tenis_war_exploded/chatbot",{
         method: 'POST',
@@ -34,24 +54,24 @@ function enviarMensagem(){
         "cliente":{
             "cpf": cpf
         },
-        "pergunta": msg.value
+        "pergunta": pergunta
     }
         })
     })
         .then((response) =>response.json())
         .then((response)=> {
             let r = response.resposta
-            exibirHistorico(msg.value, r)
+            exibirHistorico(pergunta, r)
         })
         .catch((e) =>{
             console.log("Error -> ", e)
         })
         .finally(()=>{
             status.style.display = 'none'
-            btn.disabled = false
-            btn.cursor = 'pointer'
             msg.disabled = false
-            msg.value = ''
+            btn.disabled = false
+            btn.style.cursor = 'pointer'
+            btn.innerHTML = originalContent
         })
 }
 
