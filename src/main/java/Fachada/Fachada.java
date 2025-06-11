@@ -536,21 +536,29 @@ public class Fachada implements IFachada {
                 }
                 return Resultado.sucesso(resultadoTrocaSolicitada.getValor());
             }
-            case PedidoProduto pedidoProduto ->{
+            case PedidoProduto pedidoProduto -> {
                 PedidoProdutoDAO pedidoProdutoDAO = new PedidoProdutoDAO();
                 Resultado<List<EntidadeDominio>> resultadoPedidoProduto = pedidoProdutoDAO.consultar(pedidoProduto);
-                if(!resultadoPedidoProduto.isSucesso()){
+                if (!resultadoPedidoProduto.isSucesso()) {
                     return Resultado.erro(resultadoPedidoProduto.getErro());
                 }
                 return Resultado.sucesso(resultadoPedidoProduto.getValor());
             }
-            case TrocaSolicitadaTenis trocaSolicitadaTenis ->{
+            case TrocaSolicitadaTenis trocaSolicitadaTenis -> {
                 TrocaSolicitadaTenisDAO trocaSolicitadaTenisDAO = new TrocaSolicitadaTenisDAO();
                 Resultado<List<EntidadeDominio>> resultadoTrocaTenis = trocaSolicitadaTenisDAO.consultar(trocaSolicitadaTenis);
-                if(!resultadoTrocaTenis.isSucesso()){
+                if (!resultadoTrocaTenis.isSucesso()) {
                     return Resultado.erro(resultadoTrocaTenis.getErro());
                 }
                 return Resultado.sucesso(resultadoTrocaTenis.getValor());
+            }
+            case Grafico grafico -> {
+                GraficoDAO graficoDAO = new GraficoDAO();
+                Resultado<List<EntidadeDominio>> resultadoGrafico = graficoDAO.consultar(grafico);
+                if (!resultadoGrafico.isSucesso()) {
+                    return Resultado.erro(resultadoGrafico.getErro());
+                }
+                return Resultado.sucesso(resultadoGrafico.getValor());
             }
             case null, default -> {
                 return Resultado.erro("Tipo de entidade não suportado");
