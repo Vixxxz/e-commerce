@@ -1,19 +1,40 @@
+// Variável global para guardar a instância do gráfico e evitar reinicialização
 let graficoVendas;
+const API_BASE_URL = 'http://localhost:8080/ecommerce_tenis_war_exploded';
 
+/**
+ * Ponto de entrada: Adiciona um listener na aba do dashboard.
+ * O gráfico só será criado e carregado na primeira vez que o usuário clicar nesta aba.
+ */
+document.getElementById('dashboard-title').addEventListener('click', function() {
+    // Se a variável 'graficoVendas' ainda não foi criada, inicializa todo o dashboard.
+    if (!graficoVendas) {
+        console.log('Inicializando o dashboard pela primeira vez...');
+        inicializarComponentesDashboard();
+    }
+});
+
+/**
+ * Orquestra a inicialização completa dos componentes do dashboard.
+ */
+function inicializarComponentesDashboard() {
+    initGrafico();
+    setupEventListeners();
+    definirDatasIniciais();
+    carregarDados(); // Carrega os dados com o período padrão
+}
+
+/**
+ * Cria a instância do gráfico Chart.js no canvas com id 'dashboard'.
+ */
 function initGrafico() {
-    console.log('Iniciando gráfico...');
-
     const canvas = document.getElementById('dashboard');
-    console.log('Canvas encontrado?', canvas);
-
     if (!canvas) {
-        console.error('Canvas não encontrado');
+        console.error('Elemento <canvas id="dashboard"> não encontrado!');
         return;
     }
 
     const ctx = canvas.getContext('2d');
-    console.log('Context 2D:', ctx);
-
     graficoVendas = new Chart(ctx, {
         type: 'line',
         data: {
@@ -22,26 +43,27 @@ function initGrafico() {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
+            maintainAspectRatio: false, // Importante para o canvas se adaptar ao container
             scales: {
                 x: {
                     title: {
                         display: true,
-                        text: 'Período'
+                        text: 'Período',
+                        font: { size: 14 }
                     }
                 },
                 y: {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Quantidade de Vendas'
+                        text: 'Quantidade de Vendas',
+                        font: { size: 14 }
                     }
                 }
             },
             plugins: {
                 title: {
-                    display: true,
-                    text: 'Tendência de Vendas Mensais'
+                    display: false // O título já está no HTML
                 },
                 legend: {
                     display: true,
@@ -51,252 +73,144 @@ function initGrafico() {
             interaction: {
                 mode: 'index',
                 intersect: false,
-            },
-            elements: {
-                line: {
-                    tension: 0.4
-                },
-                point: {
-                    radius: 5,
-                    hoverRadius: 8
-                }
             }
         }
     });
-
-    console.log('Gráfico criado:', graficoVendas);
 }
 
-async function carregarDados() {
-    const dataInicial = document.getElementById('dataInicial').value;
-    const dataFinal = document.getElementById('dataFinal').value;
-
-    if (!dataInicial || !dataFinal) {
-        alert('Por favor, selecione ambas as datas (inicial e final)');
-        return;
-    }
-
-    if (new Date(dataInicial) > new Date(dataFinal)) {
-        alert('A data inicial deve ser anterior à data final');
-        return;
-    }
-
-    try {
-        const response = await fetch(
-            `http://localhost:8080/ecommerce_tenis_war_exploded/controleGrafico?dataInicial=${dataInicial}&dataFinal=${dataFinal}`
-        );
-
-        if (!response.ok) {
-            throw new Error('Erro ao buscar dados do servidor');
-        }
-
-        const dados = await response.json();
-        console.log('Dados da API:', dados);
-
-        const dadosChart = transformarDados(dados);
-        console.log('Dados transformados:', dadosChart);
-
-        graficoVendas.data.labels = dadosChart.labels;
-        graficoVendas.data.datasets = dadosChart.datasets;
-        graficoVendas.update();
-
-        graficoVendas.options.plugins.title.text =
-            `Tendência de Vendas - ${formatarData(dataInicial)} até ${formatarData(dataFinal)}`;
-        graficoVendas.update();
-
-    } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        alert('Erro ao carregar dados do servidor: ' + error.message);
-    }
-}
-
-function atualizarGrafico() {
-    carregarDados();
-}
-
-function limparFiltros() {
-    document.getElementById('dataInicial').value = '';
-    document.getElementById('dataFinal').value = '';
-
-    // Limpar gráfico
-    graficoVendas.data.labels = [];
-    graficoVendas.data.datasets = [];
-    graficoVendas.options.plugins.title.text = 'Tendência de Vendas Mensais';
-    graficoVendas.update();
-}
-
-function formatarData(dataISO) {
-    const data = new Date(dataISO + 'T00:00:00');
-    return data.toLocaleDateString('pt-BR');
-}
-
-function definirDatasIniciais() {
-    const hoje = new Date();
-    const umMesAtras = new Date();
-    umMesAtras.setMonth(hoje.getMonth() - 1);
-
-    // Formatar para YYYY-MM-DD (formato do input date)
-    const dataInicialFormatada = umMesAtras.toISOString().split('T')[0];
-    const dataFinalFormatada = hoje.toISOString().split('T')[0];
-
-    document.getElementById('dataInicial').value = dataInicialFormatada;
-    document.getElementById('dataFinal').value = dataFinalFormatada;
-}
-
-
-function isDashboardVisible() {
-    const dashboard = document.getElementById('pagina-dashboard');
-    console.log('🔍 Verificando dashboard:', dashboard);
-
-    if (!dashboard) {
-        console.log('Elemento pagina-dashboard não encontrado');
-        return false;
-    }
-
-    const style = window.getComputedStyle(dashboard);
-    const isVisible = style.display !== 'none';
-    console.log('Display atual:', style.display, 'Visível?', isVisible);
-
-    return dashboard && dashboard.style.display !== 'none';
-}
-
-// Event Listeners para os botões
+/**
+ * Configura os listeners de evento para os botões de filtrar, limpar e atualizar.
+ */
 function setupEventListeners() {
-    const btnFiltrar = document.getElementById('submit-filter-dashboard');
-    if (btnFiltrar) {
-        btnFiltrar.addEventListener('click', function(e) {
-            e.preventDefault();
-            carregarDados();
-        });
-    }
-
-    // Formulário (para capturar Enter)
     const form = document.getElementById('filtroDashboard');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+    const btnFiltrar = document.getElementById('submit-filter-dashboard');
+    // Encontra os botões pela classe dentro do formulário do dashboard
+    const btnLimpar = form.querySelector('.btn.btn-danger');
+    const btnAtualizar = form.querySelector('.btn.btn-primary');
+
+    if (btnFiltrar) {
+        btnFiltrar.addEventListener('click', (e) => {
+            e.preventDefault(); // Impede o envio do formulário
             carregarDados();
         });
     }
 
-    const btnLimpar = document.querySelector('.btn.btn-danger');
     if (btnLimpar) {
-        btnLimpar.addEventListener('click', function(e) {
+        btnLimpar.addEventListener('click', (e) => {
             e.preventDefault();
             limparFiltros();
         });
     }
 
-    const btnAtualizar = document.querySelector('.btn.btn-primary');
     if (btnAtualizar) {
-        btnAtualizar.addEventListener('click', function(e) {
+        btnAtualizar.addEventListener('click', (e) => {
             e.preventDefault();
-            atualizarGrafico();
+            carregarDados(); // A função "Atualizar" pode simplesmente recarregar os dados
         });
     }
 }
 
 
-const dashboard = document.getElementById('pagina-dashboard');
+/**
+ * Busca os dados na API, transforma e atualiza o gráfico.
+ */
+async function carregarDados() {
+    if (!graficoVendas) return; // Não faz nada se o gráfico não foi inicializado
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOMContentLoaded executado');
+    const dataInicial = document.getElementById('dataInicial').value;
+    const dataFinal = document.getElementById('dataFinal').value;
+    const btnFiltrar = document.getElementById('submit-filter-dashboard');
 
-    // Verificar se a página do dashboard está visível
-    const dashboardVisivel = isDashboardVisible();
-    console.log('Dashboard visível?', dashboardVisivel);
-
-    if (dashboardVisivel) {
-        console.log('Iniciando dashboard...');
-        initGrafico();
-        setupEventListeners();
-        definirDatasIniciais();
-        carregarDados();
-    } else {
-        console.log('Dashboard não está visível');
-        console.log('Element pagina-dashboard:', document.getElementById('pagina-dashboard'));
+    if (!dataInicial || !dataFinal) {
+        alert('Por favor, selecione as datas inicial e final.');
+        return;
     }
-});
 
+    // Desabilita o botão para evitar cliques duplos durante o carregamento
+    if (btnFiltrar) btnFiltrar.disabled = true;
 
-function inicializarDashboard() {
-    console.log('🔄 Forçando inicialização do dashboard...');
+    try {
+        const response = await fetch(`${API_BASE_URL}/dashboard?dataInicio=${dataInicial}&dataFim=${dataFinal}`);
+        if (!response.ok) {
+            throw new Error(`Erro na resposta do servidor: ${response.statusText} (Status: ${response.status})`);
+        }
+        const dados = await response.json();
 
-    if (!graficoVendas) {
-        initGrafico();
-        setupEventListeners();
-        definirDatasIniciais();
-        carregarDados();
-    } else {
-        console.log('⚠️ Gráfico já existe, apenas carregando dados...');
-        carregarDados();
+        if (dados.length === 0) {
+            alert('Nenhum dado encontrado para o período selecionado.');
+        }
+
+        const dadosChart = transformarDadosParaChart(dados);
+        graficoVendas.data.labels = dadosChart.labels;
+        graficoVendas.data.datasets = dadosChart.datasets;
+        graficoVendas.update();
+
+    } catch (error) {
+        console.error('Falha ao carregar dados:', error);
+        alert(`Erro ao carregar dados: ${error.message}. Verifique a conexão com o servidor e as configurações de CORS no backend.`);
+    } finally {
+        // Reabilita o botão após a conclusão da requisição
+        if (btnFiltrar) btnFiltrar.disabled = false;
     }
 }
 
-// 🆘 FUNÇÃO DE EMERGÊNCIA - Execute no console se nada aparecer
-function forcarInicializacao() {
-    console.log('🚨 FORÇANDO INICIALIZAÇÃO...');
+/**
+ * Transforma o array de dados da API no formato que o Chart.js espera.
+ */
+function transformarDadosParaChart(dadosApi) {
+    const mesesUnicos = [...new Set(dadosApi.map(item => item.mesAno))].sort();
+    const categoriasUnicas = [...new Set(dadosApi.map(item => item.categoria))];
+    const cores = ['#0d6efd', '#dc3545', '#ffc107', '#198754', '#6f42c1', '#fd7e14'];
 
-    // Mostrar a div se estiver oculta
-    const dashboard = document.getElementById('pagina-dashboard');
-    if (dashboard) {
-        dashboard.style.display = 'block';
-        console.log('📱 Dashboard mostrado');
-    }
-
-    // Aguardar um pouco e inicializar
-    setTimeout(() => {
-        initGrafico();
-        setupEventListeners();
-        definirDatasIniciais();
-        carregarDados();
-    }, 100);
-}
-
-// Função para transformar os dados da API para o formato do Chart.js
-function transformarDados(dadosRaw) {
-    // Extrair todos os meses únicos (labels do eixo X)
-    const mesesUnicos = [...new Set(dadosRaw.map(item => item.mesAno))].sort();
-
-    // Extrair todas as categorias únicas
-    const categoriasUnicas = [...new Set(dadosRaw.map(item => item.categoria))];
-
-    // Cores para as categorias (você pode personalizar)
-    const cores = [
-        '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
-        '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#c0392b'
-    ];
-
-    // Criar datasets para cada categoria
     const datasets = categoriasUnicas.map((categoria, index) => {
-        // Para cada mês, encontrar a venda dessa categoria
-        const dadosCategoria = mesesUnicos.map(mes => {
-            const item = dadosRaw.find(d => d.categoria === categoria && d.mesAno === mes);
-            return item ? item.vendas : 0; // Se não encontrar, assume 0
+        const dadosDaCategoria = mesesUnicos.map(mes => {
+            const itemEncontrado = dadosApi.find(d => d.categoria === categoria && d.mesAno === mes);
+            return itemEncontrado ? itemEncontrado.vendas : 0;
         });
-
         return {
             label: categoria,
-            data: dadosCategoria,
+            data: dadosDaCategoria,
             borderColor: cores[index % cores.length],
-            backgroundColor: cores[index % cores.length] + '20', // Adiciona transparência
-            tension: 0.4,
+            backgroundColor: cores[index % cores.length] + '40', // Cor com 25% de opacidade
             fill: false,
-            pointRadius: 5,
-            pointHoverRadius: 8
+            tension: 0.3
         };
     });
 
-    // Formatar labels dos meses para exibição
     const labelsFormatados = mesesUnicos.map(mesAno => {
         const [ano, mes] = mesAno.split('-');
-        const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-            'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-        return `${meses[parseInt(mes) - 1]}/${ano}`;
+        return `${mes.padStart(2, '0')}/${ano}`;
     });
 
     return {
         labels: labelsFormatados,
         datasets: datasets
     };
+}
+
+/**
+ * Limpa os filtros de data e o gráfico.
+ */
+function limparFiltros() {
+    if (!graficoVendas) return;
+
+    document.getElementById('dataInicial').value = '';
+    document.getElementById('dataFinal').value = '';
+
+    graficoVendas.data.labels = [];
+    graficoVendas.data.datasets = [];
+    graficoVendas.update();
+}
+
+/**
+ * Define as datas padrão nos inputs (do último mês até hoje).
+ */
+function definirDatasIniciais() {
+    const hoje = new Date();
+    const umMesAtras = new Date();
+    umMesAtras.setMonth(hoje.getMonth() - 1);
+
+    // Formata a data para o formato YYYY-MM-DD, que é o que o input[type=date] espera
+    document.getElementById('dataInicial').value = umMesAtras.toISOString().split('T')[0];
+    document.getElementById('dataFinal').value = hoje.toISOString().split('T')[0];
 }

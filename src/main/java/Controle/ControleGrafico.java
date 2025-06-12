@@ -65,7 +65,7 @@ public class ControleGrafico extends HttpServlet{
             grafico.setDataInicio(dataUtil);
         }
         if(req.getParameter("dataFim") != null){
-            java.sql.Date dataSql = java.sql.Date.valueOf(req.getParameter("dataInicio"));
+            java.sql.Date dataSql = java.sql.Date.valueOf(req.getParameter("dataFim"));
             java.util.Date dataUtil = new java.util.Date(dataSql.getTime());
             grafico.setDataFim(dataUtil);
         }
