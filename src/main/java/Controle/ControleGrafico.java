@@ -16,7 +16,7 @@ import java.io.PrintWriter;
 import java.io.Serial;
 import java.util.List;
 
-@WebServlet(name = "ControleGrafico", urlPatterns = "/controleGrafico")
+@WebServlet(name = "ControleGrafico", urlPatterns = "/dashboard")
 public class ControleGrafico extends HttpServlet{
     @Serial
     private static final long serialVersionUID = 1L;
