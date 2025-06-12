@@ -84,13 +84,12 @@ function initGrafico() {
 function setupEventListeners() {
     const form = document.getElementById('filtroDashboard');
     const btnFiltrar = document.getElementById('submit-filter-dashboard');
-    // Encontra os botões pela classe dentro do formulário do dashboard
     const btnLimpar = form.querySelector('.btn.btn-danger');
     const btnAtualizar = form.querySelector('.btn.btn-primary');
 
     if (btnFiltrar) {
         btnFiltrar.addEventListener('click', (e) => {
-            e.preventDefault(); // Impede o envio do formulário
+            e.preventDefault();
             carregarDados();
         });
     }
@@ -105,7 +104,7 @@ function setupEventListeners() {
     if (btnAtualizar) {
         btnAtualizar.addEventListener('click', (e) => {
             e.preventDefault();
-            carregarDados(); // A função "Atualizar" pode simplesmente recarregar os dados
+            carregarDados();
         });
     }
 }
@@ -115,7 +114,7 @@ function setupEventListeners() {
  * Busca os dados na API, transforma e atualiza o gráfico.
  */
 async function carregarDados() {
-    if (!graficoVendas) return; // Não faz nada se o gráfico não foi inicializado
+    if (!graficoVendas) return;
 
     const dataInicial = document.getElementById('dataInicial').value;
     const dataFinal = document.getElementById('dataFinal').value;
@@ -125,12 +124,15 @@ async function carregarDados() {
         alert('Por favor, selecione as datas inicial e final.');
         return;
     }
+    if (new Date(dataInicial) > new Date(dataFinal)) {
+        alert('A data inicial não pode ser posterior à data final.');
+        return;
+    }
 
-    // Desabilita o botão para evitar cliques duplos durante o carregamento
     if (btnFiltrar) btnFiltrar.disabled = true;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/dashboard?dataInicio=${dataInicial}&dataFim=${dataFinal}`);
+        const response = await fetch(`${API_BASE_URL}/dashboard?dataInicial=${dataInicial}&dataFinal=${dataFinal}`);
         if (!response.ok) {
             throw new Error(`Erro na resposta do servidor: ${response.statusText} (Status: ${response.status})`);
         }
@@ -140,33 +142,73 @@ async function carregarDados() {
             alert('Nenhum dado encontrado para o período selecionado.');
         }
 
-        const dadosChart = transformarDadosParaChart(dados);
+        // Passa as datas para a função de transformação para que ela possa gerar o intervalo completo
+        const dadosChart = transformarDadosParaChart(dados, dataInicial, dataFinal);
         graficoVendas.data.labels = dadosChart.labels;
         graficoVendas.data.datasets = dadosChart.datasets;
         graficoVendas.update();
 
     } catch (error) {
         console.error('Falha ao carregar dados:', error);
-        alert(`Erro ao carregar dados: ${error.message}. Verifique a conexão com o servidor e as configurações de CORS no backend.`);
+        alert(`Erro ao carregar dados: ${error.message}.`);
     } finally {
-        // Reabilita o botão após a conclusão da requisição
         if (btnFiltrar) btnFiltrar.disabled = false;
     }
 }
 
 /**
- * Transforma o array de dados da API no formato que o Chart.js espera.
+ * Gera um array com todos os meses (no formato 'YYYY-MM') dentro de um intervalo de datas.
+ * @param {string} dataInicioStr - A data de início no formato 'YYYY-MM-DD'.
+ * @param {string} dataFimStr - A data de fim no formato 'YYYY-MM-DD'.
+ * @returns {string[]} - Um array de meses, ex: ['2025-01', '2025-02'].
  */
-function transformarDadosParaChart(dadosApi) {
-    const mesesUnicos = [...new Set(dadosApi.map(item => item.mesAno))].sort();
+function gerarTodosOsMesesNoIntervalo(dataInicioStr, dataFimStr) {
+    const meses = [];
+    // Adiciona 'T00:00:00' para evitar problemas de fuso horário
+    let dataAtual = new Date(dataInicioStr + 'T00:00:00');
+    const dataFim = new Date(dataFimStr + 'T00:00:00');
+
+    // Garante que o loop comece no primeiro dia do mês para consistência
+    dataAtual.setDate(1);
+
+    while (dataAtual <= dataFim) {
+        const ano = dataAtual.getFullYear();
+        // getMonth() é base 0 (0-11), então adicionamos 1 e formatamos
+        const mes = (dataAtual.getMonth() + 1).toString().padStart(2, '0');
+        meses.push(`${ano}-${mes}`);
+
+        // Avança para o próximo mês
+        dataAtual.setMonth(dataAtual.getMonth() + 1);
+    }
+    return meses;
+}
+
+
+/**
+ * Transforma o array de dados da API no formato que o Chart.js espera.
+ * APRIMORADO: Agora gera todos os meses do intervalo, preenchendo com 0 os que não têm vendas.
+ * @param {Array} dadosApi - Os dados retornados pelo backend.
+ * @param {string} dataInicial - A data inicial do filtro ('YYYY-MM-DD').
+ * @param {string} dataFinal - A data final do filtro ('YYYY-MM-DD').
+ * @returns {Object} - Um objeto pronto para ser usado pelo Chart.js.
+ */
+function transformarDadosParaChart(dadosApi, dataInicial, dataFinal) {
+    // Passo 1: Gerar todos os meses que deveriam aparecer no gráfico.
+    const todosOsMeses = gerarTodosOsMesesNoIntervalo(dataInicial, dataFinal);
+
+    // Passo 2: Encontrar todas as categorias únicas que vieram da API.
     const categoriasUnicas = [...new Set(dadosApi.map(item => item.categoria))];
     const cores = ['#0d6efd', '#dc3545', '#ffc107', '#198754', '#6f42c1', '#fd7e14'];
 
+    // Passo 3: Criar um dataset para cada categoria.
     const datasets = categoriasUnicas.map((categoria, index) => {
-        const dadosDaCategoria = mesesUnicos.map(mes => {
+        // Para cada mês do intervalo completo, procurar pela venda correspondente.
+        const dadosDaCategoria = todosOsMeses.map(mes => {
             const itemEncontrado = dadosApi.find(d => d.categoria === categoria && d.mesAno === mes);
+            // Se encontrar, usa o valor. Se não, a venda é 0.
             return itemEncontrado ? itemEncontrado.vendas : 0;
         });
+
         return {
             label: categoria,
             data: dadosDaCategoria,
@@ -177,9 +219,10 @@ function transformarDadosParaChart(dadosApi) {
         };
     });
 
-    const labelsFormatados = mesesUnicos.map(mesAno => {
+    // Passo 4: Formatar os labels dos meses para exibição (ex: '01/2025').
+    const labelsFormatados = todosOsMeses.map(mesAno => {
         const [ano, mes] = mesAno.split('-');
-        return `${mes.padStart(2, '0')}/${ano}`;
+        return `${mes}/${ano}`;
     });
 
     return {
@@ -210,7 +253,6 @@ function definirDatasIniciais() {
     const umMesAtras = new Date();
     umMesAtras.setMonth(hoje.getMonth() - 1);
 
-    // Formata a data para o formato YYYY-MM-DD, que é o que o input[type=date] espera
     document.getElementById('dataInicial').value = umMesAtras.toISOString().split('T')[0];
     document.getElementById('dataFinal').value = hoje.toISOString().split('T')[0];
 }
