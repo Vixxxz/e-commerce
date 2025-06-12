@@ -1,7 +1,18 @@
 let graficoVendas;
 
 function initGrafico() {
-    const ctx = document.getElementById('dashboard').getContext('2d');
+    console.log('Iniciando gráfico...');
+
+    const canvas = document.getElementById('dashboard');
+    console.log('Canvas encontrado?', canvas);
+
+    if (!canvas) {
+        console.error('Canvas não encontrado');
+        return;
+    }
+
+    const ctx = canvas.getContext('2d');
+    console.log('Context 2D:', ctx);
 
     graficoVendas = new Chart(ctx, {
         type: 'line',
@@ -52,6 +63,8 @@ function initGrafico() {
             }
         }
     });
+
+    console.log('Gráfico criado:', graficoVendas);
 }
 
 async function carregarDados() {
@@ -70,7 +83,7 @@ async function carregarDados() {
 
     try {
         const response = await fetch(
-            `/api/vendas/por-categoria-periodo?dataInicial=${dataInicial}&dataFinal=${dataFinal}`
+            `http://localhost:8080/ecommerce_tenis_war_exploded/controleGrafico?dataInicial=${dataInicial}&dataFinal=${dataFinal}`
         );
 
         if (!response.ok) {
@@ -78,10 +91,17 @@ async function carregarDados() {
         }
 
         const dados = await response.json();
+        console.log('Dados da API:', dados);
 
-        // Atualizar o gráfico
-        graficoVendas.data.labels = dados.labels;
-        graficoVendas.data.datasets = dados.datasets;
+        const dadosChart = transformarDados(dados);
+        console.log('Dados transformados:', dadosChart);
+
+        graficoVendas.data.labels = dadosChart.labels;
+        graficoVendas.data.datasets = dadosChart.datasets;
+        graficoVendas.update();
+
+        graficoVendas.options.plugins.title.text =
+            `Tendência de Vendas - ${formatarData(dataInicial)} até ${formatarData(dataFinal)}`;
         graficoVendas.update();
 
     } catch (error) {
@@ -123,9 +143,25 @@ function definirDatasIniciais() {
     document.getElementById('dataFinal').value = dataFinalFormatada;
 }
 
+
+function isDashboardVisible() {
+    const dashboard = document.getElementById('pagina-dashboard');
+    console.log('🔍 Verificando dashboard:', dashboard);
+
+    if (!dashboard) {
+        console.log('Elemento pagina-dashboard não encontrado');
+        return false;
+    }
+
+    const style = window.getComputedStyle(dashboard);
+    const isVisible = style.display !== 'none';
+    console.log('Display atual:', style.display, 'Visível?', isVisible);
+
+    return dashboard && dashboard.style.display !== 'none';
+}
+
 // Event Listeners para os botões
 function setupEventListeners() {
-    // Botão Filtrar
     const btnFiltrar = document.getElementById('submit-filter-dashboard');
     if (btnFiltrar) {
         btnFiltrar.addEventListener('click', function(e) {
@@ -160,28 +196,107 @@ function setupEventListeners() {
     }
 }
 
-// Verificar se a página do dashboard está visível
-function isDashboardVisible() {
-    const dashboard = document.getElementById('pagina-dashboard');
-    return dashboard && dashboard.style.display !== 'none';
-}
 
-// Inicializar quando a página carregar
-window.addEventListener('load', function() {
-    if (isDashboardVisible()) {
+const dashboard = document.getElementById('pagina-dashboard');
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded executado');
+
+    // Verificar se a página do dashboard está visível
+    const dashboardVisivel = isDashboardVisible();
+    console.log('Dashboard visível?', dashboardVisivel);
+
+    if (dashboardVisivel) {
+        console.log('Iniciando dashboard...');
         initGrafico();
         setupEventListeners();
-        definirDatasIniciais(); // Define datas padrão
-        carregarDados(); // Carrega dados iniciais
+        definirDatasIniciais();
+        carregarDados();
+    } else {
+        console.log('Dashboard não está visível');
+        console.log('Element pagina-dashboard:', document.getElementById('pagina-dashboard'));
     }
 });
 
-// Função para ser chamada quando o dashboard for mostrado (se necessário)
+
 function inicializarDashboard() {
+    console.log('🔄 Forçando inicialização do dashboard...');
+
     if (!graficoVendas) {
         initGrafico();
         setupEventListeners();
         definirDatasIniciais();
         carregarDados();
+    } else {
+        console.log('⚠️ Gráfico já existe, apenas carregando dados...');
+        carregarDados();
     }
+}
+
+// 🆘 FUNÇÃO DE EMERGÊNCIA - Execute no console se nada aparecer
+function forcarInicializacao() {
+    console.log('🚨 FORÇANDO INICIALIZAÇÃO...');
+
+    // Mostrar a div se estiver oculta
+    const dashboard = document.getElementById('pagina-dashboard');
+    if (dashboard) {
+        dashboard.style.display = 'block';
+        console.log('📱 Dashboard mostrado');
+    }
+
+    // Aguardar um pouco e inicializar
+    setTimeout(() => {
+        initGrafico();
+        setupEventListeners();
+        definirDatasIniciais();
+        carregarDados();
+    }, 100);
+}
+
+// Função para transformar os dados da API para o formato do Chart.js
+function transformarDados(dadosRaw) {
+    // Extrair todos os meses únicos (labels do eixo X)
+    const mesesUnicos = [...new Set(dadosRaw.map(item => item.mesAno))].sort();
+
+    // Extrair todas as categorias únicas
+    const categoriasUnicas = [...new Set(dadosRaw.map(item => item.categoria))];
+
+    // Cores para as categorias (você pode personalizar)
+    const cores = [
+        '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6',
+        '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#c0392b'
+    ];
+
+    // Criar datasets para cada categoria
+    const datasets = categoriasUnicas.map((categoria, index) => {
+        // Para cada mês, encontrar a venda dessa categoria
+        const dadosCategoria = mesesUnicos.map(mes => {
+            const item = dadosRaw.find(d => d.categoria === categoria && d.mesAno === mes);
+            return item ? item.vendas : 0; // Se não encontrar, assume 0
+        });
+
+        return {
+            label: categoria,
+            data: dadosCategoria,
+            borderColor: cores[index % cores.length],
+            backgroundColor: cores[index % cores.length] + '20', // Adiciona transparência
+            tension: 0.4,
+            fill: false,
+            pointRadius: 5,
+            pointHoverRadius: 8
+        };
+    });
+
+    // Formatar labels dos meses para exibição
+    const labelsFormatados = mesesUnicos.map(mesAno => {
+        const [ano, mes] = mesAno.split('-');
+        const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+            'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        return `${meses[parseInt(mes) - 1]}/${ano}`;
+    });
+
+    return {
+        labels: labelsFormatados,
+        datasets: datasets
+    };
 }
