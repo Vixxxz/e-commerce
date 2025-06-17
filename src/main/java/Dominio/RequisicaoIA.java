@@ -4,6 +4,7 @@ public class RequisicaoIA extends EntidadeDominio{
     private Cliente cliente;
     private String pergunta;
     private String resposta;
+    private String historicoConversa;
 
     public RequisicaoIA() {}
 
@@ -29,5 +30,13 @@ public class RequisicaoIA extends EntidadeDominio{
 
     public void setResposta(String resposta) {
         this.resposta = resposta;
+    }
+
+    public String getHistoricoConversa() {
+        return historicoConversa;
+    }
+
+    public void setHistoricoConversa(String historicoConversa) {
+        this.historicoConversa = historicoConversa;
     }
 }
