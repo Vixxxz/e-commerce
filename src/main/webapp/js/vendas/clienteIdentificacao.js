@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const montarEstruturaInicialPedido = async () => {
-        const cpf = cpfInput.value.trim();
+        const cpf = cpfInput.value.trim().replace(/\D/g, '');
 
         if (!cpf) {
             alert("Digite um CPF válido.");
