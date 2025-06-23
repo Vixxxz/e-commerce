@@ -159,9 +159,9 @@ class ManipulaDataForm {
                 ranking: 1,
                 nome: this.dadoPessoalForm.elements['nome']?.value,
                 genero: this.dadoPessoalForm.elements['genero']?.value,
-                cpf: this.dadoPessoalForm.elements['cpf']?.value,
+                cpf: this.dadoPessoalForm.elements['cpf']?.value.replace(/[.\-]/g, ''),
                 tipoTelefone: this.dadoPessoalForm.elements['tipoTelefone']?.value,
-                telefone: this.dadoPessoalForm.elements['telefone']?.value,
+                telefone: this.dadoPessoalForm.elements['telefone']?.value.replace(/[\(\)\-\s]/g, ''),
                 email: this.dadoPessoalForm.elements['email']?.value,
                 senha: this.dadoPessoalForm.elements['senha']?.value,
                 dataNascimento: this.dadoPessoalForm.elements['dataNascimento']?.value
