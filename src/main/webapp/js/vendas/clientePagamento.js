@@ -258,20 +258,24 @@ document.addEventListener("DOMContentLoaded", () => {
     //todo: verificar envio do copum junto ao pedido
     const finalizarPedido = async () => {
         try {
-            const cartaoId = document.querySelector(".cartao-container.selecionado")
-                .dataset.id;
+            // Utiliza a função que busca TODOS os cartões selecionados
+            const cartoesSelecionados = obterCartoesSelecionados();
 
-            if (!cartaoId) {
-                alert("Selecione um cartão antes de finalizar o pedido.");
-                return;
+            // VERIFICAÇÃO PRINCIPAL: Checa se a lista de cartões selecionados está vazia
+            if (cartoesSelecionados.length === 0) {
+                alert("Por favor, selecione pelo menos um cartão para finalizar o pedido.");
+                return; // Interrompe a função se nenhum cartão foi selecionado
             }
 
-            const cartoesSelecionados = obterCartoesSelecionados();
+            // A lógica de `obterCartoesSelecionados` já nos dá o que precisamos.
+            // A linha que causava o erro foi removida.
 
             pedido.CartaoPedido = cartoesSelecionados.map(cartao => ({
                 cartao: {
                     id: cartao.id
                 },
+                // Nota: a lógica de valor por cartão está comentada no seu HTML,
+                // então este valor será 'null', o que é esperado.
                 valor: cartao.valor
             }));
 
@@ -310,13 +314,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             console.log('pedido gerado, salvando...');
             if (!resposta.ok) {
-                const mensagemErro = await resposta.text(); // Captura o texto completo
-                // Tente processar como JSON, se possível
+                const mensagemErro = await resposta.text();
                 try {
                     const erroDetalhado = JSON.parse(mensagemErro);
                     throw new Error(erroDetalhado.erro || "Erro ao finalizar pedido.");
                 } catch {
-                    // Se não for um JSON, lança o texto como erro
                     throw new Error(mensagemErro);
                 }
             }
@@ -365,7 +367,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             alert("Erro ao montar o pedido: " + errorMessage);
         }
-
     };
 
     btnProsseguir.addEventListener("click", finalizarPedido);
