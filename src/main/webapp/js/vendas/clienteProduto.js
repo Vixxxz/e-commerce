@@ -59,21 +59,63 @@ async function carregarDadosProduto(modelo) {
     }
 }
 
-function adicionarProdutoAoCarrinho(produto) {
-    const carrinho = JSON.parse(sessionStorage.getItem("carrinho")) || [];
+async function adicionarProdutoAoCarrinho(produto) {
+    // 1. Prepara o payload para a reserva
+    const payloadReserva = {
+        reserva: [ // A API espera uma lista, então enviamos o item dentro de um array
+            {
+                produto: { id: produto.idTenis },
+                marca: { id: produto.marca },
+                quantidade: 1 // Reserva inicial de 1 unidade
+            }
+        ]
+    };
 
-    const index = carrinho.findIndex(item =>
-        item.sku === produto.sku &&
-        item.tamanho === produto.tamanho
-    );
+    try {
+        // 2. Envia a requisição para criar a reserva no backend
+        const response = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/reservaEstoque', {
+            method: 'POST',
+            body: JSON.stringify(payloadReserva),
+            headers: { 'Content-Type': 'application/json' }
+        });
 
-    if (index > -1) {
-        carrinho[index].quantidade += 1;
-    } else {
-        carrinho.push(produto);
+        if (!response.ok) {
+            const erro = await response.json();
+            // Se a reserva falhar (ex: sem estoque), exibe o erro e não adiciona ao carrinho
+            alert(`Não foi possível adicionar ao carrinho: ${erro}`);
+            return; // Interrompe a execução
+        }
+
+
+        // Captura o sessionId retornado pelo backend
+        const returnedSessionId = await response.json();
+
+        // Salva o sessionId no sessionStorage se ele ainda não existir
+        if (returnedSessionId && !sessionStorage.getItem("sessionId")) {
+            sessionStorage.setItem("sessionId", returnedSessionId);
+            console.log("Session ID salvo:", returnedSessionId);
+        }
+
+        // 3. Se a reserva foi bem-sucedida, prossegue com a lógica de adicionar ao sessionStorage
+        const carrinho = JSON.parse(sessionStorage.getItem("carrinho")) || [];
+        const index = carrinho.findIndex(item =>
+            item.sku === produto.sku &&
+            item.tamanho === produto.tamanho
+        );
+
+        if (index > -1) {
+            carrinho[index].quantidade += 1;
+        } else {
+            carrinho.push(produto);
+        }
+
+        sessionStorage.setItem("carrinho", JSON.stringify(carrinho));
+        alert("Produto adicionado ao carrinho!");
+
+    } catch (error) {
+        console.error("Erro ao criar reserva:", error);
+        alert("Ocorreu um erro de comunicação ao tentar adicionar o produto ao carrinho.");
     }
-
-    sessionStorage.setItem("carrinho", JSON.stringify(carrinho));
 }
 
 function preencherDados(produtos) {

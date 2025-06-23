@@ -1,37 +1,78 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const carrinho = JSON.parse(sessionStorage.getItem("carrinho")) || [];
+    let carrinho = JSON.parse(sessionStorage.getItem("carrinho")) || [];
     const container = document.getElementById("carrinho-itens");
     const subtotalEl = document.getElementById("subtotal");
     const totalEl = document.getElementById("total");
     const sessionId = sessionStorage.getItem("sessionId");
 
-    let subtotal = 0;
+    /**
+     * Função auxiliar para enviar atualizações de reserva para o backend.
+     * Ela será usada para atualizar quantidade ou remover um item.
+     */
+    const atualizarReservaBackend = async (produto, novaQuantidade) => {
+        const payload = {
+            reserva: [{
+                produto: { id: produto.idTenis },
+                marca: { id: produto.marca },
+                quantidade: novaQuantidade
+            }]
+        };
 
+        try {
+            // Usamos o metodo POST, pois nossa API já está configurada
+            // para criar ou atualizar com base na existência da reserva.
+            const response = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/reservaEstoque', {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!response.ok) {
+                const erro = await response.json();
+                console.error("Erro ao atualizar reserva no backend:", erro.erro);
+                // Opcional: Reverter a mudança no frontend se o backend falhar
+                // renderCarrinho();
+                return false;
+            }
+
+            const returnedSessionId = await response.json();
+            if (returnedSessionId && !sessionStorage.getItem("sessionId")) {
+                sessionStorage.setItem("sessionId", returnedSessionId);
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Erro de comunicação ao atualizar reserva:", error);
+            return false;
+        }
+    };
+
+    // Função para renderizar os itens do carrinho na tela
     const renderCarrinho = () => {
+        // Esta função não precisa de alteração, pois ela lerá a variável 'carrinho' do escopo superior.
         container.innerHTML = "";
-        subtotal = 0;
+        let subtotal = 0;
 
+        // Agora, quando esta função for chamada, 'carrinho' terá o valor mais recente.
         carrinho.forEach((produto, index) => {
             const preco = parseFloat(produto.preco) * produto.quantidade;
             subtotal += preco;
 
             const item = document.createElement("div");
             item.className = "item-carrinho";
-
             item.innerHTML = `
                 <img src="${produto.imagem}" alt="img-tenis">
                 <div class="item-carrinho-container">
                     <span>${produto.sku}</span>
                     <h4>${produto.nome}</h4>
-                    <h6>R$ ${produto.preco.toFixed(2).replace(".", ",")}</h6>
+                    <h6>R$ ${parseFloat(produto.preco).toFixed(2).replace(".", ",")}</h6>
                     <span>Tamanho: ${produto.tamanho}</span>
-                    <input type="number" value="${produto.quantidade}" min="1" data-index="${index}">
+                    <input type="number" value="${produto.quantidade}" min="1" data-index="${index}" class="quantidade-item">
                     <button class="remover-item" data-index="${index}" style="margin-top: 10px; background-color: red; color: white; border: none; padding: 5px 10px; cursor: pointer;">
                         Remover
                     </button>
                 </div>
             `;
-
             container.appendChild(item);
         });
 
@@ -40,28 +81,35 @@ document.addEventListener("DOMContentLoaded", () => {
         sessionStorage.setItem("totalCarrinho", subtotal.toFixed(2));
     };
 
-    const atualizarQuantidade = (index, novaQtd) => {
+    const atualizarQuantidade = async (index, novaQtd) => {
         if (novaQtd < 1) return;
-        carrinho[index].quantidade = novaQtd;
-        sessionStorage.setItem("carrinho", JSON.stringify(carrinho));
-        renderCarrinho();
+
+        const produto = carrinho[index];
+        const sucesso = await atualizarReservaBackend(produto, novaQtd);
+
+        if (sucesso) {
+            carrinho[index].quantidade = novaQtd;
+            sessionStorage.setItem("carrinho", JSON.stringify(carrinho));
+            renderCarrinho();
+        } else {
+            alert("Não foi possível atualizar a quantidade do item. Tente novamente.");
+            // Recarrega o carrinho do sessionStorage para reverter a mudança visual
+            renderCarrinho();
+        }
     };
 
-    const removerItem = (index) => {
-        carrinho.splice(index, 1);
-        sessionStorage.setItem("carrinho", JSON.stringify(carrinho));
-        renderCarrinho();
-    };
+    const removerItem = async (index) => {
+        const produto = carrinho[index];
+        // Para remover, podemos simplesmente atualizar a quantidade da reserva para 0
+        const sucesso = await atualizarReservaBackend(produto, 0);
 
-    const removerItemSilencioso = (index) => {
-        carrinho.splice(index, 1);
-        sessionStorage.setItem("carrinho", JSON.stringify(carrinho));
-    };
-
-    const removerMultiplosItens = (indices) => {
-        // Remove de trás para frente para não alterar os índices
-        indices.sort((a, b) => b - a).forEach(i => removerItemSilencioso(i));
-        renderCarrinho();
+        if (sucesso) {
+            carrinho.splice(index, 1);
+            sessionStorage.setItem("carrinho", JSON.stringify(carrinho));
+            renderCarrinho();
+        } else {
+            alert("Não foi possível remover o item. Tente novamente.");
+        }
     };
 
     container.addEventListener("input", (e) => {
@@ -79,119 +127,63 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    document.querySelector("button").addEventListener("click", async () => {
-        try {
-            // Verifica se há produtos no carrinho
-            if (!carrinho || carrinho.length === 0) {
-                alert('Carrinho vazio!');
-                return;
-            }
-
-            // Estrutura correta do JSON conforme requisito
-            const payload = {
-                reserva: carrinho.map(item => ({
-                    produto: { id: item.idTenis },
-                    marca: { id: item.marca },
-                    quantidade: item.quantidade
-                }))
-            };
-
-            // Envia uma única requisição com todos os itens
-            const response = await fetch('http://localhost:8080/ecommerce_tenis_war_exploded/reservaEstoque', {
-                method: 'POST',
-                body: JSON.stringify(payload),
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            if (response.status === 201) {
-                const sessionId = await response.json();  // Recebe a string diretamente
-
-                if (sessionId) {
-                    sessionStorage.setItem("sessionId", sessionId);
-                    console.log('[Reserva] sessionId armazenado:', sessionId);
-                }
-
-                window.location.href = "../../vendas/cliente/clienteIdentificacao.html";
-            } else {
-                const data = await response.json();
-                const errorMsg = data.erro || data.message || 'Erro desconhecido ao reservar estoque';
-                alert(errorMsg);
-            }
-
-        } catch (error) {
-            console.error("Erro durante o processo de reserva:", error);
-            alert("Ocorreu um erro inesperado durante a reserva do estoque.");
+    // O botão "PROSSEGUIR" agora apenas redireciona, pois as reservas já estão sincronizadas
+    document.querySelector("button").addEventListener("click", () => {
+        if (!carrinho || carrinho.length === 0) {
+            alert('Seu carrinho está vazio!');
+            return;
         }
+        window.location.href = "../../vendas/cliente/clienteIdentificacao.html";
     });
 
+    /**
+     * Esta é a função central que atende à sua necessidade.
+     * Ela é chamada assim que a página do carrinho carrega e, depois, a cada 30 segundos.
+     */
     const verificarReservas = async () => {
-        console.log('Iniciando verificação de reservas...');
-        console.log('sessionId:', sessionId);
-        console.log('carrinho:', carrinho);
-
         if (!sessionId || !carrinho.length) {
-            console.log('Retornando - sessionId ou carrinho vazio');
             return;
         }
 
         try {
-            console.log('Fazendo requisição para verificar status das reservas...');
             const url = `http://localhost:8080/ecommerce_tenis_war_exploded/reservaEstoque`;
-            console.log('URL:', url);
-
             const res = await fetch(url);
-            console.log('Resposta recebida, status:', res.status);
-            if (!res.ok) {
-                console.log('Retornando - resposta não OK');
+            if (!res.ok) return;
+
+            const reservasDoBackend = await res.json();
+
+            const idsComReservaExpirada = reservasDoBackend
+                .filter(r => r.status === "EXPIRADO")
+                .map(r => r.produto.id);
+
+            if (idsComReservaExpirada.length === 0) {
                 return;
             }
 
-            const reservas = await res.json();
-            console.log('Reservas recebidas:', reservas);
-
-            // Coleta os IDs de produtos com reserva e os que têm reserva ativa
-            const idsComReserva = reservas.map(r => r.produto.id);
-            const idsComReservaAtiva = reservas
-                .filter(r => r.status === "ATIVO")
-                .map(r => r.produto.id);
-
-            console.log('IDs com reserva:', idsComReserva);
-            console.log('IDs com reserva ativa:', idsComReservaAtiva);
-
-            const indicesParaRemover = [];
             const skusRemovidos = [];
 
-            carrinho.forEach((item, index) => {
-                console.log(`Verificando item ${index}:`, item);
-
-                // Se o produto tem reserva, mas não está ativa, removemos
-                if (idsComReserva.includes(item.idTenis) && !idsComReservaAtiva.includes(item.idTenis)) {
-                    console.log(`Item ${item.sku} tem reserva expirada - marcado para remoção`);
-                    indicesParaRemover.push(index);
+            // MUDANÇA 2: Em vez de criar uma nova constante, reatribua a variável 'carrinho' original.
+            carrinho = carrinho.filter(item => {
+                if (idsComReservaExpirada.includes(item.idTenis)) {
                     skusRemovidos.push(item.sku);
-                } else {
-                    console.log(`Item ${item.sku} está OK - mantido no carrinho`);
+                    return false;
                 }
+                return true;
             });
 
-            console.log('Índices para remover:', indicesParaRemover);
-            console.log('SKUs removidos:', skusRemovidos);
-
-            if (indicesParaRemover.length > 0) {
-                console.log('Removendo itens do carrinho...');
-                removerMultiplosItens(indicesParaRemover);
-                alert(`Os seguintes produtos foram removidos do carrinho por terem a reserva expirada:\n\n${skusRemovidos.join("\n")}`);
-            } else {
-                console.log('Nenhum item para remover - todas as reservas estão ativas');
+            if (skusRemovidos.length > 0) {
+                sessionStorage.setItem("carrinho", JSON.stringify(carrinho));
+                renderCarrinho(); // Agora esta chamada irá renderizar o carrinho CORRETO e atualizado.
+                alert(`Os seguintes produtos foram removidos do seu carrinho pois a reserva de estoque expirou:\n\n- ${skusRemovidos.join("\n- ")}`);
             }
         } catch (err) {
-            console.error("Erro ao verificar reservas:", err);
-        } finally {
-            console.log('Verificação de reservas concluída');
+            console.error("Erro ao verificar status das reservas:", err);
         }
     };
 
-    void verificarReservas();
-    setInterval(verificarReservas, 30000);
+
+    // Renderiza o carrinho inicial e inicia as verificações
     renderCarrinho();
+    void verificarReservas();
+    setInterval(verificarReservas, 30000); // Verifica a cada 30 segundos
 });

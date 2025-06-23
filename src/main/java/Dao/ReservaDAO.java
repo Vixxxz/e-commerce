@@ -35,20 +35,29 @@ public class ReservaDAO implements IDAO {
             Resultado<List<EntidadeDominio>> resultadoFiltro = consultar(filtro);
             List<EntidadeDominio> reservasExistentes = resultadoFiltro.getValor();
 
-            Optional<ReservaEstoque> reservaAtiva = reservasExistentes.stream()
+            // Procura por qualquer reserva existente para o produto na sessão, não apenas ativas.
+            Optional<ReservaEstoque> reservaExistente = reservasExistentes.stream()
                     .map(e -> (ReservaEstoque) e)
-                    .filter(r -> r.getStatus() == Ativo.ATIVO)
                     .findFirst();
 
-            if (reservaAtiva.isPresent()) {
-                // Atualiza a reserva ativa
-                reservaEstoque.setId(reservaAtiva.get().getId()); // garante que está atualizando
+            if (reservaExistente.isPresent()) {
+                // Se uma reserva já existe (seja ATIVO, EXPIRADO ou CONCLUIDO),
+                // nós a "reativamos" atualizando seus dados.
+                ReservaEstoque reservaParaAtualizar = reservaExistente.get();
+                reservaEstoque.setId(reservaParaAtualizar.getId()); // Garante que estamos atualizando o registro correto.
+
+                // O metodo 'alterar' já lida com a lógica de redefinir a data e a quantidade.
+                // Vamos adicionar a mudança de status para ATIVO aqui.
+                reservaEstoque.setStatus(Ativo.ATIVO); // Define explicitamente o status como ATIVO.
+
+                // O metodo alterar precisa ser ajustado para também atualizar o status.
                 Resultado<EntidadeDominio> resultadoAtualizaReserva = alterar(reservaEstoque);
+
                 if (!resultadoAtualizaReserva.isSucesso()) {
                     return Resultado.erro(resultadoAtualizaReserva.getErro());
                 }
             } else {
-                // Cria nova reserva
+                // Se nenhuma reserva existir, cria uma nova.
                 Resultado<EntidadeDominio> resultadoSalvaReserva = salvar(reservaEstoque);
                 if (!resultadoSalvaReserva.isSucesso()) {
                     return Resultado.erro(resultadoSalvaReserva.getErro());
@@ -127,7 +136,7 @@ public class ReservaDAO implements IDAO {
 
         StringBuilder sql = new StringBuilder();
         sql.append("UPDATE estoque_reserva ");
-        sql.append("SET res_qtd = ?, res_data = ? ");
+        sql.append("SET res_qtd = ?, res_data = ?, res_status = ? ");
         sql.append("WHERE res_ten_id = ? AND res_mar_id = ? AND res_sessao = ?");
 
         reservaEstoque.complementarDtCadastro();
@@ -135,9 +144,10 @@ public class ReservaDAO implements IDAO {
         try (PreparedStatement pst = connection.prepareStatement(sql.toString())) {
             pst.setInt(1, reservaEstoque.getQuantidade());
             pst.setTimestamp(2, new Timestamp(reservaEstoque.getDtCadastro().getTime()));
-            pst.setInt(3, reservaEstoque.getProduto().getId());
-            pst.setInt(4, reservaEstoque.getMarca().getId());
-            pst.setString(5, reservaEstoque.getSessao());
+            pst.setString(3, reservaEstoque.getStatus().name());
+            pst.setInt(4, reservaEstoque.getProduto().getId());
+            pst.setInt(5, reservaEstoque.getMarca().getId());
+            pst.setString(6, reservaEstoque.getSessao());
 
             int rowsAffected = pst.executeUpdate();
 
