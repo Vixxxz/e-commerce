@@ -10,6 +10,13 @@ function obterParametroUrl(parametro) {
 
 // --- Estado Global ---
 const id = obterParametroUrl("id");
+const cpf = obterParametroUrl("cpf");
+
+// Altera o href do botão "voltar"
+const voltarLink = document.querySelector("a[href^='clientePedidos.html']");
+if (cpf && voltarLink) {
+    voltarLink.href = `clientePedidos.html?cpf=${cpf}`;
+}
 
 const trocaSelecionada = {
     trocaSolicitada: {

@@ -40,7 +40,7 @@ async function carregarDadosPedidos(){
                       <td>${item.id}</td>
                       <td>${dataPedido}</td>
                       <td>R$ ${item.valorTotal}</td>
-                      <td><a href = "clienteDetalhesPedido.html?id=${item.id}"><button class="btn-detalhes">Ver</button></a></td>
+                      <td><a href = "clienteDetalhesPedido.html?id=${item.id}&cpf=${cpf}"><button class="btn-detalhes">Ver</button></a></td>
                     </tr>
                 </tbody>
             `;
@@ -49,7 +49,7 @@ async function carregarDadosPedidos(){
         })
 
     }catch(erro){
-        console.error("Erro ao buscar endereços:", erro);
-        container.innerHTML = "<p style='color:red;'>Erro ao carregar endereços.</p>";
+        console.error("Erro ao buscar Pedidos:", erro);
+        container.innerHTML = "<p style='color:red;'>Erro ao carregar Pedidos.</p>";
     }
 }
