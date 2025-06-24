@@ -1,3 +1,4 @@
+//todo: Revisar remover do carrinho, revisar se esta funcionando direito
 document.addEventListener("DOMContentLoaded", () => {
     let carrinho = JSON.parse(sessionStorage.getItem("carrinho")) || [];
     const container = document.getElementById("carrinho-itens");

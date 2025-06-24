@@ -54,7 +54,7 @@ public class ControleReservaEstoque extends HttpServlet {
         List<ReservaEstoque> reservas = gson.fromJson(jsonObject.get("reserva"), reservaListType);
 
         for(ReservaEstoque re : reservas) {
-            if(re.getProduto().getId() == null || re.getMarca().getId() == null || re.getQuantidade() <= 0) {
+            if(re.getProduto().getId() == null || re.getMarca().getId() == null || re.getQuantidade() < 0) {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 JsonObject resposta = new JsonObject();
                 resposta.addProperty("erro", "Dados de reserva inválidos");

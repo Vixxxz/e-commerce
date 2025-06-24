@@ -17,7 +17,7 @@ public class ValidaDadosReserva implements IStrategy{
             sb.append("Marca é obrigatória e deve ter um ID válido.\n");
         }
 
-        if (reserva.getQuantidade() == null || reserva.getQuantidade() <= 0) {
+        if (reserva.getQuantidade() == null || reserva.getQuantidade() < 0) {
             sb.append("Quantidade deve ser um número positivo.\n");
         }
 
