@@ -173,3 +173,4 @@ const AdmVendas = (() => {
 })();
 
 document.addEventListener('DOMContentLoaded', AdmVendas.init);
+document.getElementById('vendas-title').addEventListener('click', AdmVendas.init);
