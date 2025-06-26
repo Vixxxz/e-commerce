@@ -43,36 +43,48 @@ function enviarMensagem(){
     const originalContent = btn.innerHTML
     btn.innerHTML = '<div class="loader"></div>'
 
-    fetch("http://localhost:8080/ecommerce_tenis_war_exploded/chatbot",{
+    fetch("http://localhost:8080/ecommerce_tenis_war_exploded/chatbot", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-
-        "requisicao": {
-        "cliente":{
-            "cpf": cpf
-        },
-        "pergunta": pergunta
-    }
+            "requisicao": {
+                "cliente": {
+                    "cpf": cpf
+                },
+                "pergunta": pergunta
+            }
         })
     })
-        .then((response) =>response.json())
-        .then((response)=> {
-            let r = response.resposta
-            exibirHistorico(pergunta, r)
+        .then(response => response.json()) // Converte a resposta para JSON
+        .then(data => { // Renomeado para 'data' para maior clareza
+            // Verifica se a resposta contém a propriedade 'resposta' (sucesso)
+            if (data.resposta) {
+                exibirHistorico(pergunta, data.resposta);
+            }
+            // Caso contrário, verifica se contém a propriedade 'erro'
+            else if (data.erro) {
+                exibirHistorico(pergunta, `Desculpe, ocorreu um erro: ${data.erro}`);
+            }
+            // Fallback para uma resposta inesperada
+            else {
+                exibirHistorico(pergunta, "Não foi possível obter uma resposta do assistente.");
+            }
         })
-        .catch((e) =>{
-            console.log("Error -> ", e)
+        .catch((e) => {
+            console.log("Error -> ", e);
+            // Exibe uma mensagem amigável em caso de falha de rede ou erro de parsing
+            exibirHistorico(pergunta, "Houve um problema de comunicação. Por favor, tente novamente.");
         })
-        .finally(()=>{
-            status.style.display = 'none'
-            msg.disabled = false
-            btn.disabled = false
-            btn.style.cursor = 'pointer'
-            btn.innerHTML = originalContent
-        })
+        .finally(() => {
+            // Código para reabilitar o botão de envio
+            status.style.display = 'none';
+            msg.disabled = false;
+            btn.disabled = false;
+            btn.style.cursor = 'pointer';
+            btn.innerHTML = originalContent;
+        });
 }
 
 function exibirHistorico(message, response){
@@ -88,7 +100,6 @@ function exibirHistorico(message, response){
 
     userMsg.appendChild(myMessage)
     div.appendChild(userMsg)
-
 
     //Mensagem Bot
     let botMsg = document.createElement('div')
