@@ -65,7 +65,7 @@ function enviarMensagem(){
             }
             // Caso contrário, verifica se contém a propriedade 'erro'
             else if (data.erro) {
-                exibirHistorico(pergunta, `Desculpe, ocorreu um erro: ${data.erro}`);
+                exibirHistorico(pergunta, "Desculpe, ocorreu um erro. Aguarde e tente novamente mais tarde.");
             }
             // Fallback para uma resposta inesperada
             else {
