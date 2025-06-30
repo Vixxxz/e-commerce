@@ -9,7 +9,6 @@ import Util.Resultado;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class DevolucaoDAO implements IDAO{
@@ -230,7 +229,7 @@ public class DevolucaoDAO implements IDAO{
         double totalCupomTroca = cupons.stream()
                 .filter(c -> c instanceof Cupom)
                 .map(c -> (Cupom) c)
-                .filter(c -> TipoCupom.TROCA.equals(c.getTipo()))
+                //.filter(c -> TipoCupom.TROCA.equals(c.getTipo()))
                 .mapToDouble(Cupom::getValor)
                 .sum();
 

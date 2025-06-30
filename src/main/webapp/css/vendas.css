@@ -1,8 +1,9 @@
 .homeVendas {
     display: flex;
+    justify-content: center;
     width: 800px;
-    padding: 54px 148px;
-    align-items: flex-end;
+    padding: 20px 20px;
+    align-items: center;
     align-content: flex-end;
     gap: 76px 216px;
     flex-wrap: wrap;
